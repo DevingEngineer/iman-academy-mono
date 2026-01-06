@@ -19,6 +19,7 @@
 	--system_info: #2563eb;
 	--system_warning: #f59e0b;
 	--system_error: #b91c1c;
+	--system_disabled: #b0c2e0;
 	--font_inter: 'Inter', sans-serif;
 }
 
@@ -78,26 +79,44 @@ body {
 	letter-spacing: -0.25%;
 }
 
-.bodyLarge {
-	font-weight: 400;
-	font-size: 20px;
-	letter-spacing: 0px;
-}
-
-.bodyText {
-	font-weight: 400;
-	font-size: 18px;
-	letter-spacing: 0px;
-}
-
-.bodySmall {
-	font-weight: 400;
-	font-size: 16px;
-	letter-spacing: 0px;
-}
-
-.bodyBold {
+.body1 {
 	font-weight: 700;
-	font-size: 13px;
-	letter-spacing: 0px;
+	font-size: 16px;
+	line-height: 145%;
+	letter-spacing: 0%;
+}
+
+.body1-md {
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 145%;
+	letter-spacing: 0%;
+}
+
+.body2 {
+	font-weight: 700;
+	font-size: 14px;
+	line-height: 145%;
+	letter-spacing: 0%;
+}
+
+.body3 {
+	font-weight: 700;
+	font-size: 12px;
+	line-height: 145%;
+	letter-spacing: 0%;
+}
+
+.text-link {
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 145%;
+	letter-spacing: 0%;
+}
+
+.button-label {
+	font-weight: 600;
+	font-size: 16px;
+	line-height: 44px;
+	letter-spacing: 0.2%;
 }
