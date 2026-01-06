@@ -44,6 +44,7 @@ export default {
 				system_info: 'var(--system_info)',
 				system_warning: 'var(--system_warning)',
 				system_error: 'var(--system_error)',
+				system_disabled: 'var(--system_disabled)',
 			},
 			fontFamily: {
 				inter: 'var(--font_inter)',
