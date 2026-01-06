@@ -1,5 +1,7 @@
+import { routing } from '@/src/i18n/routing'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { notFound } from 'next/navigation'
 import './globals.css'
 
 const inter = Inter({
@@ -15,11 +17,17 @@ export const metadata: Metadata = {
 
 type RootLayoutProps = {
 	children: Readonly<React.ReactNode>
+	params: Promise<{ locale: string }>
 }
 
-const RootLayout = ({ children }: RootLayoutProps) => {
+const RootLayout = async ({ children, params }: RootLayoutProps) => {
+	const { locale } = await params
+	if (!routing.locales.includes(locale as 'ru' | 'ky')) {
+		notFound()
+	}
+
 	return (
-		<html lang='en'>
+		<html lang={locale}>
 			<body className={`${inter.variable} antialiased`}>{children}</body>
 		</html>
 	)
