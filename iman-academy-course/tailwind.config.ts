@@ -1,0 +1,58 @@
+import type { Config } from 'tailwindcss'
+
+export default {
+	content: [
+		'./src/pages/**/*.{ts,tsx,mdx}',
+		'./src/components/**/*.{ts,jsx,tsx,mdx}',
+		'./src/app/**/*.{ts,tsx,mdx}',
+		'./src/layouts/**/*.{ts,tsx,mdx}',
+		'./src/modules/**/*.{ts,tsx,mdx}',
+		'./src/**/*.{ts,tsx,mdx}',
+	],
+	theme: {
+		screens: {
+			w1440: { max: '1440px' },
+			w1350: { max: '1350px' },
+			w1250: { max: '1250px' },
+			w1170: { max: '1170px' },
+			w1150: { max: '1150px' },
+			w1050: { max: '1050px' },
+			w950: { max: '950px' },
+			w850: { max: '850px' },
+			w750: { max: '750px' },
+			w650: { max: '650px' },
+			w550: { max: '550px' },
+			w450: { max: '450px' },
+			w420: { max: '420px' },
+			w370: { max: '370px' },
+		},
+		extend: {
+			colors: {
+				// info: 'var(--info)',
+				// icon: 'var(--icon)',
+				white: 'var(--white)',
+				// error: 'var(--error)',
+				nutral: 'var(--nutral)',
+				border: 'var(--border)',
+				// bold_border: 'var(--bold_border)',
+				// light_border: 'var(--light-border)',
+				// success: 'var(--success)',
+				primary: 'var(--primary)',
+				primary_hover: 'var(--primary-hover)',
+				secondary: 'var(--secondary)',
+				background: 'var(--background)',
+				// image_color: 'var(--image-color)',
+				// white_hover: 'var(--white-hover)',
+				// primary_text: 'var(--primary-text)',
+				// primary_light: 'var(--primary-light)',
+				secondary_text: 'var(--secondary-text)',
+				// secondary_light: 'var(--secondary-light)',
+			},
+			fontFamily: {
+				poppins: 'var(--font-poppins)',
+				inter: 'var(--font-inter)',
+			},
+		},
+	},
+	plugins: [],
+} satisfies Config

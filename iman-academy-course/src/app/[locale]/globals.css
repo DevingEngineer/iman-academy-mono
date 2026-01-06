@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: var(--font-comfortaa);
+}
+
+:root {
+	/* --info: #3b82f6; */
+	/* --icon: #959595; */
+	--white: #ffffff;
+	/* --error: #ec1818; */
+	--nutral: #50667599;
+	--border: #b4bec4;
+	/* --bold-border: #00000066; */
+	/* --light-border: #e4e4e4; */
+	--primary: #052439;
+	--primary-hover: #073757;
+	/* --success: #4caf50; */
+	--secondary: #2b87ff;
+	--background: #fafafc;
+	/* --primary-text: #052439; */
+	/* --image-color: #00000080; */
+	/* --primary-light: #76c893; */
+	/* --white-hover: #071e681a; */
+	--secondary-text: #337ab7;
+	/* --secondary-light: #ffc570; */
+	--font-poppins: 'Poppins', sans-serif;
+	--font-inter: 'Inter', sans-serif;
+}
+
+input {
+	outline: none;
+}
+
+button {
+	outline: none;
+	cursor: pointer;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+body {
+	background: #f1f1f1;
+	color: var(--primary);
+	font-family: var(--font-poppins);
+}
+
+.container {
+	width: 100%;
+	max-width: 1440px;
+	margin: 0 auto;
+	padding-right: clamp(16px, -13.7px + 9.29vw, 120px);
+	padding-left: clamp(16px, -13.7px + 9.29vw, 120px);
+}
+
+.h1 {
+	font-family: var(--font-poppins);
+	font-weight: 400;
+	font-size: 35px;
+	letter-spacing: 0px;
+}
+
+.h2 {
+	font-family: var(--font-poppins);
+	font-weight: 400;
+	font-size: clamp(23px, 21px + 0.63vw, 30px);
+	letter-spacing: 0px;
+}
+
+.h3 {
+	font-family: var(--font-poppins);
+	font-weight: 400;
+	font-size: 25px;
+	letter-spacing: 0px;
+}
+
+.bodyLarge {
+	font-family: var(--font-comfortaa);
+	font-weight: 400;
+	font-size: 20px;
+	letter-spacing: 0px;
+}
+
+.bodyText {
+	font-family: var(--font-comfortaa);
+	font-weight: 400;
+	font-size: 18px;
+	letter-spacing: 0px;
+}
+
+.bodySmall {
+	font-family: var(--font-comfortaa);
+	font-weight: 400;
+	font-size: 16px;
+	letter-spacing: 0px;
+}
+
+.bodyBold {
+	font-family: var(--font-comfortaa);
+	font-weight: 700;
+	font-size: 13px;
+	letter-spacing: 0px;
+}
+
+.custom-box-shadow {
+	-webkit-box-shadow: -1px 3px 10px 2px rgba(34, 60, 80, 0.2);
+	-moz-box-shadow: -1px 3px 10px 2px rgba(34, 60, 80, 0.2);
+	box-shadow: -1px 3px 10px 2px rgba(34, 60, 80, 0.2);
+}
