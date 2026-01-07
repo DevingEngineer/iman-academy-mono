@@ -49,7 +49,7 @@ export const LanguageSwitcher = () => {
 			</button>
 
 			{open && (
-				<div className='absolute w-40 rounded-lg border shadow-lg bg-black/5 backdrop-blur-md'>
+				<div className='absolute w-40 rounded-lg mt-2 left-0 border shadow-lg bg-black/5 backdrop-blur-md'>
 					{routing.locales.map((l) => {
 						const item = LOCALES[l as Locale]
 
