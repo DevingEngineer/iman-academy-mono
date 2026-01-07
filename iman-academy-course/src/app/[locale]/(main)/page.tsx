@@ -1,8 +1,10 @@
+import { Hero } from '@/src/components/Hero'
+
 const HomePage = () => {
 	return (
-		<div>
-			<h1 className='h1'>Hero</h1>
-		</div>
+		<>
+			<Hero />
+		</>
 	)
 }
 
