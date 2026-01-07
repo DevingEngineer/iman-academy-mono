@@ -1,4 +1,5 @@
 import { routing } from '@/src/i18n/routing'
+import NextIntlProvider from '@/src/providers/NextIntlProvider'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { notFound } from 'next/navigation'
@@ -27,9 +28,11 @@ const RootLayout = async ({ children, params }: RootLayoutProps) => {
 	}
 
 	return (
-		<html lang={locale}>
-			<body className={`${inter.variable} antialiased`}>{children}</body>
-		</html>
+		<NextIntlProvider locale={locale}>
+			<html lang={locale}>
+				<body className={`${inter.variable} antialiased`}>{children}</body>
+			</html>
+		</NextIntlProvider>
 	)
 }
 

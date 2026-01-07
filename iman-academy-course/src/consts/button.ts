@@ -9,5 +9,5 @@ export const buttonVariantStyles: Record<ButtonVariant, string> = {
 	outlined:
 		'rounded-lg border-2 border-accent_brand text-white active:border-hover_focus disabled:border-system_disabled',
 	contained:
-		'rounded-lg bg-accent_brand active:bg-hover_focus disabled:bg-system_disabled',
+		'rounded-lg text-primary_text bg-accent_brand active:bg-hover_focus disabled:bg-system_disabled',
 } as const
