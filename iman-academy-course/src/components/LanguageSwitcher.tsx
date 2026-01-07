@@ -1,5 +1,6 @@
 'use client'
 
+import { CaretBottomIcon } from '@/public/icons/header/CaretBottomIcon'
 import { useLocale } from 'next-intl'
 import { useState } from 'react'
 import ReactCountryFlag from 'react-country-flag'
@@ -37,32 +38,20 @@ export const LanguageSwitcher = () => {
 		<div className='relative my-auto'>
 			<button
 				onClick={() => setOpen((v) => !v)}
-				className='flex items-center gap-2 rounded-lg font-bold text-sm bg-primary text-white w750:bg-transparent w750:px-0 hover:bg-primary_hover  w750:hover:bg-transparent duration-300'
+				className='flex items-center gap-2 rounded-lg font-bold text-sm bg-primary text-white w750:bg-transparent w750:px-0 hover:bg-primary_hover w750:hover:bg-transparent duration-300'
 			>
 				<ReactCountryFlag
 					svg
 					countryCode={current.countryCode}
 					style={{ width: '1.25em', height: '1.25em' }}
 				/>
-				<svg
-					width='9'
-					height='4'
-					viewBox='0 0 9 4'
-					fill='none'
-					xmlns='http://www.w3.org/2000/svg'
-				>
-					<path
-						d='M4.33008 3.75L8.66021 0H-4.91142e-05L4.33008 3.75Z'
-						fill='#FFFDF7'
-					/>
-				</svg>
+				<CaretBottomIcon />
 			</button>
 
 			{open && (
-				<div className='absolute w-40 rounded-lg border shadow-lg bg-black/20 backdrop-blur-md'>
+				<div className='absolute w-40 rounded-lg border shadow-lg bg-black/5 backdrop-blur-md'>
 					{routing.locales.map((l) => {
 						const item = LOCALES[l as Locale]
-						console.log(item)
 
 						return (
 							<button
