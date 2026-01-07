@@ -5,9 +5,7 @@ export default function Home() {
 	return (
 		<MainLayout>
 			<h1 className='h1'>Hero</h1>
-			<Button className='border-2' variant='outlined' disabled>
-				Click here
-			</Button>
+			<Button>Click here</Button>
 		</MainLayout>
 	)
 }
