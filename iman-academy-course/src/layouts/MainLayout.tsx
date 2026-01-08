@@ -8,9 +8,7 @@ type MainLayoutProps = {
 const MainLayout = ({ children }: MainLayoutProps) => (
 	<div className='min-h-screen flex flex-col'>
 		<Header />
-		<main>
-			<div className='container'>{children}</div>
-		</main>
+		<main className='container'>{children}</main>
 		<Footer />
 	</div>
 )
