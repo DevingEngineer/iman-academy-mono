@@ -1,7 +1,7 @@
 import { ButtonVariant } from '../types/button'
 
 export const buttonBaseStyles =
-	'w-full py-4 inline-flex items-center justify-center font-semibold tracking-[0.2%] transition-colors leading-[100%] duration-300 disabled:cursor-not-allowed disabled:opacity-60' as const
+	'gap-4 py-4 flex items-center justify-center font-semibold tracking-[0.2%] transition-colors leading-[100%] duration-300 disabled:cursor-not-allowed disabled:opacity-60' as const
 
 export const buttonVariantStyles: Record<ButtonVariant, string> = {
 	default:

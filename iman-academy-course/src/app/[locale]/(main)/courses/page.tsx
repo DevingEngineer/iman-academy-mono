@@ -1,5 +1,7 @@
+import { Courses } from '@/src/modules/courses'
+
 const CoursesPage = () => {
-	return <div>CoursesPage</div>
+	return <Courses />
 }
 
 export default CoursesPage

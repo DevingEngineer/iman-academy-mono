@@ -80,28 +80,28 @@ body {
 }
 
 .body1 {
-	font-weight: 700;
+	font-weight: 500;
 	font-size: 16px;
 	line-height: 145%;
 	letter-spacing: 0%;
 }
 
-.body1-md {
-	font-weight: 700;
+/* .body1-md {
+	font-weight: 500;
 	font-size: 16px;
 	line-height: 145%;
 	letter-spacing: 0%;
-}
+} */
 
 .body2 {
-	font-weight: 700;
+	font-weight: 500;
 	font-size: 14px;
 	line-height: 145%;
 	letter-spacing: 0%;
 }
 
 .body3 {
-	font-weight: 700;
+	font-weight: 500;
 	font-size: 12px;
 	line-height: 145%;
 	letter-spacing: 0%;
