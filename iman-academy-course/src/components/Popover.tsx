@@ -28,7 +28,7 @@ type PopoverProps = {
 
 export const Popover = ({ options = POPOVER_DATA }: PopoverProps) => {
 	return (
-		<div className='bg-white absolute min-w-[280px] border border-border_devider rounded-xl overflow-hidden top-14'>
+		<div className='bg-white absolute min-w-[280px] border border-border_devider rounded-xl overflow-hidden top-14 z-10'>
 			<ul className=''>
 				{options.map((item, index) => (
 					<li

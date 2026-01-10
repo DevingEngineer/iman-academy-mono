@@ -16,15 +16,15 @@ export const CoursesFilter = () => {
 
 	return (
 		<>
-			<div className='flex gap-6 mt-8'>
+			<div className='flex gap-6 flex-wrap mt-8 w450:gap-3'>
 				{COURSES_FILTER.map((item, index) => (
 					<Button className='px-[33px]' key={index}>
 						{item.label}
 					</Button>
 				))}
 			</div>
-			<div className='mt-12 flex items-center justify-between'>
-				<div className='flex items-center gap-6'>
+			<div className='mt-12 flex items-center justify-between gap-2 w950:flex-col w950:items-start'>
+				<div className='flex items-center flex-wrap gap-6'>
 					<CourseDirection
 						handleFilterOpen={handleFilterOpen}
 						filter={filter}
@@ -44,7 +44,7 @@ export const CoursesFilter = () => {
 						title='Направления'
 					/>
 				</div>
-				<div className='flex-1 max-w-[436px]'>
+				<div className='w-full flex-1 max-w-[436px]'>
 					<div className='relative'>
 						<SearchIcons className='absolute left-[21px] top-1/2 -translate-y-1/2' />
 						<input
