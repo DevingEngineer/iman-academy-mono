@@ -1,3 +1,3 @@
 export const Footer = () => {
-	return <footer>FOOTER</footer>
+	return <footer className='mt-auto'>FOOTER</footer>
 }

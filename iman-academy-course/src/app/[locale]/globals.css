@@ -114,6 +114,14 @@ body {
 	letter-spacing: 0%;
 }
 
+.body-medium {
+	font-weight: 500;
+	font-size: 16px;
+	line-height: 145%;
+	letter-spacing: 0%;
+	color: var(--secondary_text);
+}
+
 .text-link {
 	font-weight: 500;
 	font-size: 14px;
