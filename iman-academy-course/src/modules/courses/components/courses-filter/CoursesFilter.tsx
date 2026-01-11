@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/src/components/Button'
+import { Button } from '@/src/components/UI/Button'
 import { SearchIcons } from '@/src/components/icons/SearchIcons'
 import { useState } from 'react'
 import { COURSES_FILTER } from '../../consts/coursesFlter'
@@ -48,7 +48,7 @@ export const CoursesFilter = () => {
 					<div className='relative'>
 						<SearchIcons className='absolute left-[21px] top-1/2 -translate-y-1/2' />
 						<input
-							className=' body1 w-full outline-none border border-border_devider rounded-[13px] py-[14px] pr-[21px] pl-[50px] placeholder-[#17171780]'
+							className='body1 w-full outline-none border border-border_devider rounded-[13px] py-[14px] pr-[21px] pl-[50px] placeholder-[#17171780]'
 							type='text'
 							placeholder='Какой материал вы ищете?'
 						/>

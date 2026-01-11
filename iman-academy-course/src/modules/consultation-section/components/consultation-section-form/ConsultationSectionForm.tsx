@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/src/components/Button'
+import { Button } from '@/src/components/UI/Button'
 import { Link } from '@/src/i18n/navigation'
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'

@@ -1,4 +1,4 @@
-import { Button } from '@/src/components/Button'
+import { Button } from '@/src/components/UI/Button'
 import { Link } from '@/src/i18n/navigation'
 import Image from 'next/image'
 import { AreasStudyType } from '../../types'

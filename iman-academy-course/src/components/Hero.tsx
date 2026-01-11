@@ -1,4 +1,4 @@
-import { Button } from './Button'
+import { Button } from './UI/Button'
 
 export const Hero = () => {
 	return (
