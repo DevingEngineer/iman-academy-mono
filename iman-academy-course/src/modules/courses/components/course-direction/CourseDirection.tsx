@@ -1,6 +1,6 @@
-import { Button } from '@/src/components/Button'
 import { ArrowDown } from '@/src/components/icons/ArrowDown'
 import { Popover } from '@/src/components/Popover'
+import { Button } from '@/src/components/UI/Button'
 import { cn } from '@/src/lib/cn'
 import { CoursesFilterValue } from '../../enums/courseFilterEnum'
 

@@ -1,4 +1,4 @@
-import { Button } from '@/src/components/Button'
+import { Button } from '@/src/components/UI/Button'
 import { PricingPlansType } from '../../types'
 
 type PricingPlansCardProps = {

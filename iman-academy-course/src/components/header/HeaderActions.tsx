@@ -1,5 +1,5 @@
 import { Link } from '@/src/i18n/navigation'
-import { Button } from '../Button'
+import { Button } from '../UI/Button'
 
 export const HeaderActions = () => {
 	return (
