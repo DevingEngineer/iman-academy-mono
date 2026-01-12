@@ -2,7 +2,7 @@ import { CoursesCard } from './CoursesCard'
 
 export const CoursesList = () => {
 	return (
-		<div className='mt-16 grid grid-cols-3 gap-x-6 gap-y-12 w1150:grid-cols-2 w750:grid-cols-1'>
+		<div className='mt-16 grid grid-cols-3 gap-x-6 gap-y-12 w1150:grid-cols-2 w750:grid-cols-1 w750:gap-y-5 w750:mt-5'>
 			<CoursesCard />
 			<CoursesCard />
 			<CoursesCard />

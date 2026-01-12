@@ -3,8 +3,8 @@ import { CourseVideoBlock } from '../course-video-block/CourseVideoBlock'
 
 export const CourseDetails = () => {
 	return (
-		<section className='container'>
-			<div className='bg-system_surface_card pt-3 pb-[23px] pl-10 pr-[17px] flex justify-between items-center gap-5 rounded-[20px] w1250:flex-col w1250:items-start w1250:pl-[17px]'>
+		<section className='container pb-12 w750:pb-8'>
+			<div className='bg-system_surface_card pt-3 pb-[23px] pl-10 pr-[17px] flex justify-between items-center gap-6 rounded-[20px] w1250:flex-col w1250:items-start w1250:pl-[17px]'>
 				<div className='flex-1 w1250:max-w-[530px]'>
 					<div className='flex gap-2 items-center flex-wrap'>
 						<div className='px-3 py-2 bg-background_light flex justify-center items-center rounded-[20px] body2 !font-normal text-secondary_text'>

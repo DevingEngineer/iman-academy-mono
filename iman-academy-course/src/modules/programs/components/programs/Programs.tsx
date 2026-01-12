@@ -8,7 +8,7 @@ export const Programs = () => {
 	const [slideOpen, setSlideOpen] = useState<number>(0)
 
 	return (
-		<section className='container py-12'>
+		<section className='container py-12 w750:py-5'>
 			<SectionTitle title='Программа' />
 			<p className='body1 !font-normal mt-2 text-secondary_text'>
 				Обучение рассчитано на 8 недель. <br /> Вы будете проходить 1–2
