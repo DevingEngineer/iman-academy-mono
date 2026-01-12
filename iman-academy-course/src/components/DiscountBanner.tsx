@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 export const DiscountBanner = () => {
 	return (
-		<section className='relative pt-9 pb-[41px] bg-[linear-gradient(90deg,#091E3A_0%,#091E3A_2%,#2F80ED_55%,#2D9EE0_100%)] overflow-hidden w650:pt-11'>
+		<section className='relative pt-9 pb-[41px] bg-[linear-gradient(90deg,#091E3A_0%,#091E3A_2%,#2F80ED_55%,#2D9EE0_100%)] overflow-hidden w650:pt-11 w750:my-5'>
 			<div className='container relative'>
 				<Image
 					src={BannerMoon}

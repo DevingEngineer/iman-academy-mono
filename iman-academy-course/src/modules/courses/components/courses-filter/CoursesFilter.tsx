@@ -16,14 +16,14 @@ export const CoursesFilter = () => {
 
 	return (
 		<>
-			<div className='flex gap-6 flex-wrap mt-8 w450:gap-3'>
+			<div className='flex gap-6 flex-wrap mt-10 w450:gap-3'>
 				{COURSES_FILTER.map((item, index) => (
 					<Button className='px-[33px]' key={index}>
 						{item.label}
 					</Button>
 				))}
 			</div>
-			<div className='mt-12 flex items-center justify-between gap-2 w950:flex-col w950:items-start'>
+			<div className='mt-12 flex items-center justify-between gap-2 w950:flex-col w950:items-start w750:mt-4'>
 				<div className='flex items-center flex-wrap gap-6'>
 					<CourseDirection
 						handleFilterOpen={handleFilterOpen}

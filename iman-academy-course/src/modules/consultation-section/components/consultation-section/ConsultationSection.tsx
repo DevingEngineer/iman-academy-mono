@@ -3,7 +3,7 @@ import { ConsultationSectionForm } from '../consultation-section-form/Consultati
 
 export const ConsultationSection = () => {
 	return (
-		<section className='pt-[120px] pb-[44px] grid grid-cols-2 gap-6 w850:grid-cols-1'>
+		<section className='pt-[120px] pb-[44px] grid grid-cols-2 gap-6 w850:grid-cols-1 w750:py-5'>
 			<ConsultationSectionContent />
 			<ConsultationSectionForm />
 		</section>

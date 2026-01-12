@@ -3,9 +3,9 @@ import { PricingPlansCard } from '../pricin-plans-card/PricingPlansCard'
 
 export const PricingPlans = () => {
 	return (
-		<section className='container pt-12 pb-[68px]'>
+		<section className='container pt-12 pb-[68px] w750:py-5'>
 			<h2 className='h1 text-center'>Форматы и стоимость обучения</h2>
-			<div className='mt-6 pt-3 grid grid-cols-3 gap-[29px] w1150:grid-cols-2 w750:grid-cols-1'>
+			<div className='mt-6 pt-3 grid grid-cols-3 gap-[29px] w1150:grid-cols-2 w750:grid-cols-1 w750:mt-5'>
 				{PRICING_PLANS_DATA.map((plan, index) => (
 					<PricingPlansCard key={index} plan={plan} />
 				))}
