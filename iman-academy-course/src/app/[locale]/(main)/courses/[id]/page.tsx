@@ -7,14 +7,14 @@ import { WhoWillTeach } from '@/src/modules/who-will-teach'
 
 const CourseDetailsPage = () => {
 	return (
-		<main>
+		<>
 			<CourseDetails />
 			<WhoWillTeach />
 			<Programs />
 			<PricingPlans />
 			<DiscountBanner />
 			<ConsultationSection />
-		</main>
+		</>
 	)
 }
 

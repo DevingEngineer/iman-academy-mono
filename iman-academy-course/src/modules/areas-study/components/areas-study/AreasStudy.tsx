@@ -36,11 +36,13 @@ const AREAS_STUDY: AreasStudyType[] = [
 export const AreasStudy = () => {
 	return (
 		<section className='pt-[85px]'>
-			<SectionTitle title='Направления обучения' />
-			<div className='grid grid-cols-2 gap-12 w850:gap-9 w750:gap-6 w550:grid-cols-1'>
-				{AREAS_STUDY.map((lesson) => (
-					<EducationDirectionCard key={lesson.id} {...lesson} />
-				))}
+			<div className='container'>
+				<SectionTitle title='Направления обучения' />
+				<div className='grid grid-cols-2 gap-12 w850:gap-9 w750:gap-6 w550:grid-cols-1'>
+					{AREAS_STUDY.map((lesson) => (
+						<EducationDirectionCard key={lesson.id} {...lesson} />
+					))}
+				</div>
 			</div>
 		</section>
 	)

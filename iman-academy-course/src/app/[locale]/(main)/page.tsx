@@ -8,7 +8,7 @@ import { WhatWeTeach } from '@/src/modules/what-we-teach'
 
 const HomePage = () => {
 	return (
-		<main className='container'>
+		<>
 			<Hero />
 			<AreasStudy />
 			<WhatWeTeach />
@@ -16,7 +16,7 @@ const HomePage = () => {
 			<PopularCourses />
 			<Teachers />
 			<ConsultationSection />
-		</main>
+		</>
 	)
 }
 
