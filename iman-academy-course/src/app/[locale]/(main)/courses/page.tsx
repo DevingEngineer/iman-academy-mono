@@ -5,12 +5,12 @@ import { PricingPlans } from '@/src/modules/pricing-plans'
 
 const CoursesPage = () => {
 	return (
-		<main>
+		<>
 			<Courses />
 			<PricingPlans />
 			<DiscountBanner />
 			<ConsultationSection />
-		</main>
+		</>
 	)
 }
 
