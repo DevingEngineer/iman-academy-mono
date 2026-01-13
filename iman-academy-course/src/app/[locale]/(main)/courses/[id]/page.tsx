@@ -1,5 +1,5 @@
 import { DiscountBanner } from '@/src/components/DiscountBanner'
-import { ConsultationSection } from '@/src/modules/consultation-section'
+import { Consultation } from '@/src/modules/consultation'
 import { CourseDetails } from '@/src/modules/course-details'
 import { PricingPlans } from '@/src/modules/pricing-plans'
 import { Programs } from '@/src/modules/programs'
@@ -13,7 +13,7 @@ const CourseDetailsPage = () => {
 			<Programs />
 			<PricingPlans />
 			<DiscountBanner />
-			<ConsultationSection />
+			<Consultation />
 		</>
 	)
 }
