@@ -18,7 +18,7 @@ export const COUNTRIES = {
 
 export type Locale = keyof typeof COUNTRIES
 
-export const ConsultationSectionForm = () => {
+export const ConsultationForm = () => {
 	return (
 		<form
 			onSubmit={(e) => e.preventDefault()}

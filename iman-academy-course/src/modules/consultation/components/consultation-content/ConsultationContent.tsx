@@ -1,4 +1,4 @@
-export const ConsultationSectionContent = () => {
+export const ConsultationContent = () => {
 	return (
 		<div className='bg-system_surface_card rounded-[20px] p-8 pr-0'>
 			<h2 className='h1 max-w-[550px]'>

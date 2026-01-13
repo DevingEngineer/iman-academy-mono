@@ -1,6 +1,6 @@
 import { Hero } from '@/src/components/Hero'
 import { AreasStudy } from '@/src/modules/areas-study'
-import { ConsultationSection } from '@/src/modules/consultation-section'
+import { Consultation } from '@/src/modules/consultation'
 import { FindStep } from '@/src/modules/find-step'
 import { PopularCourses } from '@/src/modules/popular-courses'
 import { Teachers } from '@/src/modules/teachers'
@@ -15,7 +15,7 @@ const HomePage = () => {
 			<FindStep />
 			<PopularCourses />
 			<Teachers />
-			<ConsultationSection />
+			<Consultation />
 		</>
 	)
 }
