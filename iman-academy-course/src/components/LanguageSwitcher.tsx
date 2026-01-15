@@ -1,6 +1,6 @@
 'use client'
 
-import { CaretBottomIcon } from '@/public/icons/header/CaretBottomIcon'
+import { CaretBottomIcon } from '@/src/components/icons/CaretBottomIcon'
 import { useLocale } from 'next-intl'
 import { useState } from 'react'
 import ReactCountryFlag from 'react-country-flag'

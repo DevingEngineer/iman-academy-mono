@@ -1,6 +1,6 @@
-import { FacebookIcon } from '@/public/icons/social-network/FacebookIcon'
-import { InstagramIcon } from '@/public/icons/social-network/InstagramIcon'
+import { InstagramIcon } from '@/src/components/icons/InstagramIcon'
 import { Link } from '../i18n/navigation'
+import { FacebookIcon } from './icons/FacebookIcon'
 import { FooterShape } from './icons/FooterShape'
 
 export const Footer = () => {
