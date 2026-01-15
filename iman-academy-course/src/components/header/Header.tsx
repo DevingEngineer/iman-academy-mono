@@ -1,13 +1,13 @@
-import { BurgerMenuIcon } from '@/public/icons/header/BurgerMenuIcon'
-import { PhoneIcon } from '@/public/icons/header/PhoneIcon'
-import { FacebookIcon } from '@/public/icons/social-network/FacebookIcon'
-import { InstagramIcon } from '@/public/icons/social-network/InstagramIcon'
+import { BurgerMenuIcon } from '@/src/components/icons/BurgerMenuIcon'
+import { InstagramIcon } from '@/src/components/icons/InstagramIcon'
+import { PhoneIcon } from '@/src/components/icons/PhoneIcon'
 import { Link } from '@/src/i18n/navigation'
 import Image from 'next/image'
 import Logo from '../../../public/logo/logo.png'
 import { LanguageSwitcher } from '../LanguageSwitcher'
 import { HeaderActions } from './HeaderActions'
 import { HeaderNav } from './HeaderNav'
+import { FacebookIcon } from '../icons/FacebookIcon'
 
 export const Header = () => {
 	return (
