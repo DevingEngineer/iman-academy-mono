@@ -32,7 +32,7 @@ export const Header = () => {
 						</Link>
 						<div className='flex items-center gap-5'>
 							<LanguageSwitcher />
-							<div className='flex items-center gap-5'>
+							<div className='flex items-center gap-5 text-background_light'>
 								<FacebookIcon />
 								<InstagramIcon />
 							</div>
