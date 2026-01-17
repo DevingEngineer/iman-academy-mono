@@ -5,7 +5,7 @@ import Image from 'next/image'
 
 export const DashboardHeader = () => {
 	return (
-		<header className='py-[32px] w-full px-[110px] w1250:px-[60px] w1050:px-[40px] w850:px-[25px] w550:px-[16px] w550:py-[16px]'>
+		<header className='py-[32px] w-full w550:py-[16px]'>
 			<div className='px-[85px] pt-[53px] pb-[18px] rounded-3xl flex gap-5 justify-between w-full bg-[linear-gradient(90deg,#091E3A_0%,#091E3A_15%,#2F80ED_55%,#2D9EE0_100%)] w550:rounded-xl w1250:px-[60px] w1050:px-[40px] w850:px-[25px] w1050:pt-[35px] w950:pt-[25px] w550:px-[16px] w650:pt-4 w750:flex-col'>
 				<div className='min-w-[350px] flex items-center gap-[26px] w750:min-w-0 w650:gap-[10px]'>
 					<div className='relative'>

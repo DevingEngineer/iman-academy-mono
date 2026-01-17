@@ -1,9 +1,14 @@
+import { CoursesStats } from '@/src/modules/courses-stats'
+import { DashboardHeader } from '@/src/modules/dashboard-header'
 import MainLayout from '../../layouts/MainLayout'
 
-export default function Home() {
+const HomePage = () => {
 	return (
 		<MainLayout>
-			<h1 className='h1'>Hero</h1>
+			<DashboardHeader />
+			<CoursesStats />
 		</MainLayout>
 	)
 }
+
+export default HomePage
