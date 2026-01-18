@@ -1,9 +1,9 @@
 import { Button } from '@/src/components/UI/Button'
+import { Link } from '@/src/i18n/navigation'
 import { CompletedIcon } from '../../icons/CompletedIcon'
 import { Course } from '../../types'
 
 type CourseCardProps = Course & {
-	onContinue?: () => void
 	onOpenCertificate?: () => void
 }
 
@@ -45,13 +45,14 @@ export const CourseCard = (props: CourseCardProps) => {
 							</div>
 						</div>
 						{!props.isCompleted && (
-							<Button
-								onClick={props.onContinue}
-								variant='contained'
-								className='max-h-[44px] rounded-[10px] px-5 text-[14px] font-medium hover:opacity-90'
-							>
-								Продолжить
-							</Button>
+							<Link href={`/courses/${props.id}`}>
+								<Button
+									variant='contained'
+									className='max-h-[44px] rounded-[10px] px-5 text-[14px] font-medium hover:opacity-90'
+								>
+									Продолжить
+								</Button>
+							</Link>
 						)}
 						{props.isCompleted && (
 							<div className='text-nowrap flex items-center gap-4 body1 !font-normal'>

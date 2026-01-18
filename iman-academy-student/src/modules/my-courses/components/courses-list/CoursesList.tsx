@@ -35,7 +35,7 @@ export const CoursesList = () => {
 	return (
 		<div className='pt-8'>
 			{COURSES.map((course) => (
-				<CourseCard key={course.id} {...course} />
+				<CourseCard {...course} key={course.id} />
 			))}
 		</div>
 	)

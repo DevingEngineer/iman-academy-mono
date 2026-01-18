@@ -2,7 +2,7 @@ import MainLayout from '@/src/layouts/MainLayout'
 import { CoursesStats } from '@/src/modules/courses-stats'
 import { DashboardHeader } from '@/src/modules/dashboard-header'
 
-const LessonsPage = () => {
+const CoursesPage = () => {
 	return (
 		<MainLayout>
 			<DashboardHeader />
@@ -11,4 +11,4 @@ const LessonsPage = () => {
 	)
 }
 
-export default LessonsPage
+export default CoursesPage
