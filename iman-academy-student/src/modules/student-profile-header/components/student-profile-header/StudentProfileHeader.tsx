@@ -3,7 +3,7 @@ import { VerifiedIcon } from '@/src/components/icons/VerifiedIcon'
 import { Button } from '@/src/components/UI/Button'
 import Image from 'next/image'
 
-export const DashboardHeader = () => {
+export const StudentProfileHeader = () => {
 	return (
 		<header className='py-[32px] w-full w550:py-[16px]'>
 			<div className='px-[85px] pt-[53px] pb-[18px] rounded-3xl flex gap-5 justify-between w-full bg-[linear-gradient(90deg,#091E3A_0%,#091E3A_15%,#2F80ED_55%,#2D9EE0_100%)] w550:rounded-xl w1250:px-[60px] w1050:px-[40px] w850:px-[25px] w1050:pt-[35px] w950:pt-[25px] w550:px-[16px] w650:pt-4 w750:flex-col'>

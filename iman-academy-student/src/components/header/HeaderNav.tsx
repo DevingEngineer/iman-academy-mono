@@ -22,7 +22,7 @@ const HEADER_NAV_LINKS = [
 		label: 'Сертификаты',
 	},
 	{
-		path: '/payments',
+		path: '/payment',
 		label: 'Оплата и доступ ',
 	},
 ]

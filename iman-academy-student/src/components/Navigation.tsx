@@ -1,10 +1,10 @@
-import { DASHBOARD_NAV_ITEMS } from '../consts/dashboard'
+import { NAVIGATION_ITEMS } from '../consts/navigation'
 import { Link } from '../i18n/navigation'
 
-export const DashboardNav = () => {
+export const Navigation = () => {
 	return (
 		<ul className='flex flex-wrap gap-5 items-center max-w-[1035px] w-full justify-between py-[38px]'>
-			{DASHBOARD_NAV_ITEMS.map((item) => (
+			{NAVIGATION_ITEMS.map((item) => (
 				<li key={item.label}>
 					<Link
 						href={item.path}
