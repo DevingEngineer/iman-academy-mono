@@ -1,11 +1,11 @@
-export const DASHBOARD_NAV_ITEMS = [
+export const NAVIGATION_ITEMS = [
 	{
 		label: 'Главная',
 		path: '/',
 	},
 	{
 		label: 'Уроки',
-		path: '/lessons',
+		path: '/courses',
 	},
 	{
 		label: 'Тестирования',
@@ -17,6 +17,6 @@ export const DASHBOARD_NAV_ITEMS = [
 	},
 	{
 		label: 'Оплата и доступ',
-		path: '/payments',
+		path: '/payment',
 	},
 ] as const

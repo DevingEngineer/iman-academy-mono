@@ -1,4 +1,5 @@
-import clsx from 'clsx'
+import { cn } from '@/src/lib/cn'
+import { CompletedIcon } from '../../icons/CompletedIcon'
 
 type LessonItemProps = {
 	index: number
@@ -8,25 +9,19 @@ type LessonItemProps = {
 
 export const LessonItem = ({ index, title, done }: LessonItemProps) => {
 	return (
-		<li
-			className={clsx(
-				'flex items-center justify-between rounded-xl border bg-white px-4 py-3',
-				done ? 'border-green-200' : 'border-gray-200'
-			)}
-		>
+		<li className='flex items-center justify-between rounded-xl border border-border_devider bg-white px-6 py-[22px]'>
 			<div className='flex items-center gap-3'>
 				<span className='rounded-full bg-yellow-400 px-3 py-1 text-sm font-medium'>
 					Урок {index}
 				</span>
-				<p className='text-sm font-medium text-primary_text'>{title}</p>
+				<p className='font-medium text-primary_text'>{title}</p>
 			</div>
 
 			<span
-				className={clsx(
-					'h-6 w-6 rounded-full',
-					done ? 'bg-green-500' : 'bg-gray-400'
-				)}
-			/>
+				className={cn(done ? 'text-system_success' : 'text-secondary_text')}
+			>
+				<CompletedIcon />
+			</span>
 		</li>
 	)
 }
