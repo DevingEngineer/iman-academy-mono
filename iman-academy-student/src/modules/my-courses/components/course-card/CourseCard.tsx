@@ -1,42 +1,28 @@
 import { Button } from '@/src/components/UI/Button'
 import { CompletedIcon } from '../../icons/CompletedIcon'
+import { Course } from '../../types'
 
-type CourseCardProps = {
-	title: string
-	subtitle: string
-	completedLessons: number
-	totalLessons: number
-	progress: number // 0–100
-	isCompleted?: boolean
+type CourseCardProps = Course & {
 	onContinue?: () => void
 	onOpenCertificate?: () => void
 }
 
-export const CourseCard = ({
-	title,
-	subtitle,
-	completedLessons,
-	totalLessons,
-	progress,
-	isCompleted = false,
-	onContinue,
-	onOpenCertificate,
-}: CourseCardProps) => {
+export const CourseCard = (props: CourseCardProps) => {
 	return (
 		<div className='mb-4 rounded-[16px] border border-[#E6E8EC] bg-white px-[24px] py-[20px]'>
 			<div className='flex justify-between'>
 				<div>
 					<h4 className='h4 text-[18px] font-semibold text-[#0B1F33]'>
-						{title}
+						{props.title}
 					</h4>
 					<p className='body1 !font-normal mt-[4px] text-[14px] text-secondary_text'>
-						{subtitle}
+						{props.subtitle}
 					</p>
 				</div>
 
-				{isCompleted && (
+				{props.isCompleted && (
 					<button
-						onClick={onOpenCertificate}
+						onClick={props.onOpenCertificate}
 						className='text-nowrap max-h-[38px] rounded-[10px] bg-[#F9FAFB] px-[18px] text-[14px] leading-[22px] font-medium text-[#2563EB]'
 					>
 						Открыть сертификат
@@ -49,25 +35,25 @@ export const CourseCard = ({
 					<div className='pb-6 w-full flex items-center gap-5 justify-between'>
 						<div className='max-w-[920px] w-full'>
 							<span className='text-end block text-secondary_text text-sm'>
-								{progress}%
+								{props.progress}%
 							</span>
 							<div className='h-[4px] w-full rounded-full bg-border_devider'>
 								<div
 									className='h-full rounded-full bg-system_info transition-all'
-									style={{ width: `${progress}%` }}
+									style={{ width: `${props.progress}%` }}
 								/>
 							</div>
 						</div>
-						{!isCompleted && (
+						{!props.isCompleted && (
 							<Button
-								onClick={onContinue}
+								onClick={props.onContinue}
 								variant='contained'
 								className='max-h-[44px] rounded-[10px] px-5 text-[14px] font-medium hover:opacity-90'
 							>
 								Продолжить
 							</Button>
 						)}
-						{isCompleted && (
+						{props.isCompleted && (
 							<div className='text-nowrap flex items-center gap-4 body1 !font-normal'>
 								Курс завершён
 								<CompletedIcon />
@@ -75,7 +61,8 @@ export const CourseCard = ({
 						)}
 					</div>
 					<span className='text-[15px] leading-[20px] text-secondary_text'>
-						Уроков пройдено {completedLessons} из {totalLessons}
+						Уроков пройдено {props.completedLessons} из{' '}
+						{props.totalLessons}
 					</span>
 				</div>
 			</div>
