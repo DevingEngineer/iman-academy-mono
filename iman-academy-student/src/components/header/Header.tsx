@@ -6,7 +6,6 @@ import { FacebookIcon } from '../icons/FacebookIcon'
 import { InstagramIcon } from '../icons/InstagramIcon'
 import { PhoneIcon } from '../icons/PhoneIcon'
 import { LanguageSwitcher } from '../LanguageSwitcher'
-import { HeaderActions } from './HeaderActions'
 import { HeaderNav } from './HeaderNav'
 
 export const Header = () => {
@@ -43,7 +42,6 @@ export const Header = () => {
 						<button className='hidden w750:block'>
 							<BurgerMenuIcon />
 						</button>
-						<HeaderActions />
 					</div>
 				</div>
 			</div>
