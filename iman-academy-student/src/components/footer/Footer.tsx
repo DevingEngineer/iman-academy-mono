@@ -2,6 +2,9 @@ import { InstagramIcon } from '@/src/components/icons/InstagramIcon'
 import { Link } from '../../i18n/navigation'
 import { FacebookIcon } from '../icons/FacebookIcon'
 import { FooterShape } from '../icons/FooterShape'
+import { FooterBottom } from './FooterBottom'
+import { FooterLinks } from './FooterLinks'
+import { NewsletterForm } from './NewsletterForm'
 
 export const Footer = () => {
 	return (
@@ -18,49 +21,22 @@ export const Footer = () => {
 							продуктах, специальных акциях и захватывающих обновлениях.
 						</p>
 					</div>
-					<div className='flex rounded bg-[#F7C740] py-[1px] px-[1px] max-w-[583px] w-full w370:flex-col'>
-						<input
-							type='email'
-							placeholder='Введите ваш email'
-							className='flex-1 min-w-0 bg-transparent rounded-tl rounded-bl py-2 px-[18px] text-primary_text placeholder:text-primary_text'
-						/>
-						<button className='text-nowrap text-xs font-medium leading-[138%] bg-primary_brand py-3 px-[23px] text-white rounded w550:px-2'>
-							Подписаться сейчас
-						</button>
-					</div>
+					<NewsletterForm />
 				</div>
 				<div className='pt-[70px] text-primary_text flex items-center justify-between w370:flex-col w370:items-end'>
-					<ul className='flex items-center gap-6'>
-						<li>
-							<Link href=''>TEXT</Link>
-						</li>
-						<li>
-							<Link href=''>TEXT</Link>
-						</li>
-						<li>
-							<Link href=''>TEXT</Link>
-						</li>
-						<li>
-							<Link href=''>TEXT</Link>
-						</li>
-						<li>
-							<Link href=''>TEXT</Link>
-						</li>
-					</ul>
+					<FooterLinks />
 					<div className='flex items-center gap-5 w370:pt-4'>
-						<FacebookIcon className='text-current' />
-						<InstagramIcon className='text-current' />
+						<Link href='' className='text-current'>
+							<FacebookIcon />
+						</Link>
+						<Link href='' className='text-current'>
+							<InstagramIcon />
+						</Link>
 					</div>
 				</div>
 			</div>
 			<div className='px-[72px] w750:px-4'>
-				<div className='py-5 border-t border-border_devider flex justify-between w550:flex-col'>
-					<p className='body1 font-normal'>© 2026 All rights reserved</p>
-					<div className='flex gap-5 w550:pt-4'>
-						<Link href=''>Terms of Service</Link>
-						<Link href=''>Privacy Policy</Link>
-					</div>
-				</div>
+				<FooterBottom />
 			</div>
 		</footer>
 	)

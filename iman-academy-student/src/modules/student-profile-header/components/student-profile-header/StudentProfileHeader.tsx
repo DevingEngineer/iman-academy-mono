@@ -17,7 +17,7 @@ export const StudentProfileHeader = () => {
 								src='https://placehold.co/96x96.png'
 							/>
 						</div>
-						<VerifiedIcon className='absolute bottom-[7px] right-0 z-20 overflow-visible' />
+						<VerifiedIcon className='absolute bottom-[7px] right-0 z-20 w650:w-[13px] w650:h-[13px]' />
 					</div>
 					<div className='text-white w750:flex items-center justify-between w-full'>
 						<div>
