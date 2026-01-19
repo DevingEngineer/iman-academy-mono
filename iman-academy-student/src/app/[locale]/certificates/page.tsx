@@ -1,5 +1,19 @@
+import { Footer } from '@/src/components/footer/Footer'
+import { Header } from '@/src/components/header/Header'
+import { CoursesStats } from '@/src/modules/courses-stats'
+import { StudentProfileHeader } from '@/src/modules/student-profile-header'
+
 const CertificatesPage = () => {
-	return <div>CertificatesPage</div>
+	return (
+		<>
+			<Header />
+			<main className='container'>
+				<StudentProfileHeader />
+				<CoursesStats />
+			</main>
+			<Footer />
+		</>
+	)
 }
 
 export default CertificatesPage
