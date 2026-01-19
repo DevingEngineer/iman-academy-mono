@@ -10,7 +10,7 @@ const HEADER_NAV_LINKS = [
 		label: 'Главная',
 	},
 	{
-		path: '/lessons',
+		path: '/courses',
 		label: 'Уроки',
 	},
 	{

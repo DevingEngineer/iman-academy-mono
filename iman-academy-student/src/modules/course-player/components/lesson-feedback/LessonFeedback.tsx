@@ -11,7 +11,7 @@ export const LessonFeedback = () => {
 			</p>
 
 			<textarea
-				className='bg-system_surface_card min-h-[120px] w-full rounded-lg border border-border_devider px-4 py-3 text-sm outline-none focus:border-yellow-400 placeholder:text-secondary_text'
+				className='bg-system_surface_card min-h-[120px] w-full rounded-lg border border-border_devider px-4 py-3 text-sm outline-none placeholder:text-secondary_text'
 				placeholder='Например: что было понятно/непонятно, что хотелось бы добавить, качество объяснения…'
 			/>
 

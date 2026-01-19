@@ -9,9 +9,9 @@ type LessonItemProps = {
 
 export const LessonItem = ({ index, title, done }: LessonItemProps) => {
 	return (
-		<li className='flex items-center justify-between rounded-xl border border-border_devider bg-white px-6 py-[22px]'>
+		<li className='flex items-center justify-between gap-2 rounded-xl border border-border_devider bg-white px-6 py-[22px]'>
 			<div className='flex items-center gap-3'>
-				<span className='rounded-full bg-yellow-400 px-3 py-1 text-sm font-medium'>
+				<span className='rounded-full bg-accent_brand text-nowrap px-3 py-1 text-sm font-medium'>
 					Урок {index}
 				</span>
 				<p className='font-medium text-primary_text'>{title}</p>
