@@ -35,7 +35,7 @@ export const CoursePlayer = () => {
 					</div>
 				</div>
 			</div>
-			<div className='ml-auto max-w-[812px] w-full'>
+			<div className='ml-auto max-w-[664px] w-full'>
 				<LessonMaterials />
 				<LessonFeedback />
 			</div>

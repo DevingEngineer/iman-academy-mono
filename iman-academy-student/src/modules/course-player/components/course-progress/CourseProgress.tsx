@@ -4,7 +4,7 @@ type CourseProgressProps = {
 
 export const CourseProgress = ({ value }: CourseProgressProps) => {
 	return (
-		<div>
+		<>
 			<div className='mb-2 flex justify-between text-sm text-secondary_text'>
 				<span>Процесс</span>
 				<span>{value}%</span>
@@ -16,6 +16,6 @@ export const CourseProgress = ({ value }: CourseProgressProps) => {
 					style={{ width: `${value}%` }}
 				/>
 			</div>
-		</div>
+		</>
 	)
 }
