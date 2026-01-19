@@ -12,15 +12,12 @@ export const Header = () => {
 	return (
 		<header className='py-[38px] w-full px-[110px] w1250:px-[60px] w1050:px-[40px] w850:px-[25px] w550:px-[16px] w1050:py-[30px] w850:py-[25px] w550:py-4'>
 			<div className='rounded-3xl flex w-full bg-[linear-gradient(90deg,#091E3A_0%,#091E3A_15%,#2F80ED_55%,#2D9EE0_100%)] w550:rounded-xl'>
-				<div className='flex items-center justify-center'>
-					<Image
-						className='min-w-[77px] min-h-[77px]'
-						src={Logo}
-						alt='logo'
-						width={77}
-						height={77}
-					/>
-				</div>
+				<Link
+					href='/'
+					className='min-w-[77px] min-h-[77px] flex items-center justify-center'
+				>
+					<Image src={Logo} alt='logo' width={77} height={77} />
+				</Link>
 				<div className='w-full border-l border-[#DEE5ED]'>
 					<div className='flex items-center justify-between border-b border-[#DEE5ED] py-[15px] px-9 w750:px-5 w550:px-[10px]'>
 						<Link
