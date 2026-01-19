@@ -8,19 +8,19 @@ export const LessonMaterials = () => {
 				Скачайте файлы урока. Они всегда будут доступны в “Моих курсах”
 			</p>
 
-			<div className='flex flex-wrap gap-3'>
+			<div className='flex gap-3 w750:flex-col'>
 				<div className='border-b border-border_devider bg-system_surface_card py-3 px-8 rounded-[7px]'>
-					<button className='flex items-center gap-1 py-[3px] px-[6px] border border-border_devider rounded-full body1 !font-normal'>
+					<button className='mx-auto flex items-center gap-1 py-[3px] px-[6px] border border-border_devider rounded-full body1 !font-normal'>
 						PDF конспект <DownloadIcon />
 					</button>
 				</div>
 				<div className='border-b border-border_devider bg-system_surface_card py-3 px-8 rounded-[7px]'>
-					<button className='flex items-center gap-1 py-[3px] px-[6px] border border-border_devider rounded-full body1 !font-normal'>
+					<button className='mx-auto flex items-center gap-1 py-[3px] px-[6px] border border-border_devider rounded-full body1 !font-normal'>
 						Домашнее задание
 					</button>
 				</div>
 				<div className='border-b border-border_devider bg-system_surface_card py-3 px-8 rounded-[7px]'>
-					<button className='flex items-center gap-1 py-[3px] px-[6px] border border-border_devider rounded-full body1 !font-normal'>
+					<button className='mx-auto flex items-center gap-1 py-[3px] px-[6px] border border-border_devider rounded-full body1 !font-normal'>
 						Аудио лекции
 					</button>
 				</div>
