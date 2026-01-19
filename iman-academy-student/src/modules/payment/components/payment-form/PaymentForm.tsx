@@ -25,8 +25,8 @@ export const PaymentForm = () => {
 
 	return (
 		<form onSubmit={submitHandler}>
-			<div className='flex w-full gap-6'>
-				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full'>
+			<div className='flex w-full gap-6 w550:flex-col w550:gap-0'>
+				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full w550:max-w-full'>
 					<span className='pb-1'>Имя и фамилия</span>
 					<input
 						name='fullName'
@@ -35,7 +35,7 @@ export const PaymentForm = () => {
 						type='text'
 					/>
 				</label>
-				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full'>
+				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full w550:max-w-full'>
 					<span className='pb-1'>Email</span>
 					<input
 						name='email'
@@ -45,8 +45,8 @@ export const PaymentForm = () => {
 					/>
 				</label>
 			</div>
-			<div className='flex w-full gap-6'>
-				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full'>
+			<div className='flex w-full gap-6 w550:flex-col w550:gap-0'>
+				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full w550:max-w-full'>
 					<span className='pb-1'>Номер карты</span>
 					<input
 						name='cardNumber'
@@ -59,7 +59,7 @@ export const PaymentForm = () => {
 						карты
 					</p>
 				</label>
-				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full'>
+				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full w550:max-w-full'>
 					<span className='pb-1'>Тариф</span>
 					<input
 						name='tariff'
@@ -69,8 +69,8 @@ export const PaymentForm = () => {
 					/>
 				</label>
 			</div>
-			<div className='flex w-full gap-6'>
-				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full'>
+			<div className='flex w-full gap-6 w550:flex-col w550:gap-0'>
+				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full w550:max-w-full'>
 					<span className='pb-1'>Месяц</span>
 					<input
 						name='month'
@@ -79,7 +79,7 @@ export const PaymentForm = () => {
 						type='text'
 					/>
 				</label>
-				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full'>
+				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full w550:max-w-full'>
 					<span className='pb-1'>Год</span>
 					<input
 						name='year'
@@ -89,8 +89,8 @@ export const PaymentForm = () => {
 					/>
 				</label>
 			</div>
-			<div className='flex w-full gap-6'>
-				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full'>
+			<div className='flex w-full gap-6 w550:flex-col w550:gap-0'>
+				<label className='mb-4 flex flex-col body3 max-w-[396px] w-full w550:max-w-full'>
 					<span className='pb-1'>CVC</span>
 					<input
 						name='cvc'
