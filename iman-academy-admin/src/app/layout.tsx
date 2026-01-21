@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { AppLayout } from '../layouts/AppLayout'
 import './globals.css'
 
 const inter = Inter({
@@ -20,7 +21,9 @@ type RootLayoutProps = {
 const RootLayout = async ({ children }: RootLayoutProps) => {
 	return (
 		<html lang='ru'>
-			<body className={`${inter.variable} antialiased`}>{children}</body>
+			<body className={`${inter.variable} antialiased`}>
+				<AppLayout>{children}</AppLayout>
+			</body>
 		</html>
 	)
 }
