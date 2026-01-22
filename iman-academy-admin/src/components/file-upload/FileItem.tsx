@@ -8,24 +8,23 @@ type Props = {
 
 export const FileItem = ({ file, onRemove, onUpload }: Props) => {
 	return (
-		<div className='rounded-[10px] border border-dashed border-blue-400 p-4'>
+		<div className='rounded-[10px] border border-dashed border-color_system_blue p-4'>
 			<div className='flex items-center justify-between'>
 				<div>
-					<p className='text-sm text-blue-600'>{file.file.name}</p>
+					<p className='text-sm text-color_system_blue'>
+						{file.file.name}
+					</p>
 
 					{file.status === 'success' && (
-						<p className='text-xs text-green-500'>Success!</p>
+						<p className='text-xs text-color_system_green'>Success!</p>
 					)}
 
 					{file.status === 'error' && (
-						<p className='text-xs text-red-500'>{file.error}</p>
+						<p className='text-xs text-color_system_red'>{file.error}</p>
 					)}
 				</div>
 
-				<button
-					onClick={onRemove}
-					className='text-gray-400 hover:text-gray-600'
-				>
+				<button onClick={onRemove} className='text-color_icon_black'>
 					✕
 				</button>
 			</div>
@@ -33,7 +32,7 @@ export const FileItem = ({ file, onRemove, onUpload }: Props) => {
 			{file.status === 'uploading' && (
 				<div className='mt-2 h-[2px] w-full bg-gray-200'>
 					<div
-						className='h-full bg-blue-600 transition-all'
+						className='h-full bg-color_system_blue transition-all'
 						style={{ width: `${file.progress}%` }}
 					/>
 				</div>
@@ -42,7 +41,7 @@ export const FileItem = ({ file, onRemove, onUpload }: Props) => {
 			{file.status === 'idle' && (
 				<button
 					onClick={onUpload}
-					className='mt-2 text-xs text-blue-600 hover:underline'
+					className='mt-2 text-xs text-color_system_blue hover:underline'
 				>
 					Start upload
 				</button>

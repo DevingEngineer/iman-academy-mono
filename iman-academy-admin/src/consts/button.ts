@@ -10,7 +10,7 @@ export const buttonVariants: Record<ButtonVariants, string> = {
 	contained:
 		'bg-color_button_primary text-color_text_white hover:bg-color_button_hover active:bg-color_button_press active:shadow-[inset_-1px_1px_11.1px_rgba(0,0,0,0.7)] disabled:bg-color_button_disabled ',
 	outlined:
-		'bg-transparent text-color_text_primary border border-color_button_primary hover:border-color_button_hover active:border-color_button_press active:shadow-[inset_-1px_1px_8.3px_rgba(0,0,0,0.31)] disabled:bg-color_button_disabled disabled:border-none disabled:bg-color_button_disabled',
+		'bg-transparent border border-color_button_primary hover:border-color_button_hover active:border-color_button_press active:shadow-[inset_-1px_1px_8.3px_rgba(0,0,0,0.31)] disabled:bg-color_button_disabled disabled:border-none disabled:bg-color_button_disabled',
 }
 
 export const buttonBaseStyles =

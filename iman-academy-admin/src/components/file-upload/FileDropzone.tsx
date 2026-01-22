@@ -106,7 +106,11 @@ export const FileDropzone = ({
 				className={`
 					rounded-[14px] border-2 border-dashed
 					p-6 text-center transition
-					${isDragging ? 'border-red-400 bg-red-50' : 'border-blue-400'}
+					${
+						isDragging
+							? 'border-color_system_red bg-color_system_red'
+							: 'border-color_system_blue'
+					}
 				`}
 			>
 				<input
@@ -122,12 +126,12 @@ export const FileDropzone = ({
 
 				<button
 					onClick={() => inputRef.current?.click()}
-					className='inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700'
+					className='inline-flex items-center rounded-md bg-color_system_blue px-4 py-2 text-sm text-color_text_white hover:bg-color_button_hover duration-200'
 				>
 					Выберите на устройстве
 				</button>
 
-				<p className='mt-3 text-xs text-gray-400'>
+				<p className='mt-3 text-xs text-color_text_secondary'>
 					Максимальный размер {maxSizeMB} MB
 				</p>
 			</div>
