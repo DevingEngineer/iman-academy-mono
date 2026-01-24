@@ -1,5 +1,14 @@
+import { PageHeader } from '@/src/components/ui/PageHeader'
+
 const SettingsPage = () => {
-	return <div>SettingsPage</div>
+	return (
+		<>
+			<PageHeader
+				title='Параметры школы'
+				description='Общие сведения, брендинг, оплата, доступ и безопасность, интеграции и импорты.'
+			/>
+		</>
+	)
 }
 
 export default SettingsPage
