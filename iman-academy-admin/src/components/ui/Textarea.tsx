@@ -1,4 +1,4 @@
-import { cn } from '../lib/cn'
+import { cn } from '@/src/lib/cn'
 
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
 	label?: string

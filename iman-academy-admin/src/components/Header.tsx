@@ -1,18 +1,29 @@
+'use client'
+
 import Image from 'next/image'
 import AppLogo from '../../public/logo/iman_course_logo.png'
-import { Button } from './Button'
+
 import { NotificationIcon } from './icons/NotificationIcon'
 import { PlusIcon } from './icons/PlusIcon'
-import { SearchInput } from './SearchInput'
+
+import { useState } from 'react'
 import { UserProfile } from './UserProfile'
+import { Button } from './ui/Button'
+import { SearchInput } from './ui/SearchInput'
 
 export const Header = () => {
+	const [value, setValue] = useState('')
+
 	return (
 		<header className='px-10 py-[31px] border-b border-[#ADADAD] flex items-center justify-between'>
 			<Image src={AppLogo} alt='logo' width={148} height={36} />
 			<div className='flex items-center gap-5'>
-				<SearchInput />
-				<Button className=''>
+				<SearchInput
+					onChange={setValue}
+					value={value}
+					placeholder='Поиск курсов, уроков, студентов....'
+				/>
+				<Button className='h-[36px]'>
 					<PlusIcon />
 					Создать курс
 				</Button>
