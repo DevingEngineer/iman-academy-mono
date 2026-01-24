@@ -1,11 +1,5 @@
-import DateTimePicker from '../components/date-time-picker/DateTimePicker'
-
 const HomePage = () => {
-	return (
-		<div>
-			<DateTimePicker />
-		</div>
-	)
+	return <div>HomePage</div>
 }
 
 export default HomePage
