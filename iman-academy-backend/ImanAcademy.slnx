@@ -1,3 +1,11 @@
 <Solution>
-  <Project Path="ImanAcademy/ImanAcademy.csproj" />
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/ImanAcademy/ImanAcademy.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
 </Solution>
