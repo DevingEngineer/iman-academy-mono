@@ -7,12 +7,41 @@ import { ShoppingBagIcon } from '../components/icons/sidebar/ShoppingBagIcon'
 import { UsersIcon } from '../components/icons/sidebar/UsersIcon'
 import { SidebarLink } from '../types/sidebar'
 
-export const sidebarLinks: SidebarLink[] = [
-	{ href: '/', label: 'Обзор', icon: LayoutGridIcon },
-	{ href: '/courses', label: 'Курсы', icon: BookOpenIcon },
-	{ href: '/purchases', label: 'Покупки', icon: ShoppingBagIcon },
-	{ href: '/students', label: 'Студенты', icon: UsersIcon },
-	{ href: '/certificates', label: 'Сертификаты', icon: GraduationCapIcon },
-	{ href: '/feedback', label: 'Обратная связь', icon: MessageSquareIcon },
-	{ href: '/settings', label: 'Настройки', icon: SettingsIcon },
+export const SIDEBAR_LINKS: SidebarLink[] = [
+	{
+		href: '/',
+		label: 'Обзор',
+		icon: LayoutGridIcon,
+	},
+	{
+		href: '/courses',
+		label: 'Курсы',
+		icon: BookOpenIcon,
+	},
+	{
+		href: '/purchases',
+		label: 'Покупки',
+		icon: ShoppingBagIcon,
+	},
+	{
+		href: '/students',
+		label: 'Студенты',
+		icon: UsersIcon,
+	},
+	{
+		href: '/certificates',
+		label: 'Сертификаты',
+		icon: GraduationCapIcon,
+	},
+	{
+		href: '/feedback',
+		label: 'Обратная связь',
+		icon: MessageSquareIcon,
+	},
+	{
+		href: '/settings',
+		label: 'Настройки',
+		icon: SettingsIcon,
+		match: 'parent',
+	},
 ] as const

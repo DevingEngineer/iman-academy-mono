@@ -1,15 +1,20 @@
 import { usePathname } from 'next/navigation'
+import { MatchMode } from '../types/useActiveLink'
 
 type UseActiveLinkResult = {
-	getActiveLink: (href: string) => boolean
+	getActiveLink: (href: string, mode?: MatchMode) => boolean
 }
 
 export const useActiveLink = (): UseActiveLinkResult => {
 	const pathname = usePathname()
-	const pathSegments = pathname.split('/').filter(Boolean)
 
-	const getActiveLink = (href: string) =>
-		pathSegments.includes(href.replace('/', '')) || pathname === href
+	const getActiveLink = (href: string, mode: MatchMode = 'exact') => {
+		if (mode === 'exact') {
+			return pathname === href
+		}
+
+		return pathname === href || pathname.startsWith(`${href}/`)
+	}
 
 	return { getActiveLink }
 }
