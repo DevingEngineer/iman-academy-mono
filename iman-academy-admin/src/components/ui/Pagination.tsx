@@ -39,7 +39,7 @@ export const Pagination = ({
 					className={cn(
 						'w-10 h-10 flex-shrink-0 flex justify-center items-center cursor-pointer leading-[21px]',
 						p === page &&
-							'bg-primary_brand text-white bg-color_brand_accent font-semibold'
+							'bg-primary_brand text-color_text_white bg-color_brand_accent font-semibold'
 					)}
 					key={p}
 					onClick={() => onPageChange(p)}

@@ -6,7 +6,7 @@ import { FiltersSelect } from '@/src/components/filters-bar/FiltersSelect'
 export const PurchasesFilters = () => {
 	return (
 		<FiltersBar>
-			<FiltersSearch />
+			<FiltersSearch placeholder='Поиск: по имени или email' />
 
 			<FiltersGroup>
 				<FiltersSelect label='Курсы' />

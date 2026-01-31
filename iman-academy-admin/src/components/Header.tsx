@@ -15,7 +15,7 @@ export const Header = () => {
 	const [value, setValue] = useState('')
 
 	return (
-		<header className='px-10 py-[31px] border-b border-[#ADADAD] flex items-center justify-between'>
+		<header className='px-10 py-[31px] border-b border-[#ADADAD] bg-color_bg_white flex items-center justify-between'>
 			<Image src={AppLogo} alt='logo' width={148} height={36} />
 			<div className='flex items-center gap-5'>
 				<SearchInput
