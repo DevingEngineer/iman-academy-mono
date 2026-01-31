@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { sidebarLinks } from '../consts/sidebar'
+import { SIDEBAR_LINKS } from '../consts/sidebar'
 import { useActiveLink } from '../hooks/useActiveLink'
 import { cn } from '../lib/cn'
 
@@ -11,8 +11,8 @@ export const Sidebar = () => {
 	return (
 		<aside className='sticky top-0 min-h-[314px] h-full'>
 			<ul>
-				{sidebarLinks.map((link) => {
-					const active = getActiveLink(link.href)
+				{SIDEBAR_LINKS.map((link) => {
+					const active = getActiveLink(link.href, link.match ?? 'exact')
 
 					return (
 						<li
