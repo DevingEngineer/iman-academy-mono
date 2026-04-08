@@ -12,7 +12,7 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/ImanAcademy/ImanAcademy.csproj", "src/ImanAcademy/"]
+COPY ["ImanAcademy.csproj", "src/ImanAcademy/"]
 RUN dotnet restore "./src/ImanAcademy/ImanAcademy.csproj"
 COPY . .
 WORKDIR "/src/src/ImanAcademy"
