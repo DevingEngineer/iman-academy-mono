@@ -37,7 +37,12 @@ export const getCourses = (): Course[] => {
 	if (serializedCourses === cachedStoredCourses) return cachedCourses
 
 	cachedStoredCourses = serializedCourses
-	cachedCourses = [...TEMPORARY_COURSES, ...storedCourses]
+	const storedCoursesById = new Map(storedCourses.map((course) => [course.id, course]))
+	const temporaryCourseIds = new Set(TEMPORARY_COURSES.map((course) => course.id))
+	cachedCourses = [
+		...TEMPORARY_COURSES.map((course) => storedCoursesById.get(course.id) ?? course),
+		...storedCourses.filter((course) => !temporaryCourseIds.has(course.id)),
+	]
 	return cachedCourses
 }
 
@@ -90,6 +95,21 @@ export const saveCourse = (title: string): Course => {
 	window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 
 	return course
+}
+
+export const updateCourse = (course: Course) => {
+	const storedCourses = getStoredCourses()
+	const existingCourseIndex = storedCourses.findIndex((item) => item.id === course.id)
+	const updatedCourses = [...storedCourses]
+
+	if (existingCourseIndex === -1) {
+		updatedCourses.push(course)
+	} else {
+		updatedCourses[existingCourseIndex] = course
+	}
+
+	window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCourses))
+	window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 }
 
 export const subscribeToCourses = (onStoreChange: () => void) => {

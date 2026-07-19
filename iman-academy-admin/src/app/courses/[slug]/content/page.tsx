@@ -1,8 +1,13 @@
-const CourseContentPage = () => (
-	<div className='rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
-		<h2 className='text-lg font-semibold text-slate-900'>Содержание курса</h2>
-		<p className='mt-2 text-sm text-slate-500'>Здесь будет управление модулями и уроками курса.</p>
-	</div>
-)
+import { CourseSyllabus } from '@/src/components/CourseSyllabus'
+
+type CourseContentPageProps = {
+	params: Promise<{ slug: string }>
+}
+
+const CourseContentPage = async ({ params }: CourseContentPageProps) => {
+	const { slug } = await params
+
+	return <CourseSyllabus courseSlug={slug} />
+}
 
 export default CourseContentPage
