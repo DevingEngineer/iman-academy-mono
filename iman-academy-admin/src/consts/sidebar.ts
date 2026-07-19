@@ -17,6 +17,7 @@ export const SIDEBAR_LINKS: SidebarLink[] = [
 		href: '/courses',
 		label: 'Курсы',
 		icon: BookOpenIcon,
+		match: 'parent'
 	},
 	{
 		href: '/purchases',
