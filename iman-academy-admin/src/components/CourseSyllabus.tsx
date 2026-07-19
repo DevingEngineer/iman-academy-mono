@@ -44,8 +44,19 @@ export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 								{subModules.length > 0 && (
 									<ol className='mt-3 space-y-2 pl-5 text-sm text-slate-600'>
 										{subModules.map((subModule) => (
-											<li key={subModule.id}>
-												{subModule.metadata.order}. {subModule.metadata.title}
+											<li key={subModule.id} className='flex items-center justify-between gap-3'>
+												<span>{subModule.metadata.order}. {subModule.metadata.title}</span>
+												<Button
+													size='sm'
+													variant='outlined'
+													onClick={() =>
+														router.push(
+															`/edit-lesson/${subModule.id}/step/1`
+														)
+													}
+												>
+													Редактировать
+												</Button>
 											</li>
 										))}
 									</ol>

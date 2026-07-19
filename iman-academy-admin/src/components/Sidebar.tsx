@@ -9,7 +9,7 @@ import { cn } from '../lib/cn'
 
 export const Sidebar = () => {
 	const pathname = usePathname()
-	const isCoursePage = /^\/courses\/[^/]+(?:\/|$)/.test(pathname)
+	const isCoursePage = /^\/courses\/[^/]+(?:\/|$)/.test(pathname) || /^\/edit-lesson\/[^/]+\/step\/[^/]+$/.test(pathname)
 
 
 	return <SidebarMenu key={ isCoursePage ? 'course' : 'app'} initiallyCollapsed={isCoursePage &&  pathname !== '/courses/create'} />
