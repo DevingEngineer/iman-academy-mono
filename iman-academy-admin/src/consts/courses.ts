@@ -1,34 +1,58 @@
-export type Course = {
-	slug: string
-	title: string
-	category: string
-	lessons: number
-	status: string
-}
+import type { Course } from '../types/course-types'
 
 export const TEMPORARY_COURSES: Course[] = [
 	{
-		slug: 'react-basics',
-		title: 'Основы React',
-		category: 'Frontend',
-		lessons: 12,
-		status: 'Опубликован',
+		id: 'course-react-basics',
+		metadata: {
+			title: 'Основы React',
+			slug: 'react-basics',
+			description: 'Практический курс по основам React.',
+			instructorIds: ['instructor-1'],
+			tags: ['Frontend', 'React'],
+			level: 'beginner',
+			language: 'ru',
+			price: 0,
+			currency: 'KZT',
+			status: 'published',
+			createdAt: '2026-01-10T00:00:00.000Z',
+			updatedAt: '2026-07-15T00:00:00.000Z',
+		},
+		modules: [],
 	},
 	{
-		slug: 'typescript-for-beginners',
-		title: 'TypeScript для начинающих',
-		category: 'Frontend',
-		lessons: 8,
-		status: 'Черновик',
+		id: 'course-typescript-for-beginners',
+		metadata: {
+			title: 'TypeScript для начинающих',
+			slug: 'typescript-for-beginners',
+			description: 'Введение в TypeScript для frontend-разработчиков.',
+			instructorIds: ['instructor-1'],
+			tags: ['Frontend', 'TypeScript'],
+			level: 'beginner',
+			language: 'ru',
+			price: 0,
+			currency: 'KZT',
+			status: 'draft',
+			createdAt: '2026-02-02T00:00:00.000Z',
+			updatedAt: '2026-07-10T00:00:00.000Z',
+		},
+		modules: [],
 	},
 	{
-		slug: 'ui-ux-design',
-		title: 'UI/UX дизайн',
-		category: 'Design',
-		lessons: 10,
-		status: 'В процессе',
+		id: 'course-ui-ux-design',
+		metadata: {
+			title: 'UI/UX дизайн',
+			slug: 'ui-ux-design',
+			description: 'Курс по проектированию удобных интерфейсов.',
+			instructorIds: ['instructor-2'],
+			tags: ['Design', 'UI/UX'],
+			level: 'intermediate',
+			language: 'ru',
+			price: 15000,
+			currency: 'KZT',
+			status: 'archived',
+			createdAt: '2026-03-01T00:00:00.000Z',
+			updatedAt: '2026-06-28T00:00:00.000Z',
+		},
+		modules: [],
 	},
 ]
-
-export const getCourseBySlug = (slug: string) =>
-	TEMPORARY_COURSES.find((course) => course.slug === slug)
