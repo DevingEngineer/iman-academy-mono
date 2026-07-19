@@ -11,7 +11,8 @@ export const Sidebar = () => {
 	const pathname = usePathname()
 	const isCoursePage = /^\/courses\/[^/]+(?:\/|$)/.test(pathname)
 
-	return <SidebarMenu key={isCoursePage ? 'course' : 'app'} initiallyCollapsed={isCoursePage} />
+
+	return <SidebarMenu key={ isCoursePage ? 'course' : 'app'} initiallyCollapsed={isCoursePage &&  pathname !== '/courses/create'} />
 }
 
 const SidebarMenu = ({ initiallyCollapsed }: { initiallyCollapsed: boolean }) => {

@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import AppLogo from '../../public/logo/iman_course_logo.png'
 
 import { NotificationIcon } from './icons/NotificationIcon'
@@ -13,6 +14,7 @@ import { SearchInput } from './ui/SearchInput'
 
 export const Header = () => {
 	const [value, setValue] = useState('')
+	const router = useRouter()
 
 	return (
 		<header className='px-10 py-[31px] border-b border-[#ADADAD] bg-color_bg_white flex items-center justify-between'>
@@ -23,7 +25,7 @@ export const Header = () => {
 					value={value}
 					placeholder='Поиск курсов, уроков, студентов....'
 				/>
-				<Button className='h-[36px]'>
+				<Button className='h-[36px]' onClick={() => router.push('/courses/create')}>
 					<PlusIcon />
 					Создать курс
 				</Button>
