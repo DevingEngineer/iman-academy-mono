@@ -37,10 +37,10 @@ export const EditorSyllabusNavigator = ({
 						const subModules = [...module.subModules].sort((a, b) => a.metadata.order - b.metadata.order)
 						return (
 							<li key={module.id}>
-								<p className='px-3 text-xs font-semibold text-slate-500'>
+								<p className='px-3 text-base font-bold text-slate-500'>
 									{module.metadata.order}. {module.metadata.title}
 								</p>
-								<ul className='mt-1 space-y-1'>
+								<ul className='mt-1 space-y-1 pl-4'>
 									{subModules.map((subModule) => {
 										const isActive = subModule.id === activeSubmoduleId
 										return (
