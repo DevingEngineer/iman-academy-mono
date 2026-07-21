@@ -1,6 +1,17 @@
+@import 'ckeditor5/ckeditor5.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.ck.ck-toolbar .ck-button,
+.ck.ck-toolbar .ck-dropdown {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  flex: none !important;
+  inset: unset !important;
+}
 
 :root {
 	/* ================= Brand ================= */

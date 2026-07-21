@@ -15,6 +15,7 @@ import { useCourses } from '../hooks/useCourses'
 import { updateCourse } from '../lib/course-storage'
 import { Button } from './ui/Button'
 import { EditorSyllabusNavigator } from './EditorSyllabusNavigator'
+import dynamic from 'next/dynamic';
 
 const createId = (prefix: string) =>
 	`${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -64,7 +65,11 @@ const createStep = (stepType: StepType, subModuleId: string, order: number): Ste
 		timeLimitSeconds: undefined,
 	}
 }
-
+// Dynamically import with SSR disabled to prevent hydration or window errors
+const CustomContentCkEditor = dynamic(() => import('@/src/components/CustomContentCkEditor'), {
+	ssr: false,
+	loading: () => <div className='h-[300px] w-full animate-pulse rounded-lg bg-slate-100' />,
+});
 type FormProps = {
 	course: Course
 	subModule: SubModule
@@ -290,7 +295,20 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 							<div className='md:col-span-2'><Field label='Описание (необязательно)'><textarea className={textareaClass} value={step.metadata.description ?? ''} onChange={(event) => updateStep(step.id, (current) => ({ ...current, metadata: { ...current.metadata, description: event.target.value } }))} /></Field></div>
 						</div>
 
-						{step.stepType === 'Content' && <div className='mt-4'><Field label='Текст урока'><textarea className={textareaClass} value={step.body} onChange={(event) => updateStep(step.id, (current) => current.stepType === 'Content' ? { ...current, body: event.target.value } : current)} /></Field></div>}
+						{step.stepType === 'Content' && (
+							<div className='mt-4'>
+								<Field label='Текст урока'>
+									<CustomContentCkEditor
+										value={step.body}
+										onChange={(data) => 
+										updateStep(step.id, (current) => 
+										current.stepType === 'Content' ? { ...current, body: data } : current
+									)
+									}
+								/>
+								</Field>
+							</div>
+						)}
 						{step.stepType === 'Video' && <div className='mt-4 grid gap-4 md:grid-cols-2'><Field label='URL видео'><input className={inputClass} type='url' value={step.videoUrl} onChange={(event) => updateStep(step.id, (current) => current.stepType === 'Video' ? { ...current, videoUrl: event.target.value } : current)} /></Field><Field label='Длительность (сек., обязательно)'><input className={inputClass} type='number' min='1' required value={step.durationSeconds || ''} onChange={(event) => updateStep(step.id, (current) => current.stepType === 'Video' ? { ...current, durationSeconds: Number(event.target.value) } : current)} /></Field></div>}
 						{step.stepType === 'Quiz' && <QuizEditor step={step} updateStep={updateStep} updateQuestion={updateQuestion} changeQuestionType={changeQuestionType} />}
 					</article>
