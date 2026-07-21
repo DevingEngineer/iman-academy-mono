@@ -96,7 +96,7 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 		? -1
 		: Math.min(requestedStepIndex, draft.steps.length - 1)
 	const selectedStep = selectedStepIndex === -1 ? undefined : draft.steps[selectedStepIndex]
-	const stepHref = (number: number) => `/edit-lesson/${subModule.id}/step/${number}`
+	const stepHref = (number: number) => `/courses/edit-lesson/${subModule.id}/step/${number}`
 
 	useEffect(() => {
 		onDirtyChange(JSON.stringify(draft) !== JSON.stringify(subModule))
@@ -107,7 +107,7 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 	useEffect(() => {
 		const canonicalStepNumber = selectedStepIndex === -1 ? 1 : selectedStepIndex + 1
 		if (stepNumber !== String(canonicalStepNumber)) {
-			router.replace(`/edit-lesson/${subModule.id}/step/${canonicalStepNumber}`)
+			router.replace(`/courses/edit-lesson/${subModule.id}/step/${canonicalStepNumber}`)
 		}
 	}, [router, selectedStepIndex, stepNumber, subModule.id])
 

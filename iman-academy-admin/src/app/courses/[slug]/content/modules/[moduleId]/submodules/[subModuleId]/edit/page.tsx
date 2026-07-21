@@ -6,7 +6,7 @@ type LegacyEditSubmodulePageProps = {
 
 const LegacyEditSubmodulePage = async ({ params }: LegacyEditSubmodulePageProps) => {
 	const { subModuleId } = await params
-	redirect(`/edit-lesson/${subModuleId}/step/1`)
+	redirect(`/courses/edit-lesson/${subModuleId}/step/1`)
 }
 
 export default LegacyEditSubmodulePage

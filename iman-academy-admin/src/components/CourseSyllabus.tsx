@@ -51,7 +51,7 @@ export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 													variant='outlined'
 													onClick={() =>
 														router.push(
-															`/edit-lesson/${subModule.id}/step/1`
+															`/courses/edit-lesson/${subModule.id}/step/1`
 														)
 													}
 												>

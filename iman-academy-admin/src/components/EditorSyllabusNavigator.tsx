@@ -47,7 +47,7 @@ export const EditorSyllabusNavigator = ({
 											<li key={subModule.id}>
 												<button
 													type='button'
-												onClick={() => navigateTo(`/edit-lesson/${subModule.id}/step/1`)}
+												onClick={() => navigateTo(`/courses/edit-lesson/${subModule.id}/step/1`)}
 													className={cn(
 														'w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900',
 														isActive && 'bg-color_brand_primary text-white hover:bg-color_brand_primary hover:text-white'
