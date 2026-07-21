@@ -88,13 +88,18 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 	const router = useRouter()
 	const [draft, setDraft] = useState<SubModule>(() => clone(subModule))
 	const [newStepType, setNewStepType] = useState<StepType>('Content')
-	const requestedStepNumber = Number(stepNumber)
-	const requestedStepIndex = Number.isInteger(requestedStepNumber) && requestedStepNumber > 0
-		? requestedStepNumber - 1
-		: 0
+
+	// 1. Store active step index in state initialized from URL prop
+    const [activeStepIndex, setActiveStepIndex] = useState<number>(() => {
+        const num = Number(stepNumber)
+        return Number.isInteger(num) && num > 0 ? num - 1 : 0
+    })
+
+
+
 	const selectedStepIndex = draft.steps.length === 0
 		? -1
-		: Math.min(requestedStepIndex, draft.steps.length - 1)
+		: Math.min(activeStepIndex, draft.steps.length - 1)
 	const selectedStep = selectedStepIndex === -1 ? undefined : draft.steps[selectedStepIndex]
 	const stepHref = (number: number) => `/courses/edit-lesson/${subModule.id}/step/${number}`
 
@@ -104,13 +109,16 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 
 	useEffect(() => () => onDirtyChange(false), [onDirtyChange])
 
-	useEffect(() => {
-		const canonicalStepNumber = selectedStepIndex === -1 ? 1 : selectedStepIndex + 1
-		if (stepNumber !== String(canonicalStepNumber)) {
-			router.replace(`/courses/edit-lesson/${subModule.id}/step/${canonicalStepNumber}`)
-		}
-	}, [router, selectedStepIndex, stepNumber, subModule.id])
-
+	// useEffect(() => {
+	// 	const canonicalStepNumber = selectedStepIndex === -1 ? 1 : selectedStepIndex + 1
+	// 	if (stepNumber !== String(canonicalStepNumber)) {
+	// 		router.replace(`/courses/edit-lesson/${subModule.id}/step/${canonicalStepNumber}`)
+	// 	}
+	// }, [router, selectedStepIndex, stepNumber, subModule.id])
+	const navigateToStep = (index: number) => {
+       setActiveStepIndex(index)
+       window.history.replaceState(null, '', stepHref(index + 1))
+   }
 	const setMetadata = (key: 'title' | 'description' | 'estimatedDurationMinutes', value: string) => {
 		setDraft((current) => ({
 			...current,
@@ -136,20 +144,34 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 			;[steps[index], steps[destination]] = [steps[destination], steps[index]]
 			return { ...current, steps: normalizeSteps(steps) }
 		})
-		router.replace(stepHref(destination + 1))
+		navigateToStep(destination)
 	}
 
 	const addStep = () => {
-		const step = createStep(newStepType, draft.id, draft.steps.length + 1)
-		setDraft((current) => ({ ...current, steps: [...current.steps, step] }))
-		router.replace(stepHref(draft.steps.length + 1))
+		// 1. Calculate the target step number once
+  		const nextStepNumber = draft.steps.length + 1;
+  
+		// 2. Build the step object
+		const step = createStep(newStepType, draft.id, nextStepNumber);
+
+		// 3. Update state safely using functional updater
+		setDraft((current) => ({
+			...current,
+			steps: [...current.steps, step],
+		}));
+		
+		// 4. Navigate using the calculated step number
+		
+		
 	}
 
 	const deleteSelectedStep = () => {
 		if (!selectedStep || !window.confirm('Удалить урок?')) return
 		const steps = normalizeSteps(draft.steps.filter((step) => step.id !== selectedStep.id))
 		setDraft((current) => ({ ...current, steps }))
-		router.replace(stepHref(steps.length === 0 ? 1 : Math.min(selectedStepIndex, steps.length - 1) + 1))
+		//router.replace(stepHref(steps.length === 0 ? 1 : Math.min(selectedStepIndex, steps.length - 1) + 1))
+		const nextIndex = steps.length === 0 ? 0 : Math.min(selectedStepIndex, steps.length - 1)
+        navigateToStep(nextIndex)
 	}
 
 	const updateQuestion = (stepId: string, questionId: string, updater: (question: QuizQuestion) => QuizQuestion) => {
@@ -234,7 +256,7 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 						<button
 							key={step.id}
 							type='button'
-							onClick={() => router.replace(stepHref(index + 1))}
+							onClick={() => navigateToStep(index)}
 							className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${selectedStepIndex === index ? 'bg-color_brand_primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
 						>
 							Шаг {index + 1}
