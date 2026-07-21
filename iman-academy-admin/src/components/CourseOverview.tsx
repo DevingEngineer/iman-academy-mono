@@ -4,7 +4,8 @@ import { useCourses } from '../hooks/useCourses'
 
 export const CourseOverview = ({ courseSlug }: { courseSlug: string }) => {
 	const courses = useCourses()
-	const course = courses.find((item) => item.metadata.slug === courseSlug)
+	const cleanSlug = decodeURIComponent(courseSlug);
+	const course = courses.find((item) => item.metadata.slug === cleanSlug)
 
 	if (!course) return null
 

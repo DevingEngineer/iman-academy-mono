@@ -10,6 +10,8 @@ type CourseSidebarProps = {
 
 export const CourseSidebar = ({ courseSlug }: CourseSidebarProps) => {
 	const { getActiveLink } = useActiveLink()
+	
+
 	const baseHref = `/courses/${courseSlug}`
 	const links = [
 		{ label: 'Описание', href: baseHref },

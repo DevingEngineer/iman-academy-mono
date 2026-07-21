@@ -7,7 +7,9 @@ import { useCourses } from '../hooks/useCourses'
 export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 	const router = useRouter()
 	const courses = useCourses()
-	const course = courses.find((item) => item.metadata.slug === courseSlug)
+	const cleanSlug = decodeURIComponent(courseSlug);
+
+	const course = courses.find((item) => item.metadata.slug === cleanSlug)
 
 	if (!course) return null
 

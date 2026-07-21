@@ -7,13 +7,13 @@ type UseActiveLinkResult = {
 
 export const useActiveLink = (): UseActiveLinkResult => {
 	const pathname = usePathname()
-
+	const cleanPathName  = decodeURIComponent(pathname);
 	const getActiveLink = (href: string, mode: MatchMode = 'exact') => {
 		if (mode === 'exact') {
-			return pathname === href
+			return cleanPathName === href
 		}
 
-		return pathname === href || pathname.startsWith(`${href}/`)
+		return cleanPathName === href || cleanPathName.startsWith(`${href}/`)
 	}
 
 	return { getActiveLink }
