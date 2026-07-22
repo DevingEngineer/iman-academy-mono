@@ -297,16 +297,18 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 
 						{step.stepType === 'Content' && (
 							<div className='mt-4'>
-								<Field label='Текст урока'>
-									<CustomContentCkEditor
-										value={step.body}
-										onChange={(data) => 
-										updateStep(step.id, (current) => 
-										current.stepType === 'Content' ? { ...current, body: data } : current
-									)
-									}
+								<label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+									Текст урока
+								</label>
+								<CustomContentCkEditor
+									value={step.body}
+									onChange={(data) => 
+									updateStep(step.id, (current) => 
+									current.stepType === 'Content' ? { ...current, body: data } : current
+								)
+								}
 								/>
-								</Field>
+								
 							</div>
 						)}
 						{step.stepType === 'Video' && <div className='mt-4 grid gap-4 md:grid-cols-2'><Field label='URL видео'><input className={inputClass} type='url' value={step.videoUrl} onChange={(event) => updateStep(step.id, (current) => current.stepType === 'Video' ? { ...current, videoUrl: event.target.value } : current)} /></Field><Field label='Длительность (сек., обязательно)'><input className={inputClass} type='number' min='1' required value={step.durationSeconds || ''} onChange={(event) => updateStep(step.id, (current) => current.stepType === 'Video' ? { ...current, durationSeconds: Number(event.target.value) } : current)} /></Field></div>}
