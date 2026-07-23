@@ -1,0 +1,125 @@
+@import 'ckeditor5/ckeditor5.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+	/* ================= Brand ================= */
+	--color-brand-primary: #1e48a1;
+	--color-brand-accent: #f5b400;
+
+	/* ================= Background ================= */
+	--color-bg-gray: #f7f7f7;
+	--color-bg-white: #ffffff;
+
+	/* ================= Text ================= */
+	--color-text-primary: #1a1a1a;
+	--color-text-secondary: #757575;
+	--color-text-white: #ffffff;
+
+	/* ================= Border ================= */
+	--color-border-default: #757575;
+	--color-border-light: #adadad;
+
+	/* ================= Icon ================= */
+	--color-icon-black: #1a1a1a;
+	--color-icon-white: #ffffff;
+
+	/* ================= Button ================= */
+	--color-button-primary: #1e48a1;
+	--color-button-hover: #2a5cd1;
+	--color-button-press: #173a84;
+	--color-button-disabled: #b0c2e0;
+
+	/* ================= System ================= */
+	--color-system-red: #e30d0d;
+	--color-system-blue: #104afb;
+	--color-system-green: #89ffa3;
+	--color-system-black: #545454;
+	--color-system-success: #2d7a46;
+	--color-system-light: #e0edff;
+
+	/* ================= Font ================= */
+	--font-inter: 'Inter', sans-serif;
+}
+
+* {
+	font-family: var(--font-inter);
+}
+
+input {
+	outline: none;
+}
+
+button {
+	outline: none;
+	cursor: pointer;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+body {
+	color: var(--color-text-primary);
+	background: var(--color-bg-gray);
+}
+
+.container {
+	width: 100%;
+	max-width: 1440px;
+}
+
+.headline-section {
+	font-size: 24px;
+	font-weight: 600;
+	line-height: normal;
+}
+
+.headline-table {
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 100%;
+}
+
+.body {
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 138%;
+}
+
+.body-medium {
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 138%;
+}
+
+.supporting {
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 138%;
+}
+
+.caption {
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 138%;
+}
+
+.button-lg {
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 138%;
+}
+
+.button-md {
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 138%;
+}
+
+.button-sm {
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 138%;
+}
