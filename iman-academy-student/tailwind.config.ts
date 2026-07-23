@@ -1,0 +1,54 @@
+import type { Config } from 'tailwindcss'
+
+export default {
+	content: [
+		'./src/pages/**/*.{ts,tsx,mdx}',
+		'./src/components/**/*.{ts,jsx,tsx,mdx}',
+		'./src/app/**/*.{ts,tsx,mdx}',
+		'./src/layouts/**/*.{ts,tsx,mdx}',
+		'./src/modules/**/*.{ts,tsx,mdx}',
+		'./src/**/*.{ts,tsx,mdx}',
+	],
+	theme: {
+		screens: {
+			w1440: { max: '1440px' },
+			w1350: { max: '1350px' },
+			w1250: { max: '1250px' },
+			w1170: { max: '1170px' },
+			w1150: { max: '1150px' },
+			w1050: { max: '1050px' },
+			w950: { max: '950px' },
+			w850: { max: '850px' },
+			w750: { max: '750px' },
+			w650: { max: '650px' },
+			w550: { max: '550px' },
+			w450: { max: '450px' },
+			w420: { max: '420px' },
+			w370: { max: '370px' },
+		},
+		extend: {
+			colors: {
+				primary_brand: 'var(--primary_brand)',
+				accent_brand: 'var(--accent_brand)',
+				primary_text: 'var(--primary_text)',
+				secondary_text: 'var(--secondary_text)',
+				shadow_depth: 'var(--shadow_depth)',
+				white_clean: 'var(--white_clean)',
+				background_light: 'var(--background_light)',
+				focus_ring: 'var(--focus_ring)',
+				hover_focus: 'var(--hover_focus)',
+				border_devider: 'var(--border_devider)',
+				surface_card: 'var(--surface_card)',
+				system_surface_card: 'var(--system_surface_card)',
+				system_success: 'var(--system_success)',
+				system_info: 'var(--system_info)',
+				system_warning: 'var(--system_warning)',
+				system_error: 'var(--system_error)',
+			},
+			fontFamily: {
+				inter: 'var(--font_inter)',
+			},
+		},
+	},
+	plugins: [],
+} satisfies Config
