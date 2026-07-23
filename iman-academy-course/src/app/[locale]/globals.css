@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--primary_brand: #1e48a1;
+	--accent_brand: #f5b400;
+	--primary_text: #10213d;
+	--secondary_text: #6b7280;
+	--shadow_depth: #d1d5db40;
+	--white_clean: #ffffff;
+	--background_light: #fffdf7;
+	--focus_ring: #60a5fa;
+	--hover_focus: #f9c933;
+	--border_devider: #e5e7eb;
+	--surface_card: #fafafa;
+	--system_surface_card: #f1f2f3;
+	--system_success: #2d7a46;
+	--system_info: #2563eb;
+	--system_warning: #f59e0b;
+	--system_error: #b91c1c;
+	--system_disabled: #b0c2e0;
+	--font_inter: 'Inter', sans-serif;
+}
+
+* {
+	font-family: var(--font-inter);
+}
+
+input {
+	outline: none;
+}
+
+button {
+	outline: none;
+	cursor: pointer;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+body {
+	color: var(--primary_text);
+	background: var(--background_light);
+}
+
+.container {
+	width: 100%;
+	max-width: 1360px;
+	margin: 0 auto;
+	padding-right: clamp(16px, -3.44px + 5.4vw, 70px);
+	padding-left: clamp(16px, -3.44px + 5.4vw, 70px);
+}
+
+.h1 {
+	font-weight: 800;
+	line-height: 100%;
+	letter-spacing: -1.5%;
+	font-size: clamp(24px, 15.36px + 2.4vw, 48px);
+}
+
+.h2 {
+	font-weight: 700;
+	line-height: 100%;
+	letter-spacing: -1.25%;
+	font-size: clamp(24px, 18.24px + 1.6vw, 40px);
+}
+
+.h3 {
+	font-weight: 700;
+	line-height: 100%;
+	letter-spacing: -0.5%;
+	font-size: clamp(24px, 21.12px + 0.8vw, 32px);
+}
+
+.h4 {
+	font-size: 24px;
+	font-weight: 700;
+	line-height: 100%;
+	letter-spacing: -0.25%;
+}
+
+.body {
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 21px;
+	letter-spacing: 0%;
+}
+
+.body1 {
+	font-weight: 500;
+	font-size: 16px;
+	line-height: 145%;
+	letter-spacing: 0%;
+}
+
+/* .body1-md {
+	font-weight: 500;
+	font-size: 16px;
+	line-height: 145%;
+	letter-spacing: 0%;
+} */
+
+.body2 {
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 145%;
+	letter-spacing: 0%;
+}
+
+.body3 {
+	font-weight: 500;
+	font-size: 12px;
+	line-height: 145%;
+	letter-spacing: 0%;
+}
+
+.body-medium {
+	font-weight: 500;
+	font-size: 16px;
+	line-height: 145%;
+	letter-spacing: 0%;
+	color: var(--secondary_text);
+}
+
+.text-link {
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 145%;
+	letter-spacing: 0%;
+}
+
+.button-label {
+	font-weight: 600;
+	font-size: 16px;
+	line-height: 44px;
+	letter-spacing: 0.2%;
+}
