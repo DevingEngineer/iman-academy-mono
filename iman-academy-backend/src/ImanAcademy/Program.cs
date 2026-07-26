@@ -1,3 +1,4 @@
+using ImanAcademy;
 using ImanAcademy.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -27,13 +28,14 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ImanAcademyContext>()
-
     .AddSignInManager()
-    .AddDefaultTokenProviders()
-    .AddApiEndpoints();
+    .AddDefaultTokenProviders();
 
 // JWT auth
-var jwtKey = builder.Configuration["Jwt:Key"]!;
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwtSection["Key"]!;
+var jwtIssuer = jwtSection["Issuer"]!;
+var jwtAudience = jwtSection["Audience"]!;
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -41,10 +43,24 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    // Your JWT configurations go here (Authority, TokenValidationParameters, etc.)
-}).AddIdentityCookies();
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
 
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
 
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromSeconds(30) // avoid default 5-min leeway
+    };
+});
+
+builder.Services.AddAuthorization();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddAuthorization();
 var app = builder.Build();
 
@@ -59,8 +75,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapIdentityApi<ApplicationUser>();
-
 app.MapControllers();
 
 app.Run();

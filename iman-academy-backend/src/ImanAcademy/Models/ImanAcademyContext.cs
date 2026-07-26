@@ -12,7 +12,7 @@ public partial class ImanAcademyContext : IdentityDbContext<ApplicationUser>
         : base(options)
     {
     }
-
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<Course> Courses { get; set; }
@@ -40,6 +40,15 @@ public partial class ImanAcademyContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasIndex(rt => rt.TokenHash).IsUnique();
+            entity.HasOne(rt => rt.User)
+                  .WithMany()
+                  .HasForeignKey(rt => rt.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<Category>(entity =>
         {
