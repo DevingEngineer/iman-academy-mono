@@ -1,5 +1,7 @@
 using ImanAcademy;
 using ImanAcademy.Models;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -36,31 +38,88 @@ var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection["Key"]!;
 var jwtIssuer = jwtSection["Issuer"]!;
 var jwtAudience = jwtSection["Audience"]!;
+
+const string CookieScheme = "Identity.Application";
+const string JwtScheme = JwtBearerDefaults.AuthenticationScheme;
+const string SmartScheme = "Smart"; // the one we set as default
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "frontendCorsPolicy",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3002") // Your Next.js local URL
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials(); // Required if you pass cookies or HttpOnly tokens
+        });
+});
+
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = SmartScheme;
+    options.DefaultChallengeScheme = SmartScheme;
+    options.DefaultSignInScheme = CookieScheme;
 })
-.AddJwtBearer(options =>
+.AddPolicyScheme(SmartScheme, "JWT or Cookie", options =>
 {
+    options.ForwardDefaultSelector = context =>
+    {
+        var authHeader = context.Request.Headers.Authorization.ToString();
+        return authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            ? JwtScheme
+            : CookieScheme;
+    };
+})
+.AddCookie(CookieScheme, options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict; // Lax same-origin, None cross-origin
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = true;
+    options.Events.OnRedirectToLogin = ctx =>
+    {
+        ctx.Response.StatusCode = 401; // API, not a browser page — no HTML redirect
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = ctx =>
+    {
+        ctx.Response.StatusCode = 403;
+        return Task.CompletedTask;
+    };
+})
+.AddJwtBearer(JwtScheme, options =>
+{
+    var jwt = builder.Configuration.GetSection("Jwt");
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidIssuer = jwtIssuer,
-
+        ValidIssuer = jwt["Issuer"],
         ValidateAudience = true,
-        ValidAudience = jwtAudience,
-
+        ValidAudience = jwt["Audience"],
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!)),
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.FromSeconds(30) // avoid default 5-min leeway
+        ClockSkew = TimeSpan.FromSeconds(30)
     };
+})
+.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+    options.CallbackPath = "/api/auth/google/callback";
+    options.SignInScheme = CookieScheme; // redirect flow always signs into the cookie
 });
-
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-Token";
+    options.Cookie.Name = "XSRF-TOKEN";
+    options.Cookie.HttpOnly = false; // frontend JS needs to read it
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<GoogleSignInService>();
 builder.Services.AddAuthorization();
 var app = builder.Build();
 
@@ -72,9 +131,32 @@ if (true || app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("frontendCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
+app.Use(async (context, next) =>
+{
+    var isStateChanging = HttpMethods.IsPost(context.Request.Method)
+        || HttpMethods.IsPut(context.Request.Method)
+        || HttpMethods.IsDelete(context.Request.Method);
+
+    var usedBearer = context.Request.Headers.Authorization.ToString()
+        .StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase);
+
+    if (isStateChanging && !usedBearer && context.User.Identity?.IsAuthenticated == true)
+    {
+        var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+        await antiforgery.ValidateRequestAsync(context); // throws 400 if missing/invalid
+    }
+
+    await next();
+});
+
+app.MapGet("/api/auth/csrf", (IAntiforgery antiforgery, HttpContext ctx) =>
+{
+    var tokens = antiforgery.GetAndStoreTokens(ctx);
+    return Results.Ok(new { token = tokens.RequestToken });
+});
 app.MapControllers();
 
 app.Run();
