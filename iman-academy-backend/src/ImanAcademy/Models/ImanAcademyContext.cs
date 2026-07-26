@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ImanAcademy.Models;
 
-public partial class ImanAcademyContext : DbContext
+public partial class ImanAcademyContext : IdentityDbContext<ApplicationUser>
 {
-    public ImanAcademyContext()
-    {
-    }
 
     public ImanAcademyContext(DbContextOptions<ImanAcademyContext> options)
         : base(options)
@@ -41,6 +39,8 @@ public partial class ImanAcademyContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.CategoryId).HasName("categories_pkey");
