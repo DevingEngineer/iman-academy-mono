@@ -3,6 +3,7 @@ import NextIntlProvider from '@/src/providers/NextIntlProvider'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { notFound } from 'next/navigation'
+import Script from "next/script";
 import './globals.css'
 
 const inter = Inter({
@@ -30,7 +31,10 @@ const RootLayout = async ({ children, params }: RootLayoutProps) => {
 	return (
 		<NextIntlProvider locale={locale}>
 			<html lang={locale}>
-				<body className={`${inter.variable} antialiased`}>{children}</body>
+				<body className={`${inter.variable} antialiased`}>
+					{children}
+				    <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+				</body>
 			</html>
 		</NextIntlProvider>
 	)

@@ -2,6 +2,7 @@ import { AppleIcon } from '@/src/components/icons/AppleIcon'
 import { FacebookIcon } from '@/src/components/icons/FacebookIcon'
 import { GoogleIcon } from '@/src/components/icons/GoogleIcon'
 import { Button } from '@/src/components/UI/Button'
+import  GoogleSignInButton from '@/src/components/GoogleSignInButton'
 
 export const OAuth = () => {
 	return (
@@ -16,12 +17,7 @@ export const OAuth = () => {
 				>
 					<FacebookIcon />
 				</Button>
-				<Button
-					className='px-[54px] bg-white border border-border_devider w-full'
-					variant='contained'
-				>
-					<GoogleIcon />
-				</Button>
+		  		<GoogleSignInButton />
 				<Button
 					className='px-[54px] bg-primary_text w-full'
 					variant='contained'
