@@ -34,7 +34,7 @@ public class AuthControllerFrontend : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("refresh-token")]
+    [HttpPost(AuthConstants.RefreshTokenCookiePath)]
     [ProducesResponseType<TokenResponse>(200)]
     public async Task<IActionResult> RefreshTokenAsync()
     {

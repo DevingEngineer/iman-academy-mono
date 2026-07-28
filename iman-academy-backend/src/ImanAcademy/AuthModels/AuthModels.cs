@@ -1,7 +1,10 @@
 ﻿namespace ImanAcademy.AuthModels
 {
     public static class AuthConstants {
-    }
+        public const string RefreshTokenCookieName = "refreshToken";
+        public const string AccessTokenCookieName = "accessToken";
+        public const string RefreshTokenCookiePath = "~/"+"api/auth/frontend/refresh-token";
+    } 
     public class RegisterRequest
     {
         public string Email { get; set; } = string.Empty;
