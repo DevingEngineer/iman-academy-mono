@@ -2,7 +2,6 @@
 using ImanAcademy.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace ImanAcademy.Controllers;
 
@@ -23,6 +22,7 @@ public class AuthControllerMobile : ControllerBase
         _tokenService = tokenService;
         _config = config;
     }
+
     [HttpPost("register")]
     [ProducesResponseType(201)]
     public async Task<IActionResult> RegisterUserAsync(RegisterRequest request)
@@ -49,6 +49,7 @@ public class AuthControllerMobile : ControllerBase
 
         return Ok(await IssueTokensAsync(user));
     }
+
     [HttpPost("refresh-token")]
     [ProducesResponseType<TokenResponse>(200)]
     public async Task<IActionResult> RefreshTokenAsync(RefreshRequest request)
@@ -75,6 +76,7 @@ public class AuthControllerMobile : ControllerBase
             RefreshToken = newRefreshToken
         });
     }
+
     [HttpPost("revoke-refresh-token")]
     [ProducesResponseType(204)]
     public async Task<IActionResult> RevokeRefreshTokenAsync(RefreshRequest request)
@@ -86,24 +88,28 @@ public class AuthControllerMobile : ControllerBase
         await _tokenService.RevokeRefreshTokenAsync(existing);
         return NoContent();
     }
+
     [HttpPost("google-id-token")]
     [ProducesResponseType<TokenResponse>(200)]
     public async Task<IActionResult> GoogleAuthorizationByIdTokenFlowAsync()
     {
         return NoContent();
     }
+
     [HttpPost("google-code")]
     [ProducesResponseType<TokenResponse>(200)]
     public async Task<IActionResult> GoogleAuthorizationByCodeFlowAsync()
     {
         return NoContent();
     }
+
     [HttpPost("change-password")]
     [ProducesResponseType(201)]
     public async Task<IActionResult> ChangePasswordAsync()
     {
         return NoContent();
     }
+
     [HttpPost("current-user")]
     public async Task<IActionResult> CurrentUserAsync()
     {
