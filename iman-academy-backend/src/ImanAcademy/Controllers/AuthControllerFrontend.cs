@@ -12,6 +12,12 @@ public class AuthControllerFrontend : ControllerBase
     {
     }
 
+    [ServiceFilter(typeof(ValidateAntiforgeryTokenFilter))]
+    [HttpPost("antiforgery")]
+    public async Task<IActionResult> AntiForgeryTestAsync()
+    {
+        return NoContent();
+    }
     [HttpPost("register")]
     [ProducesResponseType(201)]
     public async Task<IActionResult> RegisterUserAsync(RegisterRequest request)

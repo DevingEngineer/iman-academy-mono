@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -17,6 +18,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<ValidateAntiforgeryTokenFilter>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<ImanAcademyContext>(options =>
@@ -112,10 +114,11 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAntiforgery(options =>
 {
-    options.HeaderName = "X-CSRF-Token";
+    options.HeaderName = "X-CSRF-TOKEN";
     options.Cookie.Name = "XSRF-TOKEN";
     options.Cookie.HttpOnly = false; // frontend JS needs to read it
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    //options.Cookie.SameSite = SameSiteMode.None;
 });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -132,31 +135,25 @@ if (true || app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("frontendCorsPolicy");
+app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
-app.Use(async (context, next) =>
+
+app.MapGet("/api/auth/csrf", (IAntiforgery antiforgery, HttpContext context) =>
 {
-    var isStateChanging = HttpMethods.IsPost(context.Request.Method)
-        || HttpMethods.IsPut(context.Request.Method)
-        || HttpMethods.IsDelete(context.Request.Method);
+    var tokens = antiforgery.GetAndStoreTokens(context);
 
-    var usedBearer = context.Request.Headers.Authorization.ToString()
-        .StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase);
+    //// Append the token to a SameSite cookie that Next.js can read
+    //context.Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!, new CookieOptions
+    //{
+    //    HttpOnly = false, // Must be false so Next.js client-side JS can read it
+    //    Secure = true,
+    //    SameSite = SameSiteMode.Lax
+    //});
 
-    if (isStateChanging && !usedBearer && context.User.Identity?.IsAuthenticated == true)
-    {
-        var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
-        await antiforgery.ValidateRequestAsync(context); // throws 400 if missing/invalid
-    }
-
-    await next();
-});
-
-app.MapGet("/api/auth/csrf", (IAntiforgery antiforgery, HttpContext ctx) =>
-{
-    var tokens = antiforgery.GetAndStoreTokens(ctx);
     return Results.Ok(new { token = tokens.RequestToken });
 });
+
 app.MapControllers();
 
 app.Run();
