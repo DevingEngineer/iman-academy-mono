@@ -1,0 +1,32 @@
+﻿namespace ImanAcademy.AuthModels
+{
+    public static class AuthConstants {
+    }
+    public class RegisterRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class LoginRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class TokenResponse
+    {
+        public string AccessToken { get; set; } = string.Empty;
+        public DateTime? AccessTokenExpires { get; set; }
+        public string RefreshToken { get; set; } = string.Empty;
+        public DateTime? RefreshTokenExpires { get; set; }
+    }
+
+    public class RefreshRequest
+    {
+        public string RefreshToken { get; set; } = string.Empty;
+    }
+
+
+
+}

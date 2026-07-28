@@ -1,4 +1,5 @@
 ﻿using Google.Apis.Auth;
+using ImanAcademy.AuthModels;
 using ImanAcademy.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -12,8 +13,8 @@ using System.Security.Claims;
 namespace ImanAcademy.Controllers
 {
     [ApiController]
-    [Route("api/auth")]
-    public class AuthController : ControllerBase
+    [Route("api/auth/draft")]
+    public class AuthControllerDraft : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -21,7 +22,7 @@ namespace ImanAcademy.Controllers
         private readonly IJwtTokenService _tokenService;
         private readonly IConfiguration _config;
 
-        public AuthController(UserManager<ApplicationUser> userManager, IJwtTokenService tokenService, SignInManager<ApplicationUser> signInManager, GoogleSignInService googleSignIn, IConfiguration config)
+        public AuthControllerDraft(UserManager<ApplicationUser> userManager, IJwtTokenService tokenService, SignInManager<ApplicationUser> signInManager, GoogleSignInService googleSignIn, IConfiguration config)
         {
             _userManager = userManager;
             _tokenService = tokenService;
@@ -29,11 +30,6 @@ namespace ImanAcademy.Controllers
             _googleSignIn = googleSignIn;
             _config = config;
         }
-
-        public record RegisterRequest(string Email, string Password);
-        public record LoginRequest(string Email, string Password);
-        public record RefreshRequest(string RefreshToken);
-        public record TokenResponse(string AccessToken, string RefreshToken);
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest request)
@@ -82,7 +78,11 @@ namespace ImanAcademy.Controllers
             // Rotate: revoke the old one, link it to the new one for audit purposes
             await _tokenService.RevokeRefreshTokenAsync(existing, newRefreshToken);
 
-            return Ok(new TokenResponse(newAccessToken, newRefreshToken));
+            return Ok(new TokenResponse()
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            });
         }
 
         [HttpPost("revoke")]
@@ -139,7 +139,11 @@ namespace ImanAcademy.Controllers
 
             var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
             var refreshToken = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
-            return Ok(new TokenResponse(accessToken, refreshToken));
+            return Ok(new TokenResponse()
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            });
         }
         [Authorize] // accepts cookie OR bearer, transparently
         [HttpGet("me")]
@@ -223,7 +227,7 @@ namespace ImanAcademy.Controllers
             var refreshToken = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
 
             SetRefreshCookie(refreshToken);
-            return Ok(new TokenResponse(accessToken, null)); // only the access token is visible to JS
+            return Ok(new TokenResponse() { AccessToken = accessToken }); // only the access token is visible to JS
         }
 
         private void SetRefreshCookie(string rawRefreshToken)
