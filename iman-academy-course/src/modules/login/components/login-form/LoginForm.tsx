@@ -2,6 +2,7 @@
 
 import { EmailIcon } from '@/src/components/icons/EmailIcon'
 import { EyeOff } from '@/src/components/icons/EyeOff'
+import { AuthFormError } from '@/src/components/AuthFormError'
 import { Button } from '@/src/components/UI/Button'
 import { Checkbox } from '@/src/components/UI/Checkbox'
 import { Input } from '@/src/components/UI/Input'
@@ -15,7 +16,7 @@ export const LoginForm = () => {
 	const [checked, setChecked] = useState(false)
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
-	const [error, setError] = useState<string | null>(null)
+	const [error, setError] = useState<unknown | null>(null)
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	const handleCheck = () => {
@@ -31,7 +32,7 @@ export const LoginForm = () => {
 			await login({ email, password })
 			router.push('/')
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Не удалось войти')
+			setError(err)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -71,9 +72,9 @@ export const LoginForm = () => {
 					<Checkbox
 						checked={checked}
 						onChange={handleCheck}
-						name='Запомнить меня'
+						name='remember-me'
 					>
-						Я согласен с{' '}
+						Запомнить меня
 					</Checkbox>
 					<Link
 						href='/forgot-password'
@@ -82,7 +83,7 @@ export const LoginForm = () => {
 						Забыли пароль?
 					</Link>
 				</div>
-				{error && <p className='text-sm text-red-600'>{error}</p>}
+				<AuthFormError error={error} fallback='Не удалось войти' />
 				<Button
 					type='submit'
 					variant='contained'

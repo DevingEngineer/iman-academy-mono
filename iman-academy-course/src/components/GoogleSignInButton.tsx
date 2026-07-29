@@ -1,8 +1,9 @@
 'use client'
 
+import { AuthFormError } from '@/src/components/AuthFormError'
 import { useRouter } from '@/src/i18n/navigation'
 import { useAuth } from '@/src/providers/AuthProvider'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 declare global {
 	interface Window {
@@ -27,6 +28,7 @@ export default function GoogleSignInButton() {
 	const buttonRef = useRef<HTMLDivElement>(null)
 	const router = useRouter()
 	const { loginWithGoogle } = useAuth()
+	const [error, setError] = useState<unknown | null>(null)
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -50,13 +52,20 @@ export default function GoogleSignInButton() {
 	}, [])
 
 	async function handleCredentialResponse(response: { credential: string }) {
+		setError(null)
+
 		try {
 			await loginWithGoogle(response.credential)
 			router.push('/')
 		} catch (err) {
-			console.error('Google sign-in failed', err)
+			setError(err)
 		}
 	}
 
-	return <div ref={buttonRef} />
+	return (
+		<div className='flex w-full flex-col gap-2'>
+			<div ref={buttonRef} />
+			<AuthFormError error={error} fallback='Не удалось войти через Google' />
+		</div>
+	)
 }
