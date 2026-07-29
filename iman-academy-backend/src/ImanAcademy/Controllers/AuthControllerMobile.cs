@@ -194,7 +194,7 @@ public class AuthControllerMobile : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("current-user")]
+    [HttpGet("current-user")]
     public async Task<IActionResult> CurrentUserAsync()
     {
         var user = await _userManager.GetUserAsync(User);
