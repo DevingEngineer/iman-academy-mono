@@ -4,7 +4,7 @@ using ImanAcademy.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,8 +22,18 @@ public class AuthControllerFrontend : ControllerBase
     private readonly IAntiforgery _antiforgery;
     private readonly ILogger<AuthControllerFrontend> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IEmailSender _emailSender;
 
-    public AuthControllerFrontend(UserManager<ApplicationUser> userManager, IJwtTokenService tokenService, SignInManager<ApplicationUser> signInManager, GoogleSignInService googleSignIn, IConfiguration config, IAntiforgery antiforgery, ILogger<AuthControllerFrontend> logger, IHttpContextAccessor httpContextAccessor)
+    public AuthControllerFrontend(UserManager<ApplicationUser> userManager, 
+        IJwtTokenService tokenService, 
+        SignInManager<ApplicationUser> signInManager, 
+        GoogleSignInService googleSignIn, 
+        IConfiguration config, 
+        IAntiforgery antiforgery, 
+        ILogger<AuthControllerFrontend> logger, 
+        IHttpContextAccessor httpContextAccessor, 
+        IEmailSender emailSender
+        )
     {
         _userManager = userManager;
         _tokenService = tokenService;
@@ -33,6 +43,7 @@ public class AuthControllerFrontend : ControllerBase
         _antiforgery = antiforgery;
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
+        _emailSender = emailSender;
     }
     [HttpGet("csrf-cookie-token")]
     public async Task<IActionResult> CsrfCookieTokenAssignAsync()
@@ -205,12 +216,41 @@ public class AuthControllerFrontend : ControllerBase
         return await IssueTokensAsync(user);
     }
 
-    // TODO: add a "forgot-password" endpoint that:
-    //   1. looks up the user by email
-    //   2. generates a token via _userManager.GeneratePasswordResetTokenAsync(user)
-    //   3. emails a link containing { email, code = token } to the user
-    // Wire this up once you have an email-sending service; ResetPassword below
-    // assumes that code already exists.
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(204)]
+    public async Task<IActionResult> ForgotPasswordAsync(ForgotPasswordRequest request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        // Don't reveal whether the email exists or is unconfirmed — always return
+        // the same response so this endpoint can't be used to enumerate accounts.
+        if (user is null || !await _userManager.IsEmailConfirmedAsync(user))
+            return NoContent();
+
+        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedCode = Uri.EscapeDataString(code);
+        var encodedEmail = Uri.EscapeDataString(user.Email!);
+
+        var frontendBaseUrl = _config["Frontend:ResetPasswordUrl"]!.TrimEnd('/');
+        var resetLink = $"{frontendBaseUrl}?email={encodedEmail}&code={encodedCode}";
+
+        try
+        {
+            await _emailSender.SendEmailAsync(
+                user.Email!,
+                "Reset your password",
+                $"<p>Click the link below to reset your password:</p>" +
+                $"<p><a href=\"{resetLink}\">Reset password</a></p>" +
+                $"<p>If you didn't request this, you can safely ignore this email.</p>");
+        }
+        catch (Exception ex)
+        {
+            // Log but don't leak failure to the caller — same enumeration concern as above.
+            _logger.LogError(ex, "Failed to send password reset email to {Email}", user.Email);
+        }
+
+        return NoContent();
+    }
 
     [HttpPost("reset-password")]
     [ProducesResponseType(204)]
@@ -221,7 +261,7 @@ public class AuthControllerFrontend : ControllerBase
         if (user is null)
             return NoContent(); // don't reveal whether the email exists
 
-        var result = await _userManager.ResetPasswordAsync(user, request.Code, request.NewPassword);
+        var result = await _userManager.ResetPasswordAsync(user, request.ResetCode, request.NewPassword);
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 

@@ -54,4 +54,17 @@
         public string UserName { get; init; } = default!;
         public bool EmailConfirmed { get; init; }
     }
+
+    public sealed class ResetPasswordRequest
+    {
+        public required string Email { get; init; }
+
+        public required string ResetCode { get; init; }
+
+        public required string NewPassword { get; init; }
+    }
+    public sealed class ForgotPasswordRequest
+    {
+        public required string Email { get; init; }
+    }
 }
