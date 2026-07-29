@@ -80,7 +80,6 @@ public class AuthControllerFrontend : ControllerBase
         return await IssueTokensAsync(user);
     }
 
-    [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> LogoutAndClearCookiesUserAsync()
     {
@@ -143,7 +142,7 @@ public class AuthControllerFrontend : ControllerBase
         {
             payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, new GoogleJsonWebSignature.ValidationSettings
             {
-                Audience = new[] { _config["Google:ClientId"] }
+                Audience = new[] { _config["Authentication:Google:ClientId"] }
             });
         }
         catch (InvalidJwtException)
