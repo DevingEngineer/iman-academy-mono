@@ -1,11 +1,9 @@
 using ImanAcademy;
 using ImanAcademy.AuthModels;
 using ImanAcademy.Models;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -124,6 +122,7 @@ builder.Services.AddAntiforgery(options =>
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailSender>();
 builder.Services.AddScoped<GoogleSignInService>();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();

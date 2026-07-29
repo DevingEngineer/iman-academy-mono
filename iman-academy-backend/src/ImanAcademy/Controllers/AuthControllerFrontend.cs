@@ -22,7 +22,7 @@ public class AuthControllerFrontend : ControllerBase
     private readonly IAntiforgery _antiforgery;
     private readonly ILogger<AuthControllerFrontend> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailService _emailSender;
 
     public AuthControllerFrontend(UserManager<ApplicationUser> userManager, 
         IJwtTokenService tokenService, 
@@ -31,8 +31,8 @@ public class AuthControllerFrontend : ControllerBase
         IConfiguration config, 
         IAntiforgery antiforgery, 
         ILogger<AuthControllerFrontend> logger, 
-        IHttpContextAccessor httpContextAccessor, 
-        IEmailSender emailSender
+        IHttpContextAccessor httpContextAccessor,
+        IEmailService emailSender
         )
     {
         _userManager = userManager;
