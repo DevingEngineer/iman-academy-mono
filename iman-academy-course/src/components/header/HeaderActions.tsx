@@ -22,7 +22,14 @@ export const HeaderActions = () => {
 	}
 
 	if (isLoading) {
-		return <div className='h-[44px] w-[180px]' />
+		return (
+			<div className='flex gap-[10px] animate-pulse'>
+			{/* Skeleton for Button 1 */}
+			<div className='h-[44px] w-[80px] bg-white/10 rounded-[8px]' />
+			{/* Skeleton for Button 2 */}
+			<div className='h-[44px] w-[110px] bg-white/20 rounded-[8px]' />
+			</div>
+		)
 	}
 
 	if (isAuthenticated && user) {
