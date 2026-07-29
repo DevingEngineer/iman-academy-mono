@@ -54,13 +54,12 @@ public class AuthControllerMobile : ControllerBase
     [ProducesResponseType<TokenResponse>(200)]
     public async Task<IActionResult> RefreshTokenAsync(RefreshRequest request)
     {
-        if (!Request.Cookies.TryGetValue("refreshToken", out var rawToken) || string.IsNullOrEmpty(rawToken))
+        if (string.IsNullOrEmpty(request.RefreshToken))
             return Unauthorized("No refresh token.");
 
-        var existing = await _tokenService.ValidateRefreshTokenAsync(rawToken);
+        var existing = await _tokenService.ValidateRefreshTokenAsync(request.RefreshToken);
         if (existing is null)
         {
-            Response.Cookies.Delete("refreshToken");
             return Unauthorized("Invalid or expired refresh token.");
         }
 

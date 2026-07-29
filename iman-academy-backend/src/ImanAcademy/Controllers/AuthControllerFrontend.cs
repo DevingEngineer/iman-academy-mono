@@ -121,26 +121,23 @@ public class AuthControllerFrontend : ControllerBase
     private async Task<IActionResult> IssueTokensAsync(ApplicationUser user)
     {
         var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
-        var refreshToken = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
-
-        SetRefreshCookie(refreshToken);
+        var (refreshToken, expires) = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
+        SetRefreshCookie(refreshToken, expires);
         return Ok(new TokenResponse() { AccessToken = accessToken }); // only the access token is visible to JS
     }
 
-    private void SetRefreshCookie(string rawRefreshToken)
+    private void SetRefreshCookie(string rawRefreshToken, DateTime? expires)
     {
-
-
         Response.Cookies.Append(
-            "refreshToken",
+            AuthConstants.RefreshTokenCookieName,
             rawRefreshToken,
             new CookieOptions()
             {
                 HttpOnly = true,
                 Secure = false, // allow plain http on localhost, force https elsewhere
                 SameSite = SameSiteMode.Strict, // refresh token never needs to go cross-site
-                Path = "/api/auth/refresh", // only sent to auth endpoints, not every request
-                Expires = DateTime.Now.AddDays(15)
+                Path = AuthConstants.RefreshTokenCookiePath, // only sent to auth endpoints, not every request
+                Expires = expires ?? DateTime.UtcNow.AddDays(15) 
             });
     }
 }

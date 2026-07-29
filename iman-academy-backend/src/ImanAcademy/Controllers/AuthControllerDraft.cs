@@ -60,20 +60,20 @@ namespace ImanAcademy.Controllers
         public async Task<IActionResult> Refresh(RefreshRequest request)
         {
 
-            if (!Request.Cookies.TryGetValue("refreshToken", out var rawToken) || string.IsNullOrEmpty(rawToken))
+            if (!Request.Cookies.TryGetValue(AuthConstants.RefreshTokenCookieName, out var rawToken) || string.IsNullOrEmpty(rawToken))
                 return Unauthorized("No refresh token.");
 
             var existing = await _tokenService.ValidateRefreshTokenAsync(rawToken);
             if (existing is null)
             {
-                Response.Cookies.Delete("refreshToken");
+                Response.Cookies.Delete(AuthConstants.RefreshTokenCookieName);
                 return Unauthorized("Invalid or expired refresh token.");
             }
 
        
             
             var newAccessToken = await _tokenService.GenerateAccessTokenAsync(existing.User);
-            var newRefreshToken = await _tokenService.GenerateAndStoreRefreshTokenAsync(existing.User);
+            var (newRefreshToken, refreshExpires) = await _tokenService.GenerateAndStoreRefreshTokenAsync(existing.User);
 
             // Rotate: revoke the old one, link it to the new one for audit purposes
             await _tokenService.RevokeRefreshTokenAsync(existing, newRefreshToken);
@@ -235,7 +235,7 @@ namespace ImanAcademy.Controllers
 
 
             Response.Cookies.Append(
-                "refreshToken",
+                AuthConstants.RefreshTokenCookieName,
                 rawRefreshToken,
                 new CookieOptions()
                 {
