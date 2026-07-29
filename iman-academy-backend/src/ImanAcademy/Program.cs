@@ -1,4 +1,5 @@
 using ImanAcademy;
+using ImanAcademy.AuthModels;
 using ImanAcademy.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -114,16 +115,18 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAntiforgery(options =>
 {
-    options.HeaderName = "X-CSRF-TOKEN";
-    options.Cookie.Name = "XSRF-TOKEN";
+    options.HeaderName = AuthConstants.CsrfTokenHeaderName;
+    options.Cookie.Name = AuthConstants.CsrfTokenCookieName;
     options.Cookie.HttpOnly = false; // frontend JS needs to read it
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    //options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SameSite = SameSiteMode.Strict;
 });
+
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<GoogleSignInService>();
 builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -138,22 +141,6 @@ app.UseCors("frontendCorsPolicy");
 app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapGet("/api/auth/csrf", (IAntiforgery antiforgery, HttpContext context) =>
-{
-    var tokens = antiforgery.GetAndStoreTokens(context);
-
-    //// Append the token to a SameSite cookie that Next.js can read
-    //context.Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!, new CookieOptions
-    //{
-    //    HttpOnly = false, // Must be false so Next.js client-side JS can read it
-    //    Secure = true,
-    //    SameSite = SameSiteMode.Lax
-    //});
-
-    return Results.Ok(new { token = tokens.RequestToken });
-});
-
 app.MapControllers();
 
 app.Run();

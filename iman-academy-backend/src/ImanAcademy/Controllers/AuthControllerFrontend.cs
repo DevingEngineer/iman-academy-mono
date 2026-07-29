@@ -1,6 +1,10 @@
 ﻿using ImanAcademy.AuthModels;
+using ImanAcademy.Models;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ImanAcademy.Controllers;
 
@@ -8,21 +12,48 @@ namespace ImanAcademy.Controllers;
 [Route("api/auth/frontend")]
 public class AuthControllerFrontend : ControllerBase
 {
-    public AuthControllerFrontend()
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly GoogleSignInService _googleSignIn;
+    private readonly IJwtTokenService _tokenService;
+    private readonly IConfiguration _config;
+    private readonly IAntiforgery _antiforgery;
+    private readonly ILogger<AuthControllerFrontend> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public AuthControllerFrontend(UserManager<ApplicationUser> userManager, IJwtTokenService tokenService, SignInManager<ApplicationUser> signInManager, GoogleSignInService googleSignIn, IConfiguration config, IAntiforgery antiforgery, ILogger<AuthControllerFrontend> logger, IHttpContextAccessor httpContextAccessor)
     {
+        _userManager = userManager;
+        _tokenService = tokenService;
+        _signInManager = signInManager;
+        _googleSignIn = googleSignIn;
+        _config = config;
+        _antiforgery = antiforgery;
+        _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
+    }
+    [HttpGet("csrf-cookie-token")]
+    public async Task<IActionResult> CsrfCookieTokenAssignAsync()
+    {
+        if(_httpContextAccessor.HttpContext == null)
+        {
+            return BadRequest("HttpContext is null.");
+        }
+        var tokens = _antiforgery.GetAndStoreTokens(_httpContextAccessor.HttpContext);
+        return Ok(new { token = tokens.RequestToken });
     }
 
-    [ServiceFilter(typeof(ValidateAntiforgeryTokenFilter))]
-    [HttpPost("antiforgery")]
-    public async Task<IActionResult> AntiForgeryTestAsync()
-    {
-        return NoContent();
-    }
     [HttpPost("register")]
     [ProducesResponseType(201)]
     public async Task<IActionResult> RegisterUserAsync(RegisterRequest request)
     {
-        return Ok();
+        var user = new ApplicationUser { UserName = request.Email, Email = request.Email };
+        var result = await _userManager.CreateAsync(user, request.Password);
+
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        return Created();
     }
 
     [HttpPost("login")]
@@ -81,4 +112,35 @@ public class AuthControllerFrontend : ControllerBase
         return Ok();
     }
 
+    [ServiceFilter(typeof(ValidateAntiforgeryTokenFilter))]
+    [HttpPost("antiforgery-test")]
+    public async Task<IActionResult> AntiForgeryTestAsync()
+    {
+        return NoContent();
+    }
+    private async Task<IActionResult> IssueTokensAsync(ApplicationUser user)
+    {
+        var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
+        var refreshToken = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
+
+        SetRefreshCookie(refreshToken);
+        return Ok(new TokenResponse() { AccessToken = accessToken }); // only the access token is visible to JS
+    }
+
+    private void SetRefreshCookie(string rawRefreshToken)
+    {
+
+
+        Response.Cookies.Append(
+            "refreshToken",
+            rawRefreshToken,
+            new CookieOptions()
+            {
+                HttpOnly = true,
+                Secure = false, // allow plain http on localhost, force https elsewhere
+                SameSite = SameSiteMode.Strict, // refresh token never needs to go cross-site
+                Path = "/api/auth/refresh", // only sent to auth endpoints, not every request
+                Expires = DateTime.Now.AddDays(15)
+            });
+    }
 }
