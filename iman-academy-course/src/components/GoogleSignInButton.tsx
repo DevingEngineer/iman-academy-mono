@@ -37,7 +37,7 @@ export default function GoogleSignInButton() {
   }, []);
 
   async function handleCredentialResponse(response: { credential: string }) {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/frontend/google-id-token`, {
       method: "POST",
       credentials: "include", // so the refresh-token cookie gets set
       headers: { "Content-Type": "application/json" },
