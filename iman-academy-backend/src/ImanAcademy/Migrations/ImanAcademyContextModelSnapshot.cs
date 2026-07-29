@@ -459,6 +459,9 @@ namespace ImanAcademy.Migrations
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("ReplacedByTokenHash")
                         .HasColumnType("text");
 
