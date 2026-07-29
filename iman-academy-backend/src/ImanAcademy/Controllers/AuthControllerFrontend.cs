@@ -1,8 +1,10 @@
-﻿using ImanAcademy.AuthModels;
+﻿using Google.Apis.Auth;
+using ImanAcademy.AuthModels;
 using ImanAcademy.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -60,56 +62,205 @@ public class AuthControllerFrontend : ControllerBase
     [ProducesResponseType<TokenResponse>(200)]
     public async Task<IActionResult> LoginAndSetCookiesUserAsync(LoginRequest request)
     {
-        return Ok();
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user is null || !await _userManager.CheckPasswordAsync(user, request.Password))
+            return Unauthorized("Invalid email or password.");
+
+        return await IssueTokensAsync(user);
     }
 
     [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> LogoutAndClearCookiesUserAsync()
     {
-        return Ok();
+        if (Request.Cookies.TryGetValue(AuthConstants.RefreshTokenCookieName, out var rawRefreshToken)
+            && !string.IsNullOrEmpty(rawRefreshToken))
+        {
+            var existing = await _tokenService.ValidateRefreshTokenAsync(rawRefreshToken);
+            if (existing is not null)
+                await _tokenService.RevokeRefreshTokenAsync(existing);
+        }
+
+        ClearRefreshCookie();
+        return NoContent();
     }
 
     [Authorize]
     [HttpPost(AuthConstants.RefreshTokenCookiePath)]
     [ProducesResponseType<TokenResponse>(200)]
+    [ProducesResponseType(401)]
     public async Task<IActionResult> RefreshTokenAsync()
     {
-        return Ok();
+        if (!Request.Cookies.TryGetValue(AuthConstants.RefreshTokenCookieName, out var rawRefreshToken)
+           || string.IsNullOrEmpty(rawRefreshToken))
+        {
+            return Unauthorized("No refresh token.");
+        }
+
+        var result = await _tokenService.RotateRefreshTokenAsync(rawRefreshToken);
+
+        switch (result.Status)
+        {
+            case RefreshRotationStatus.Success:
+                SetRefreshCookie(result.RefreshToken!, result.RefreshTokenExpires);
+                return Ok(new TokenResponse { AccessToken = result.AccessToken! });
+
+            case RefreshRotationStatus.Reused:
+                ClearRefreshCookie();
+                return Unauthorized("Session revoked due to suspicious activity. Please log in again.");
+
+            case RefreshRotationStatus.Expired:
+                ClearRefreshCookie();
+                return Unauthorized("Refresh token expired.");
+
+            default:
+                ClearRefreshCookie();
+                return Unauthorized("Invalid refresh token.");
+        }
     }
 
     [HttpPost("google-id-token")]
     [ProducesResponseType<TokenResponse>(200)]
-    public async Task<IActionResult> GoogleAuthorizationByIdTokenFlowAsync() { 
-        return Ok();
+    [ProducesResponseType(401)]
+    public async Task<IActionResult> GoogleAuthorizationByIdTokenFlowAsync(GoogleIdTokenRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.IdToken))
+            return Unauthorized("Missing Google ID token.");
+
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _config["Google:ClientId"] }
+            });
+        }
+        catch (InvalidJwtException)
+        {
+            return Unauthorized("Invalid Google ID token.");
+        }
+
+        ApplicationUser user;
+        try
+        {
+            user = await _googleSignIn.ResolveUserAsync(payload.Subject, payload.Email, payload.EmailVerified);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+
+        return await IssueTokensAsync(user);
     }
 
     [HttpPost("google-code")]
     [ProducesResponseType<TokenResponse>(200)]
-    public async Task<IActionResult> GoogleAuthorizationByCodeFlowAsync()
+    [ProducesResponseType(401)]
+    public async Task<IActionResult> GoogleAuthorizationByCodeFlowAsync(GoogleCodeRequest request)
     {
-        return Ok();
+        if (string.IsNullOrWhiteSpace(request.Code))
+            return Unauthorized("Missing authorization code.");
+
+        var client = new HttpClient();
+        var tokenResponse = await client.PostAsync("https://oauth2.googleapis.com/token", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["code"] = request.Code,
+            ["client_id"] = _config["Google:ClientId"]!,
+            ["client_secret"] = _config["Google:ClientSecret"]!,
+            ["redirect_uri"] = request.RedirectUri ?? _config["Google:RedirectUri"]!,
+            ["grant_type"] = "authorization_code"
+        }));
+
+        if (!tokenResponse.IsSuccessStatusCode)
+            return Unauthorized("Failed to exchange authorization code with Google.");
+
+        var json = await tokenResponse.Content.ReadAsStringAsync();
+        using var doc = System.Text.Json.JsonDocument.Parse(json);
+        if (!doc.RootElement.TryGetProperty("id_token", out var idTokenElement))
+            return Unauthorized("Google response did not include an ID token.");
+
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(idTokenElement.GetString(), new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _config["Google:ClientId"] }
+            });
+        }
+        catch (InvalidJwtException)
+        {
+            return Unauthorized("Invalid Google ID token.");
+        }
+
+        ApplicationUser user;
+        try
+        {
+            user = await _googleSignIn.ResolveUserAsync(payload.Subject, payload.Email, payload.EmailVerified);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+
+        return await IssueTokensAsync(user);
     }
 
+    // TODO: add a "forgot-password" endpoint that:
+    //   1. looks up the user by email
+    //   2. generates a token via _userManager.GeneratePasswordResetTokenAsync(user)
+    //   3. emails a link containing { email, code = token } to the user
+    // Wire this up once you have an email-sending service; ResetPassword below
+    // assumes that code already exists.
+
     [HttpPost("reset-password")]
-    [ProducesResponseType(201)]
-    public async Task<IActionResult> ResetPassword(string code) {
-        return Ok();
+    [ProducesResponseType(204)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user is null)
+            return NoContent(); // don't reveal whether the email exists
+
+        var result = await _userManager.ResetPasswordAsync(user, request.Code, request.NewPassword);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        return NoContent();
     }
 
     [Authorize]
     [HttpPost("change-password")]
-    [ProducesResponseType(201)]
-    public async Task<IActionResult> ChangePasswordAsync()
+    [ProducesResponseType(204)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> ChangePasswordAsync(ChangePasswordRequest request)
     {
-        return Ok();
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+            return Unauthorized();
+
+        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        return NoContent();
     }
 
     [Authorize]
     [HttpGet("current-user")]
+    [ProducesResponseType<CurrentUserResponse>(200)]
     public async Task<IActionResult> GetCurrentUserAsync()
     {
-        return Ok();
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+            return Unauthorized();
+
+        return Ok(new CurrentUserResponse
+        {
+            Id = user.Id,
+            Email = user.Email!,
+            UserName = user.UserName!,
+            EmailConfirmed = user.EmailConfirmed
+        });
     }
 
     [ServiceFilter(typeof(ValidateAntiforgeryTokenFilter))]
@@ -139,5 +290,12 @@ public class AuthControllerFrontend : ControllerBase
                 Path = AuthConstants.RefreshTokenCookiePath, // only sent to auth endpoints, not every request
                 Expires = expires ?? DateTime.UtcNow.AddDays(15) 
             });
+    }
+    private void ClearRefreshCookie()
+    {
+        Response.Cookies.Delete(AuthConstants.RefreshTokenCookieName, new CookieOptions
+        {
+            Path = AuthConstants.RefreshTokenCookiePath
+        });
     }
 }
