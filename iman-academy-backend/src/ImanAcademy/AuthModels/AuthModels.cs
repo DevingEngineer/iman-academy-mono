@@ -32,6 +32,26 @@
         public string RefreshToken { get; set; } = string.Empty;
     }
 
+    public enum RefreshRotationStatus { Success, NotFound, Expired, Reused }
 
+    public class RefreshRotationResult
+    {
+        public RefreshRotationStatus Status { get; init; }
+        public string? AccessToken { get; init; }
+        public string? RefreshToken { get; init; }
+        public DateTime? RefreshTokenExpires { get; init; }
+    }
+    public record GoogleIdTokenRequest(string IdToken);
 
+    public record GoogleCodeRequest(string Code, string? RedirectUri);
+
+    public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+
+    public record CurrentUserResponse
+    {
+        public string Id { get; init; } = default!;
+        public string Email { get; init; } = default!;
+        public string UserName { get; init; } = default!;
+        public bool EmailConfirmed { get; init; }
+    }
 }

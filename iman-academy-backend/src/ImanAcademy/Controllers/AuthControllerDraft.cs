@@ -138,7 +138,7 @@ namespace ImanAcademy.Controllers
             var user = await _googleSignIn.ResolveUserAsync(payload.Subject, payload.Email, payload.EmailVerified);
 
             var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
-            var refreshToken = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
+            var (refreshToken, refreshExpires) = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
             return Ok(new TokenResponse()
             {
                 AccessToken = accessToken,
@@ -224,7 +224,7 @@ namespace ImanAcademy.Controllers
         private async Task<IActionResult> IssueTokensAsync(ApplicationUser user)
         {
             var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
-            var refreshToken = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
+            var (refreshToken, refreshExpires) = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
 
             SetRefreshCookie(refreshToken);
             return Ok(new TokenResponse() { AccessToken = accessToken }); // only the access token is visible to JS

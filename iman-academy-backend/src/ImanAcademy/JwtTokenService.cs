@@ -1,4 +1,5 @@
-﻿using ImanAcademy.Models;
+﻿using ImanAcademy.AuthModels;
+using ImanAcademy.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,9 +14,10 @@ namespace ImanAcademy
     public interface IJwtTokenService
     {
         Task<string> GenerateAccessTokenAsync(ApplicationUser user);
-        Task<(string, DateTime)> GenerateAndStoreRefreshTokenAsync(ApplicationUser user);
+        Task<(string, DateTime)> GenerateAndStoreRefreshTokenAsync(ApplicationUser user, Guid? familyId = null);
         Task<RefreshToken?> ValidateRefreshTokenAsync(string rawToken);
         Task RevokeRefreshTokenAsync(RefreshToken token, string? replacedByRawToken = null);
+        Task<RefreshRotationResult> RotateRefreshTokenAsync(string rawToken);
     }
 
     public class JwtTokenService : IJwtTokenService
@@ -59,7 +61,7 @@ namespace ImanAcademy
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<(string, DateTime)> GenerateAndStoreRefreshTokenAsync(ApplicationUser user)
+        public async Task<(string, DateTime)> GenerateAndStoreRefreshTokenAsync(ApplicationUser user,Guid? familyId = null)
         {
             var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
             var days = double.Parse(_config["Jwt:RefreshTokenDays"]!);
@@ -68,13 +70,14 @@ namespace ImanAcademy
             {
                 UserId = user.Id,
                 TokenHash = Hash(rawToken),
+                FamilyId = familyId ?? Guid.NewGuid(), // new login starts a new family
                 ExpiresAt = DateTime.UtcNow.AddDays(days)
             };
 
             _db.RefreshTokens.Add(entity);
             await _db.SaveChangesAsync();
 
-            return (rawToken, entity.ExpiresAt); // only the raw value is ever returned to the client
+            return (rawToken, entity.ExpiresAt);
         }
 
         public async Task<RefreshToken?> ValidateRefreshTokenAsync(string rawToken)
@@ -92,6 +95,54 @@ namespace ImanAcademy
             token.RevokedAt = DateTime.UtcNow;
             if (replacedByRawToken is not null)
                 token.ReplacedByTokenHash = Hash(replacedByRawToken);
+
+            await _db.SaveChangesAsync();
+        }
+        public async Task<RefreshRotationResult> RotateRefreshTokenAsync(string rawToken)
+        {
+            var hash = Hash(rawToken);
+            var entity = await _db.RefreshTokens
+                .Include(rt => rt.User)
+                .FirstOrDefaultAsync(rt => rt.TokenHash == hash);
+
+            if (entity is null)
+                return new RefreshRotationResult { Status = RefreshRotationStatus.NotFound };
+
+            if (entity.RevokedAt is not null)
+            {
+                // Token was already used/revoked but is being presented again — likely theft.
+                // Kill every token in this login's family so a stolen token can't be replayed
+                // and the legitimate user is forced to re-authenticate.
+                await RevokeFamilyAsync(entity.FamilyId);
+                return new RefreshRotationResult { Status = RefreshRotationStatus.Reused };
+            }
+
+            if (entity.ExpiresAt <= DateTime.UtcNow)
+                return new RefreshRotationResult { Status = RefreshRotationStatus.Expired };
+
+            var accessToken = await GenerateAccessTokenAsync(entity.User);
+            var (newRawToken, newExpires) = await GenerateAndStoreRefreshTokenAsync(entity.User, entity.FamilyId);
+
+            entity.RevokedAt = DateTime.UtcNow;
+            entity.ReplacedByTokenHash = Hash(newRawToken);
+            await _db.SaveChangesAsync();
+
+            return new RefreshRotationResult
+            {
+                Status = RefreshRotationStatus.Success,
+                AccessToken = accessToken,
+                RefreshToken = newRawToken,
+                RefreshTokenExpires = newExpires
+            };
+        }
+        private async Task RevokeFamilyAsync(Guid familyId)
+        {
+            var activeTokens = await _db.RefreshTokens
+                .Where(rt => rt.FamilyId == familyId && rt.RevokedAt == null)
+                .ToListAsync();
+
+            foreach (var t in activeTokens)
+                t.RevokedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
         }
