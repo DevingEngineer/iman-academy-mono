@@ -13,7 +13,7 @@ namespace ImanAcademy
     public interface IJwtTokenService
     {
         Task<string> GenerateAccessTokenAsync(ApplicationUser user);
-        Task<string> GenerateAndStoreRefreshTokenAsync(ApplicationUser user);
+        Task<(string, DateTime)> GenerateAndStoreRefreshTokenAsync(ApplicationUser user);
         Task<RefreshToken?> ValidateRefreshTokenAsync(string rawToken);
         Task RevokeRefreshTokenAsync(RefreshToken token, string? replacedByRawToken = null);
     }
@@ -59,7 +59,7 @@ namespace ImanAcademy
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<string> GenerateAndStoreRefreshTokenAsync(ApplicationUser user)
+        public async Task<(string, DateTime)> GenerateAndStoreRefreshTokenAsync(ApplicationUser user)
         {
             var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
             var days = double.Parse(_config["Jwt:RefreshTokenDays"]!);
@@ -74,7 +74,7 @@ namespace ImanAcademy
             _db.RefreshTokens.Add(entity);
             await _db.SaveChangesAsync();
 
-            return rawToken; // only the raw value is ever returned to the client
+            return (rawToken, entity.ExpiresAt); // only the raw value is ever returned to the client
         }
 
         public async Task<RefreshToken?> ValidateRefreshTokenAsync(string rawToken)

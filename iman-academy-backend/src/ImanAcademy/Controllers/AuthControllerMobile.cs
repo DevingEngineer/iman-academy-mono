@@ -65,7 +65,7 @@ public class AuthControllerMobile : ControllerBase
         }
 
         var newAccessToken = await _tokenService.GenerateAccessTokenAsync(existing.User);
-        var newRefreshToken = await _tokenService.GenerateAndStoreRefreshTokenAsync(existing.User);
+        var (newRefreshToken, refreshExpires) = await _tokenService.GenerateAndStoreRefreshTokenAsync(existing.User);
 
         // Rotate: revoke the old one, link it to the new one for audit purposes
         await _tokenService.RevokeRefreshTokenAsync(existing, newRefreshToken);
@@ -73,7 +73,8 @@ public class AuthControllerMobile : ControllerBase
         return Ok(new TokenResponse()
         {
             AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken
+            RefreshToken = newRefreshToken,
+            RefreshTokenExpires = refreshExpires
         });
     }
 
@@ -118,26 +119,7 @@ public class AuthControllerMobile : ControllerBase
     private async Task<IActionResult> IssueTokensAsync(ApplicationUser user)
     {
         var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
-        var refreshToken = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
-
-        SetRefreshCookie(refreshToken);
-        return Ok(new TokenResponse() { AccessToken = accessToken }); // only the access token is visible to JS
-    }
-
-    private void SetRefreshCookie(string rawRefreshToken)
-    {
-
-
-        Response.Cookies.Append(
-            "refreshToken",
-            rawRefreshToken,
-            new CookieOptions()
-            {
-                HttpOnly = true,
-                Secure = false, // allow plain http on localhost, force https elsewhere
-                SameSite = SameSiteMode.Strict, // refresh token never needs to go cross-site
-                Path = "/api/auth/refresh", // only sent to auth endpoints, not every request
-                Expires = DateTime.Now.AddDays(15)
-            });
+        var (refreshToken, refreshExpires) = await _tokenService.GenerateAndStoreRefreshTokenAsync(user);
+        return Ok(new TokenResponse() { AccessToken = accessToken, RefreshToken = refreshToken, RefreshTokenExpires = refreshExpires });
     }
 }
