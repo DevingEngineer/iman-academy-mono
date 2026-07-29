@@ -1,58 +1,62 @@
-// components/GoogleSignInButton.tsx
-"use client";
+'use client'
 
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { setAccessToken } from "../lib/auth";
+import { useRouter } from '@/src/i18n/navigation'
+import { useAuth } from '@/src/providers/AuthProvider'
+import { useEffect, useRef } from 'react'
 
 declare global {
-  interface Window {
-    google: any;
-  }
+	interface Window {
+		google: {
+			accounts: {
+				id: {
+					initialize: (config: {
+						client_id: string | undefined
+						callback: (response: { credential: string }) => void
+					}) => void
+					renderButton: (
+						element: HTMLElement,
+						options: { theme: string; size: string; width: number }
+					) => void
+				}
+			}
+		}
+	}
 }
 
 export default function GoogleSignInButton() {
-  const buttonRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+	const buttonRef = useRef<HTMLDivElement>(null)
+	const router = useRouter()
+	const { loginWithGoogle } = useAuth()
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (window.google && buttonRef.current) {
-        clearInterval(interval);
+	useEffect(() => {
+		const interval = setInterval(() => {
+			if (window.google && buttonRef.current) {
+				clearInterval(interval)
 
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-          callback: handleCredentialResponse,
-        });
+				window.google.accounts.id.initialize({
+					client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+					callback: handleCredentialResponse,
+				})
 
-        window.google.accounts.id.renderButton(buttonRef.current, {
-          theme: "outline",
-          size: "large",
-          width: 280,
-        });
-      }
-    }, 100);
+				window.google.accounts.id.renderButton(buttonRef.current, {
+					theme: 'outline',
+					size: 'large',
+					width: 280,
+				})
+			}
+		}, 100)
 
-    return () => clearInterval(interval);
-  }, []);
+		return () => clearInterval(interval)
+	}, [])
 
-  async function handleCredentialResponse(response: { credential: string }) {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/frontend/google-id-token`, {
-      method: "POST",
-      credentials: "include", // so the refresh-token cookie gets set
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken: response.credential }),
-    });
+	async function handleCredentialResponse(response: { credential: string }) {
+		try {
+			await loginWithGoogle(response.credential)
+			router.push('/')
+		} catch (err) {
+			console.error('Google sign-in failed', err)
+		}
+	}
 
-    if (!res.ok) {
-      console.error("Google sign-in failed", await res.text());
-      return;
-    }
-
-    const data = await res.json(); // { accessToken }
-    setAccessToken(data.accessToken);
-    router.push("/");
-  }
-
-  return <div ref={buttonRef} />;
+	return <div ref={buttonRef} />
 }
