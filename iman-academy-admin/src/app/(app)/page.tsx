@@ -1,7 +1,7 @@
-import { PageHeader } from '../components/ui/PageHeader'
-import { CoursesProgress } from '../modules/courses-progress'
-import { Metrics } from '../modules/metrics'
-import { RecentActivity } from '../modules/recent-activity'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { CoursesProgress } from '../../modules/courses-progress'
+import { Metrics } from '../../modules/metrics'
+import { RecentActivity } from '../../modules/recent-activity'
 
 const HomePage = () => {
 	return (

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { AppLayout } from '../layouts/AppLayout'
+import { AuthProvider } from '../providers/auth-provider'
 import './globals.css'
 
 const inter = Inter({
@@ -18,11 +18,11 @@ type RootLayoutProps = {
 	children: Readonly<React.ReactNode>
 }
 
-const RootLayout = async ({ children }: RootLayoutProps) => {
+const RootLayout = ({ children }: RootLayoutProps) => {
 	return (
 		<html lang='ru'>
 			<body className={`${inter.variable} antialiased`}>
-				<AppLayout>{children}</AppLayout>
+				<AuthProvider>{children}</AuthProvider>
 			</body>
 		</html>
 	)

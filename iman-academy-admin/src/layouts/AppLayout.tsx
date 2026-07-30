@@ -1,7 +1,28 @@
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
 import { Header } from '../components/Header'
 import { Sidebar } from '../components/Sidebar'
+import { useAuthStore } from '../store/auth'
+const MOCK_AUTH = 'true'
 
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
+	const router = useRouter()
+	const accessToken = useAuthStore((s) => s.accessToken)
+
+	useEffect(() => {
+		if (!MOCK_AUTH && !accessToken) {
+			router.replace('/login')
+		}
+	}, [accessToken, router])
+
+	// AuthProvider (root layout) has already resolved the silent refresh by
+	// the time this mounts, so a missing token here means no valid session
+	// — unless mock mode is on, in which case we skip the check entirely.
+	if (!MOCK_AUTH && !accessToken) return null
+
 	return (
 		<>
 			<Header />
