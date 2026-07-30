@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Header } from '../components/Header'
 import { Sidebar } from '../components/Sidebar'
 import { useAuthStore } from '../store/auth'
-const MOCK_AUTH = 'true'
+const MOCK_AUTH = false
 
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
 	const router = useRouter()
