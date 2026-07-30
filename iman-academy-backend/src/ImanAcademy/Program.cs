@@ -51,7 +51,11 @@ builder.Services.AddCors(options =>
             policy.WithOrigins("http://localhost:3002") // Your Next.js local URL
                   .AllowAnyHeader()
                   .AllowAnyMethod()
-                  .AllowCredentials(); // Required if you pass cookies or HttpOnly tokens
+                  .AllowCredentials()
+                  .WithOrigins("http://localhost:3000") // Your Next.js local URL
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials(); // Required if you pass cookies or HttpOnly tokens
         });
 });
 
