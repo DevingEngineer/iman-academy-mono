@@ -3,7 +3,7 @@
     public static class AuthConstants {
         public const string RefreshTokenCookieName = "refreshToken";
         public const string AccessTokenCookieName = "accessToken";
-        public const string RefreshTokenCookiePath = "~/"+"api/auth/frontend/refresh-token";
+        public const string RefreshTokenCookiePath = "/"+"api/auth/frontend/refresh-token";
         public const string CsrfTokenCookieName = "XSRF-TOKEN";
         public const string CsrfTokenHeaderName = "X-CSRF-TOKEN";
     } 

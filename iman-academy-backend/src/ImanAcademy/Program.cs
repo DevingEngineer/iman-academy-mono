@@ -48,7 +48,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "frontendCorsPolicy",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3002") // Your Next.js local URL
+            policy.WithOrigins("https://localhost:3002") // Your Next.js local URL
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials()
