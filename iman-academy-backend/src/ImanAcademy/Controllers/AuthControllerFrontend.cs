@@ -52,8 +52,18 @@ public class AuthControllerFrontend : ControllerBase
         {
             return BadRequest("HttpContext is null.");
         }
-        var tokens = _antiforgery.GetAndStoreTokens(_httpContextAccessor.HttpContext);
-        return Ok(new { token = tokens.RequestToken });
+        AntiforgeryTokenSet? tokens = null;
+        try
+        {
+            tokens = _antiforgery.GetAndStoreTokens(_httpContextAccessor.HttpContext);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate CSRF token.");
+            return StatusCode(400, $"Failed to generate CSRF token. Error Message {ex.Message}");
+        }
+        return Ok(new { token = tokens?.RequestToken });
     }
 
     [HttpPost("register")]
@@ -95,14 +105,12 @@ public class AuthControllerFrontend : ControllerBase
         return NoContent();
     }
 
-    [Authorize]
     [HttpPost(AuthConstants.RefreshTokenCookiePath)]
     [ProducesResponseType<TokenResponse>(200)]
-    [ProducesResponseType(401)]
     public async Task<IActionResult> RefreshTokenAsync()
     {
-        if (!Request.Cookies.TryGetValue(AuthConstants.RefreshTokenCookieName, out var rawRefreshToken)
-           || string.IsNullOrEmpty(rawRefreshToken))
+        var isSuccess = Request.Cookies.TryGetValue(AuthConstants.RefreshTokenCookieName, out var rawRefreshToken);
+        if (!isSuccess || string.IsNullOrEmpty(rawRefreshToken))
         {
             return Unauthorized("No refresh token.");
         }
@@ -324,7 +332,7 @@ public class AuthControllerFrontend : ControllerBase
             new CookieOptions()
             {
                 HttpOnly = true,
-                Secure = false, // allow plain http on localhost, force https elsewhere
+                Secure = true, // allow plain http on localhost, force https elsewhere
                 SameSite = SameSiteMode.Strict, // refresh token never needs to go cross-site
                 Path = AuthConstants.RefreshTokenCookiePath, // only sent to auth endpoints, not every request
                 Expires = expires ?? DateTime.UtcNow.AddDays(15) 

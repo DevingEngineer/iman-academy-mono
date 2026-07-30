@@ -52,7 +52,7 @@ builder.Services.AddCors(options =>
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials()
-                  .WithOrigins("http://localhost:3000") // Your Next.js local URL
+                  .WithOrigins("https://localhost:3000") // Your Next.js local URL
                    .AllowAnyMethod()
                    .AllowAnyHeader()
                    .AllowCredentials(); // Required if you pass cookies or HttpOnly tokens
