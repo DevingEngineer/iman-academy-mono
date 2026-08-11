@@ -203,7 +203,7 @@ public class AuthControllerMobile : ControllerBase
 
         return Ok(new CurrentUserResponse
         {
-            Id = user.Id,
+            Id = user.Id.ToString(),
             Email = user.Email!,
             UserName = user.UserName!,
             EmailConfirmed = user.EmailConfirmed

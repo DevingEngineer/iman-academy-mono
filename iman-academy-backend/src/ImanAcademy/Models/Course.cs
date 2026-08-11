@@ -1,35 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace ImanAcademy.Models;
 
 public partial class Course
 {
-    public int CourseId { get; set; }
+    public Guid Id { get; set; }
 
-    public int? InstructorId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string? ThumbnailUrl { get; set; }
 
-    public int? CategoryId { get; set; }
+    public CourseLevel Level { get; set; }
+    public string Language { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public string Currency { get; set; } = string.Empty;
+    public ContentStatus Status { get; set; }
 
-    public string Title { get; set; } = null!;
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
-    public string? Description { get; set; }
-
-    public decimal? Price { get; set; }
-
-    public string? DifficultyLevel { get; set; }
-
-    public DateTime? CreatedAt { get; set; }
-
-    public virtual Category? Category { get; set; }
-
-    public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
-
-    public virtual User? Instructor { get; set; }
-
-    public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
-
-    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public ICollection<Module> Modules { get; set; } = new List<Module>();
+    public ICollection<CourseInstructor> CourseInstructors { get; set; } = new List<CourseInstructor>();
+    public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+    public ICollection<CourseTag> CourseTags { get; set; } = new List<CourseTag>();
+    public ICollection<CourseReview> Reviews { get; set; } = new List<CourseReview>();
 }

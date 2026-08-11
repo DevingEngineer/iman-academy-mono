@@ -3,7 +3,7 @@
     public class RefreshToken
     {
         public int Id { get; set; }
-        public string UserId { get; set; } = default!;
+        public Guid UserId { get; set; } = default!;
         public ApplicationUser User { get; set; } = default!;
 
         public string TokenHash { get; set; } = default!;   // store hash, never the raw token

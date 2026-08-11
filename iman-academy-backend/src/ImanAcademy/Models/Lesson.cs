@@ -3,21 +3,19 @@ using System.Collections.Generic;
 
 namespace ImanAcademy.Models;
 
-public partial class Lesson
+public class Module
 {
-    public int LessonId { get; set; }
+    public Guid Id { get; set; }
 
-    public int? CourseId { get; set; }
+    public Guid CourseId { get; set; }
+    public Course Course { get; set; } = null!;
 
-    public string Title { get; set; } = null!;
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int Order { get; set; }
+    public int? EstimatedDurationMinutes { get; set; }
+    public ContentStatus Status { get; set; }
 
-    public string? ContentUrl { get; set; }
-
-    public int OrderIndex { get; set; }
-
-    public bool? IsPreview { get; set; }
-
-    public virtual Course? Course { get; set; }
-
-    public virtual ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
+    public ICollection<SubModule> SubModules { get; set; } = new List<SubModule>();
+    public ICollection<ModuleReview> Reviews { get; set; } = new List<ModuleReview>();
 }
