@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
-namespace ImanAcademy.Controllers;
+namespace ImanAcademy.Controllers.Auth;
 
 [ApiController]
 [Route("api/auth/mobile")]

@@ -7,7 +7,7 @@ namespace ImanAcademy.Models;
 // composite ApplicationUserId+CourseId key) so a ApplicationUser could re-enroll in the
 // same course later and each attempt gets tracked separately; enforce
 // "one active enrollment per ApplicationUser/course" with a filtered unique index
-// instead (see CoursePlatformDbContext).
+// instead (see ImanAcademyContext).
 public class Enrollment
 {
     public Guid Id { get; set; }

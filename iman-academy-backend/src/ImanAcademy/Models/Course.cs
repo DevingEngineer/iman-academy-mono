@@ -9,14 +9,14 @@ public partial class Course
     public Guid Id { get; set; }
 
     public string Title { get; set; } = string.Empty;
-    public string Slug { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+    public string? Slug { get; set; } = string.Empty;
+    public string? Description { get; set; } = string.Empty;
     public string? ThumbnailUrl { get; set; }
 
-    public CourseLevel Level { get; set; }
-    public string Language { get; set; } = string.Empty;
-    public decimal Price { get; set; }
-    public string Currency { get; set; } = string.Empty;
+    public CourseLevel? Level { get; set; }
+    public string? Language { get; set; } = string.Empty;
+    public decimal? Price { get; set; }
+    public string? Currency { get; set; } = string.Empty;
     public ContentStatus Status { get; set; }
 
     public DateTime CreatedAt { get; set; }
