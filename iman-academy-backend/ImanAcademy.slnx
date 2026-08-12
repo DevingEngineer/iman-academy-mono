@@ -8,6 +8,7 @@
     <Project Path="src/ImanAcademy/ImanAcademy.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/ImanAcademy.Integration.Tests/ImanAcademy.Integration.Tests.csproj" Id="68030256-cbf3-4d8c-a9a4-a01999bd3d4b" />
     <Project Path="tests/ImanAcademy.UnitTests/ImanAcademy.UnitTests.csproj" Id="a692ae51-00d1-4d3c-ac30-19128e3a27cb" />
   </Folder>
 </Solution>

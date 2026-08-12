@@ -18,7 +18,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // Add services to the container.
 
 builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())); ;
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
 builder.Services.AddScoped<ValidateAntiforgeryTokenFilter>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -150,3 +151,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Required so WebApplicationFactory<Program> in the test project can reference
+// this entry point - top-level statements otherwise generate an internal one.
+public partial class Program
+{
+}
