@@ -13,15 +13,15 @@ const createId = (prefix: string) =>
 const normalizeOrders = (course: Course): Course => ({
 	...course,
 	modules: [...course.modules]
-		.sort((a, b) => a.metadata.order - b.metadata.order)
+		.sort((a, b) => a.order - b.order)
 		.map((module, moduleIndex) => ({
 			...module,
-			metadata: { ...module.metadata, order: moduleIndex + 1 },
+			order: moduleIndex + 1,
 			subModules: [...module.subModules]
-				.sort((a, b) => a.metadata.order - b.metadata.order)
+				.sort((a, b) => a.order - b.order)
 				.map((subModule, subModuleIndex) => ({
 					...subModule,
-					metadata: { ...subModule.metadata, order: subModuleIndex + 1 },
+		 			order: subModuleIndex + 1,
 				})),
 		})),
 })
@@ -52,7 +52,8 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 				{
 					id: createId('module'),
 					courseId: current.id,
-					metadata: { title, order: current.modules.length + 1, status: 'draft' },
+					title, order: current.modules.length + 1, 
+					status: 'draft',
 					subModules: [],
 				},
 			],
@@ -75,7 +76,8 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 								{
 									id: createId('submodule'),
 									moduleId: item.id,
-									metadata: { title, order: item.subModules.length + 1 },
+									title,
+									order: item.subModules.length + 1,
 									steps: [],
 								},
 							],
@@ -118,7 +120,8 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 	const save = () => {
 		updateCourse({
 			...normalizeOrders(draft),
-			metadata: { ...draft.metadata, updatedAt: new Date().toISOString() },
+			updatedAt: new Date().toISOString(),
+			
 		})
 		router.push(`/courses/${courseSlug}/content`)
 	}
@@ -153,15 +156,15 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 				{draft.modules.map((module, moduleIndex) => (
 					<div key={module.id} className='rounded-xl border border-slate-200 p-4'>
 						<div className='flex items-center gap-2'>
-							<span className='text-sm font-medium text-slate-500'>{module.metadata.order}.</span>
+							<span className='text-sm font-medium text-slate-500'>{module.order}.</span>
 							<input
-								value={module.metadata.title}
+								value={module.title}
 								onChange={(event) =>
 									updateDraft((current) => ({
 										...current,
 										modules: current.modules.map((item) =>
 											item.id === module.id
-												? { ...item, metadata: { ...item.metadata, title: event.target.value } }
+												? { ...item, title: event.target.value }
 												: item
 										),
 									}))
@@ -189,9 +192,9 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 						<div className='mt-4 space-y-2 border-l-2 border-slate-100 pl-4'>
 							{module.subModules.map((subModule, subModuleIndex) => (
 								<div key={subModule.id} className='flex items-center gap-2'>
-									<span className='text-xs text-slate-500'>{module.metadata.order}.{subModule.metadata.order}</span>
+									<span className='text-xs text-slate-500'>{module.order}.{subModule.order}</span>
 									<input
-										value={subModule.metadata.title}
+										value={subModule.title}
 										onChange={(event) =>
 											updateDraft((current) => ({
 												...current,
@@ -201,7 +204,7 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 															...item,
 															subModules: item.subModules.map((child) =>
 																child.id === subModule.id
-																	? { ...child, metadata: { ...child.metadata, title: event.target.value } }
+																	? { ...child, title: event.target.value }
 																	: child
 															),
 														}
@@ -256,9 +259,9 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 export const SyllabusEditor = ({ courseSlug }: { courseSlug: string }) => {
 	const courses = useCourses()
 	const cleanSlug = decodeURIComponent(courseSlug);
-	const course = courses.find((item) => item.metadata.slug === cleanSlug)
+	const course = courses.find((item) => item.slug === cleanSlug)
 
 	if (!course) return <p className='text-sm text-slate-500'>Загрузка курса...</p>
 
-	return <SyllabusEditorForm key={`${course.id}-${course.metadata.updatedAt}`} course={course} courseSlug={courseSlug} />
+	return <SyllabusEditorForm key={`${course.id}-${course.updatedAt}`} course={course} courseSlug={courseSlug} />
 }

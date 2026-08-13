@@ -18,7 +18,7 @@ export const EditorSyllabusNavigator = ({
 	onDiscardDraft,
 }: EditorSyllabusNavigatorProps) => {
 	const router = useRouter()
-	const modules = [...course.modules].sort((a, b) => a.metadata.order - b.metadata.order)
+	const modules = [...course.modules].sort((a, b) => a.order - b.order)
 
 	const navigateTo = (href: string) => {
 		if (hasUnsavedChanges && !window.confirm('Несохранённые изменения будут потеряны. Перейти к другому подразделу?')) return
@@ -34,11 +34,11 @@ export const EditorSyllabusNavigator = ({
 			<nav aria-label='Навигация по содержанию курса'>
 				<ul className='space-y-3'>
 					{modules.map((module) => {
-						const subModules = [...module.subModules].sort((a, b) => a.metadata.order - b.metadata.order)
+						const subModules = [...module.subModules].sort((a, b) => a.order - b.order)
 						return (
 							<li key={module.id}>
 								<p className='px-3 text-base font-bold text-slate-500'>
-									{module.metadata.order}. {module.metadata.title}
+									{module.order}. {module.title}
 								</p>
 								<ul className='mt-1 space-y-1 pl-4'>
 									{subModules.map((subModule) => {
@@ -53,7 +53,7 @@ export const EditorSyllabusNavigator = ({
 														isActive && 'bg-color_brand_primary text-white hover:bg-color_brand_primary hover:text-white'
 													)}
 												>
-													{subModule.metadata.order}. {subModule.metadata.title}
+													{subModule.order}. {subModule.title}
 												</button>
 											</li>
 										)

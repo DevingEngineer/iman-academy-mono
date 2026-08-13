@@ -13,9 +13,9 @@ const isCourse = (value: unknown): value is Course => {
 	return (
 		typeof course.id === 'string' &&
 		Array.isArray(course.modules) &&
-		!!course.metadata &&
-		typeof course.metadata.title === 'string' &&
-		typeof course.metadata.slug === 'string'
+		!!course &&
+		typeof course.title === 'string' &&
+		typeof course.slug === 'string'
 	)
 }
 
@@ -55,7 +55,7 @@ export const createCourseSlug = (title: string, courses: Course[]) => {
 			.replace(/[^\p{Letter}\p{Number}]+/gu, '-')
 			.replace(/^-+|-+$/g, '') || 'course'
 
-	const existingSlugs = new Set(courses.map((course) => course.metadata.slug))
+	const existingSlugs = new Set(courses.map((course) => course.slug))
 	let slug = baseSlug
 	let suffix = 2
 
@@ -73,20 +73,18 @@ export const saveCourse = (title: string): Course => {
 	const slug = createCourseSlug(title, courses)
 	const course: Course = {
 		id: `course-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-		metadata: {
-			title,
-			slug,
-			description: '',
-			instructorIds: [],
-			tags: [],
-			level: 'beginner',
-			language: 'ru',
-			price: 0,
-			currency: 'KZT',
-			status: 'draft',
-			createdAt: now,
-			updatedAt: now,
-		},
+		title,
+		slug,
+		description: '',
+		instructorIds: [],
+		tags: [],
+		level: 'beginner',
+		language: 'ru',
+		price: 0,
+		currency: 'KZT',
+		status: 'draft',
+		createdAt: now,
+		updatedAt: now,
 		modules: [],
 	}
 

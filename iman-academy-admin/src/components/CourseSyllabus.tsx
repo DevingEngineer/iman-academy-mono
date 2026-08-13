@@ -9,11 +9,11 @@ export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 	const courses = useCourses()
 	const cleanSlug = decodeURIComponent(courseSlug);
 
-	const course = courses.find((item) => item.metadata.slug === cleanSlug)
+	const course = courses.find((item) => item.slug === cleanSlug)
 
 	if (!course) return null
 
-	const modules = [...course.modules].sort((a, b) => a.metadata.order - b.metadata.order)
+	const modules = [...course.modules].sort((a, b) => a.order - b.order)
 
 	return (
 		<div className='rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
@@ -35,19 +35,19 @@ export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 				<ol className='mt-6 space-y-4'>
 					{modules.map((module) => {
 						const subModules = [...module.subModules].sort(
-							(a, b) => a.metadata.order - b.metadata.order
+							(a, b) => a.order - b.order
 						)
 
 						return (
 							<li key={module.id} className='rounded-xl border border-slate-200 p-4'>
 								<p className='font-semibold text-slate-900'>
-									{module.metadata.order}. {module.metadata.title}
+									{module.order}. {module.title}
 								</p>
 								{subModules.length > 0 && (
 									<ol className='mt-3 space-y-2 pl-5 text-sm text-slate-600'>
 										{subModules.map((subModule) => (
 											<li key={subModule.id} className='flex items-center justify-between gap-3'>
-												<span>{subModule.metadata.order}. {subModule.metadata.title}</span>
+												<span>{subModule.order}. {subModule.title}</span>
 												<Button
 													size='sm'
 													variant='outlined'

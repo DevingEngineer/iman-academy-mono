@@ -14,7 +14,10 @@ export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 
 // ---------- Course ----------
 
-export interface CourseMetadata {
+
+
+export interface Course {
+  id: EntityId;
   title: string;
   slug: string;
   description: string;
@@ -28,44 +31,33 @@ export interface CourseMetadata {
   status: ContentStatus;
   createdAt: string; // ISO date
   updatedAt: string; // ISO date
-}
-
-export interface Course {
-  id: EntityId;
-  metadata: CourseMetadata;
   modules: Module[];
 }
 
 // ---------- Module ----------
 
-export interface ModuleMetadata {
+
+export interface Module {
+  id: EntityId;
+  courseId: EntityId;
   title: string;
   description?: string;
   order: number;
   estimatedDurationMinutes?: number;
   status: ContentStatus;
-}
-
-export interface Module {
-  id: EntityId;
-  courseId: EntityId;
-  metadata: ModuleMetadata;
   subModules: SubModule[];
 }
 
 // ---------- SubModule ----------
 
-export interface SubModuleMetadata {
-  title: string;
-  description?: string;
-  order: number;
-  estimatedDurationMinutes?: number;
-}
 
 export interface SubModule {
   id: EntityId;
   moduleId: EntityId;
-  metadata: SubModuleMetadata;
+  title: string;
+  description?: string;
+  order: number;
+  estimatedDurationMinutes?: number;
   steps: Step[];
 }
 
@@ -73,19 +65,16 @@ export interface SubModule {
 
 export type StepType = 'Content' | 'Quiz' | 'Video';
 
-export interface StepMetadata {
+
+interface BaseStep {
+  id: EntityId;
+  subModuleId: EntityId;
   title: string;
   description?: string;
   order: number;
   estimatedDurationMinutes?: number;
   isFreePreview?: boolean;
   status: ContentStatus;
-}
-
-interface BaseStep {
-  id: EntityId;
-  subModuleId: EntityId;
-  metadata: StepMetadata;
 }
 
 // --- Step type-specific payloads (discriminated union on stepType) ---

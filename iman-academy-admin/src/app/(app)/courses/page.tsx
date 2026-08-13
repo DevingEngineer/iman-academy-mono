@@ -26,17 +26,17 @@ const CoursesPage = () => {
 					{courses.map((course) => (
 						<li key={course.id}>
 							<Link
-								href={`/courses/${course.metadata.slug}`}
+								href={`/courses/${course.slug}`}
 								className='flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 transition-colors hover:border-color_brand_primary hover:bg-slate-50'
 							>
 								<div>
-									<p className='font-medium text-slate-900'>{course.metadata.title}</p>
+									<p className='font-medium text-slate-900'>{course.title}</p>
 									<p className='text-sm text-slate-500'>
-										{course.metadata.level} • {course.modules.length} модулей
+										{course.level} • {course.modules.length} модулей
 									</p>
 								</div>
 								<span className='rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700'>
-									{course.metadata.status}
+									{course.status}
 								</span>
 							</Link>
 						</li>

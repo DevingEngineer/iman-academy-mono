@@ -11,7 +11,7 @@ type CourseLayoutClientProps = {
 export const CourseLayoutClient = ({ children, courseSlug }: CourseLayoutClientProps) => {
 	const courses = useCourses()
 	const cleanSlug = decodeURIComponent(courseSlug);
-	const course = courses.find((item) => item.metadata.slug === cleanSlug)
+	const course = courses.find((item) => item.slug === cleanSlug)
 
 	if (!course) {
 		return <p className='text-sm text-slate-500'>Загрузка курса...</p>
@@ -20,16 +20,16 @@ export const CourseLayoutClient = ({ children, courseSlug }: CourseLayoutClientP
 	return (
 		<section>
 			<div className='mb-6'>
-				<p className='text-sm text-slate-500'>Курсы / {course.metadata.title}</p>
+				<p className='text-sm text-slate-500'>Курсы / {course.title}</p>
 				<div className='mt-2 flex items-center gap-3'>
-					<h1 className='text-2xl font-semibold text-slate-900'>{course.metadata.title}</h1>
+					<h1 className='text-2xl font-semibold text-slate-900'>{course.title}</h1>
 					<span className='rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700'>
-						{course.metadata.status}
+						{course.status}
 					</span>
 				</div>
 			</div>
 			<div className='flex items-start gap-6'>
-				<CourseSidebar courseSlug={course.metadata.slug} />
+				<CourseSidebar courseSlug={course.slug} />
 				<div className='min-w-0 flex-1'>{children}</div>
 			</div>
 		</section>

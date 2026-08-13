@@ -25,7 +25,7 @@ const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T
 const normalizeSteps = (steps: Step[]) =>
 	steps.map((step, index) => ({
 		...step,
-		metadata: { ...step.metadata, order: index + 1 },
+		order: index + 1,
 	}))
 
 const createQuestion = (): QuizQuestion => ({
@@ -44,14 +44,12 @@ const createStep = (stepType: StepType, subModuleId: string, order: number): Ste
 	const base = {
 		id: createId('step'),
 		subModuleId,
-		metadata: {
-			title: 'Новый урок',
-			description: '',
-			order,
-			estimatedDurationMinutes: undefined,
-			isFreePreview: false,
-			status: 'draft' as ContentStatus,
-		},
+		title: 'Новый урок',
+		description: '',
+		order,
+		estimatedDurationMinutes: undefined,
+		isFreePreview: false,
+		status: 'draft' as ContentStatus,
 	}
 
 	if (stepType === 'Content') return { ...base, stepType, body: '' }
@@ -127,10 +125,7 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 	const setMetadata = (key: 'title' | 'description' | 'estimatedDurationMinutes', value: string) => {
 		setDraft((current) => ({
 			...current,
-			metadata: {
-				...current.metadata,
-				[key]: key === 'estimatedDurationMinutes' ? (value === '' ? undefined : Number(value)) : value,
-			},
+			[key]: key === 'estimatedDurationMinutes' ? (value === '' ? undefined : Number(value)) : value,
 		}))
 	}
 
@@ -214,7 +209,7 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 		const savedSubmodule = { ...draft, steps: normalizeSteps(draft.steps) }
 		updateCourse({
 			...course,
-			metadata: { ...course.metadata, updatedAt: new Date().toISOString() },
+			updatedAt: new Date().toISOString() ,
 			modules: course.modules.map((module) => module.id !== moduleId ? module : {
 				...module,
 				subModules: module.subModules.map((item) => item.id === savedSubmodule.id ? savedSubmodule : item),
@@ -241,9 +236,9 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 			</div>
 
 			<div className='mt-6 grid gap-4 md:grid-cols-2'>
-				<Field label='Название подраздела'><input className={inputClass} value={draft.metadata.title} onChange={(event) => setMetadata('title', event.target.value)} /></Field>
-				<Field label='Оценочная длительность (мин.)'><input className={inputClass} type='number' min='0' value={draft.metadata.estimatedDurationMinutes ?? ''} onChange={(event) => setMetadata('estimatedDurationMinutes', event.target.value)} /></Field>
-				<div className='md:col-span-2'><Field label='Описание (необязательно)'><textarea className={textareaClass} value={draft.metadata.description ?? ''} onChange={(event) => setMetadata('description', event.target.value)} /></Field></div>
+				<Field label='Название подраздела'><input className={inputClass} value={draft.title} onChange={(event) => setMetadata('title', event.target.value)} /></Field>
+				<Field label='Оценочная длительность (мин.)'><input className={inputClass} type='number' min='0' value={draft.estimatedDurationMinutes ?? ''} onChange={(event) => setMetadata('estimatedDurationMinutes', event.target.value)} /></Field>
+				<div className='md:col-span-2'><Field label='Описание (необязательно)'><textarea className={textareaClass} value={draft.description ?? ''} onChange={(event) => setMetadata('description', event.target.value)} /></Field></div>
 			</div>
 
 			<div className='mt-8 flex flex-wrap items-end gap-3 border-t border-slate-200 pt-6'>
@@ -288,11 +283,11 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 						</div>
 
 						<div className='mt-4 grid gap-4 md:grid-cols-2'>
-							<Field label='Название'><input className={inputClass} value={step.metadata.title} onChange={(event) => updateStep(step.id, (current) => ({ ...current, metadata: { ...current.metadata, title: event.target.value } }))} /></Field>
-							<Field label='Статус'><select className={inputClass} value={step.metadata.status} onChange={(event) => updateStep(step.id, (current) => ({ ...current, metadata: { ...current.metadata, status: event.target.value as ContentStatus } }))}><option value='draft'>Черновик</option><option value='published'>Опубликован</option><option value='archived'>Архив</option></select></Field>
-							<Field label='Оценочная длительность (мин.)'><input className={inputClass} type='number' min='0' value={step.metadata.estimatedDurationMinutes ?? ''} onChange={(event) => updateStep(step.id, (current) => ({ ...current, metadata: { ...current.metadata, estimatedDurationMinutes: event.target.value === '' ? undefined : Number(event.target.value) } }))} /></Field>
-							<label className='flex items-center gap-2 self-end pb-2 text-sm text-slate-700'><input type='checkbox' checked={step.metadata.isFreePreview ?? false} onChange={(event) => updateStep(step.id, (current) => ({ ...current, metadata: { ...current.metadata, isFreePreview: event.target.checked } }))} />Бесплатный предпросмотр</label>
-							<div className='md:col-span-2'><Field label='Описание (необязательно)'><textarea className={textareaClass} value={step.metadata.description ?? ''} onChange={(event) => updateStep(step.id, (current) => ({ ...current, metadata: { ...current.metadata, description: event.target.value } }))} /></Field></div>
+							<Field label='Название'><input className={inputClass} value={step.title} onChange={(event) => updateStep(step.id, (current) => ({ ...current, title: event.target.value } ))} /></Field>
+							<Field label='Статус'><select className={inputClass} value={step.status} onChange={(event) => updateStep(step.id, (current) => ({ ...current, status: event.target.value as ContentStatus  }))}><option value='draft'>Черновик</option><option value='published'>Опубликован</option><option value='archived'>Архив</option></select></Field>
+							<Field label='Оценочная длительность (мин.)'><input className={inputClass} type='number' min='0' value={step.estimatedDurationMinutes ?? ''} onChange={(event) => updateStep(step.id, (current) => ({ ...current, estimatedDurationMinutes: event.target.value === '' ? undefined : Number(event.target.value) }))} /></Field>
+							<label className='flex items-center gap-2 self-end pb-2 text-sm text-slate-700'><input type='checkbox' checked={step.isFreePreview ?? false} onChange={(event) => updateStep(step.id, (current) => ({ ...current, isFreePreview: event.target.checked } ))} />Бесплатный предпросмотр</label>
+							<div className='md:col-span-2'><Field label='Описание (необязательно)'><textarea className={textareaClass} value={step.description ?? ''} onChange={(event) => updateStep(step.id, (current) => ({ ...current, description: event.target.value } ))} /></Field></div>
 						</div>
 
 						{step.stepType === 'Content' && (
@@ -370,8 +365,8 @@ export const SubmoduleEditor = ({ lessonId, stepNumber }: { lessonId: string; st
 	return (
 		<section>
 			<div className='mb-6'>
-				<p className='text-sm text-slate-500'>Курсы / {course.metadata.title} / Содержание</p>
-				<h1 className='mt-2 text-2xl font-semibold text-slate-900'>{course.metadata.title}</h1>
+				<p className='text-sm text-slate-500'>Курсы / {course.title} / Содержание</p>
+				<h1 className='mt-2 text-2xl font-semibold text-slate-900'>{course.title}</h1>
 			</div>
 			<div className='flex items-start gap-6'>
 				<EditorSyllabusNavigator
@@ -382,10 +377,10 @@ export const SubmoduleEditor = ({ lessonId, stepNumber }: { lessonId: string; st
 				/>
 				<div className='min-w-0 flex-1'>
 					<SubmoduleEditorForm
-						key={`${course.id}-${subModule.id}-${course.metadata.updatedAt}`}
+						key={`${course.id}-${subModule.id}-${course.updatedAt}`}
 						course={course}
 						subModule={subModule}
-						courseSlug={course.metadata.slug}
+						courseSlug={course.slug}
 						moduleId={courseModule.id}
 						stepNumber={stepNumber}
 						onDirtyChange={setHasUnsavedChanges}
