@@ -150,6 +150,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ImanAcademyContext>();
+    await db.Database.MigrateAsync(); 
+
+    await IdentitySeeder.SeedAdminAsync(scope.ServiceProvider);
+}
+
 app.Run();
 
 // Required so WebApplicationFactory<Program> in the test project can reference
