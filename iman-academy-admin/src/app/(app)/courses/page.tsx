@@ -2,10 +2,27 @@
 
 import Link from 'next/link'
 import { PageHeader } from '@/src/components/ui/PageHeader'
-import { useCourses } from '@/src/hooks/useCourses'
+import { useEffect, useState } from 'react'
+import type { Course } from '@/src/types/course-types'
+import { fetchCourses } from '@/src/lib/api'
 
 const CoursesPage = () => {
-	const courses = useCourses()
+	const [courses, setCourses] = useState<Course[]>([])
+	const [loading, setLoading] = useState(true)
+
+	useEffect(() => {
+		let mounted = true
+		fetchCourses()
+			.then((data) => mounted && setCourses(data))
+			.catch(() => {
+				// keep empty on error; UI can still create courses
+			})
+			.finally(() => mounted && setLoading(false))
+
+		return () => {
+			mounted = false
+		}
+	}, [])
 
 	return (
 		<>
@@ -18,7 +35,7 @@ const CoursesPage = () => {
 				<div className='mb-4 flex items-center justify-between'>
 					<h2 className='text-lg font-semibold text-slate-900'>Список курсов</h2>
 					<span className='rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600'>
-						{courses.length} курса
+						{loading ? 'Загрузка...' : `${courses.length} курса`}
 					</span>
 				</div>
 
