@@ -21,7 +21,10 @@ public class CourseDto
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
-
+//public class CourseSyllabusDto : CourseDto
+//{
+//    public List<ModuleSyllabusDto> Modules { get; set; } = new();
+//}   
 public class CreateCourseDto
 {
     [MaxLength(200)]
@@ -45,11 +48,11 @@ public class CreateCourseDto
     [MaxLength(3)]
     public string? Currency { get; set; } = string.Empty;
 
-    public ContentStatus Status { get; set; } = ContentStatus.Draft;
+    public ContentStatus? Status { get; set; } = ContentStatus.Draft;
 
     // Tag names, e.g. ["react", "beginner-friendly"] - matched to existing
     // tags case-insensitively, new ones are created automatically.
-    public List<string> Tags { get; set; } = new();
+    public List<string>? Tags { get; set; } = new();
 }
 
 // PUT is a full replace here, so the update shape matches create exactly.
@@ -67,7 +70,10 @@ public class ModuleDto
     public int? EstimatedDurationMinutes { get; set; }
     public ContentStatus Status { get; set; }
 }
-
+//public class ModuleSyllabusDto : ModuleDto
+//{
+//    public List<SubModuleDto> SubModules { get; set; } = new();
+//}
 public class CreateModuleDto
 {
     [Required, MaxLength(200)]
@@ -82,7 +88,6 @@ public class CreateModuleDto
 
     public ContentStatus Status { get; set; } = ContentStatus.Draft;
 }
-
 public class UpdateModuleDto : CreateModuleDto
 {
 }

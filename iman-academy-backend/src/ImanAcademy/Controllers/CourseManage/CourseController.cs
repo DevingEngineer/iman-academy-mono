@@ -53,7 +53,7 @@ public class CoursesController : ControllerBase
             Language = dto.Language,
             Price = dto.Price,
             Currency = dto.Currency,
-            Status = dto.Status,
+            Status = dto.Status ?? ContentStatus.Draft,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         };
@@ -83,7 +83,7 @@ public class CoursesController : ControllerBase
         course.Language = dto.Language;
         course.Price = dto.Price;
         course.Currency = dto.Currency;
-        course.Status = dto.Status;
+        course.Status = dto.Status ?? ContentStatus.Draft;
         course.UpdatedAt = DateTime.UtcNow;
 
         course.CourseTags.Clear();
