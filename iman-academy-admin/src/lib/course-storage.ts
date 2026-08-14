@@ -1,12 +1,72 @@
-import type { Course } from '../types/course-types'
+import type { Course, Module, SubModule } from '../types/course-types'
 import { TEMPORARY_COURSES } from '../consts/courses'
-import { fetchCourses, createCourseApi, updateCourseApi, deleteCourseApi } from './api'
+import {
+  fetchCourses,
+  createCourseApi,
+  updateCourseApi,
+  deleteCourseApi,
+  fetchCourseSyllabusApi,
+  syncCourseSyllabusApi,
+  mapLevelToBackend,
+  mapStatusToBackend,
+} from './api'
+import type { SyllabusTreeDto } from '../types'
 
 const STORAGE_KEY = 'iman-course-admin:user-courses:v1'
 const COURSES_UPDATED_EVENT = 'iman-course-admin:courses-updated'
 let cachedStoredCourses = '[]'
 let cachedCourses: Course[] = TEMPORARY_COURSES
 let hasSyncedWithBackend = false
+
+const isPersistedEntityId = (value?: string | null): value is string =>
+  !!value && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value)
+
+const mapSyllabusTreeToCourseModules = (courseId: string, tree: SyllabusTreeDto): Module[] =>
+  (tree.modules ?? []).map((module, moduleIndex) => ({
+    id: module.moduleId ?? `module-${courseId}-${moduleIndex}`,
+    courseId,
+    title: module.moduleName ?? `Module ${moduleIndex + 1}`,
+    order: Number(module.order ?? 0),
+    status: 'draft',
+    subModules: (module.subModules ?? []).map((subModule, subModuleIndex) => ({
+      id: subModule.subModuleId ?? `submodule-${courseId}-${moduleIndex}-${subModuleIndex}`,
+      moduleId: subModule.moduleId ?? `module-${courseId}-${moduleIndex}`,
+      title: subModule.subModuleName,
+      order: Number(subModule.order ?? 0),
+      steps: [],
+    })),
+  }))
+
+const mapCourseToSyllabusTree = (course: Course): SyllabusTreeDto => ({
+  courseId: course.id,
+  courseName: course.title,
+  modules: course.modules.map((module, moduleIndex) => ({
+    moduleId: isPersistedEntityId(module.id) ? module.id : null,
+    courseId: course.id,
+    moduleName: module.title,
+    order: Number(module.order ?? 0),
+    subModules: module.subModules.map((subModule, subModuleIndex) => ({
+      subModuleId: isPersistedEntityId(subModule.id) ? subModule.id : null,
+      moduleId: isPersistedEntityId(subModule.moduleId) ? subModule.moduleId : null,
+      subModuleName: subModule.title,
+      order: Number(subModule.order ?? 0),
+    })),
+  })),
+})
+
+const hydrateCourseFromBackend = async (course: Course): Promise<Course> => {
+  if (!course.id || course.id.startsWith('temp-')) return course
+
+  try {
+    const syllabus = await fetchCourseSyllabusApi(course.id)
+    return {
+      ...course,
+      modules: mapSyllabusTreeToCourseModules(course.id, syllabus),
+    }
+  } catch {
+    return course
+  }
+}
 
 const isCourse = (value: unknown): value is Course => {
 	if (!value || typeof value !== 'object') return false
@@ -46,12 +106,14 @@ export const getCourses = (): Course[] => {
 		...storedCourses.filter((course) => !temporaryCourseIds.has(course.id)),
 	]
 
-	// Kick off a background sync from backend once per session to keep local data fresh.
 	if (typeof window !== 'undefined' && !hasSyncedWithBackend) {
 		hasSyncedWithBackend = true
 		fetchCourses()
-			.then((remote) => {
-				window.localStorage.setItem(STORAGE_KEY, JSON.stringify(remote))
+			.then(async (remote) => {
+				const hydrated = await Promise.all(
+					remote.map(async (course) => hydrateCourseFromBackend(course))
+				)
+				window.localStorage.setItem(STORAGE_KEY, JSON.stringify(hydrated))
 				window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 			})
 			.catch(() => {
@@ -84,7 +146,6 @@ export const createCourseSlug = (title: string, courses: Course[]) => {
 
 export const saveCourse = (title: string): Course => {
 	const now = new Date().toISOString()
-	// Optimistic local creation: insert a temporary course and fire update, then call backend.
 	const courses = getCourses()
 	const slug = createCourseSlug(title, courses)
 	const tempId = `temp-course-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -109,39 +170,44 @@ export const saveCourse = (title: string): Course => {
 	window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storedCourses))
 	window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 
-	// Fire-and-forget create on backend; when it returns, replace temp entry with canonical one.
 	createCourseApi({
 		title: course.title,
 		slug: course.slug,
 		description: course.description,
-		// backend expects numeric level/status; send null and let server default if mapping unknown
-		level: null,
+		level: course.level,
 		language: course.language,
 		price: course.price,
 		currency: course.currency,
-		status: null,
+		status: course.status,
 		tags: course.tags,
 	})
-		.then((created) => {
-			const current = getStoredCourses()
-			const temp = current.find((c) => c.id === tempId)
-			// Merge locally-added content (modules, tags, description) into backend-created course
-			const merged = {
+		.then(async (created) => {
+			const backendCourse: Course = {
 				...created,
-				modules: temp?.modules ?? created.modules ?? [],
-				description: temp?.description ?? created.description,
-				tags: temp?.tags ?? created.tags ?? [],
-				updatedAt: temp?.updatedAt ?? created.updatedAt,
+				modules: [],
+				description: created.description ?? '',
+				tags: created.tags ?? [],
+				level: created.level ?? 'beginner',
+				status: created.status ?? 'draft',
 			}
 
-			const replaced = current.map((c) => (c.id === tempId ? merged : c))
+			const current = getStoredCourses()
+			const replaced = current.map((c) => (c.id === tempId ? backendCourse : c))
 			window.localStorage.setItem(STORAGE_KEY, JSON.stringify(replaced))
 			window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 
-			// Persist merged data to backend (modules/content) immediately
-			updateCourseApi(String(created.id), merged as Partial<Course>).catch((err) => {
-				console.error('Failed to persist merged course to backend', err)
-			})
+			try {
+				const syllabus = await fetchCourseSyllabusApi(String(created.id))
+				const refreshed = {
+					...backendCourse,
+					modules: mapSyllabusTreeToCourseModules(String(created.id), syllabus),
+				}
+				const finalCourses = getStoredCourses().map((c) => (c.id === tempId ? refreshed : c))
+				window.localStorage.setItem(STORAGE_KEY, JSON.stringify(finalCourses))
+				window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
+			} catch {
+				// no syllabus yet; keep the created course without modules
+			}
 		})
 		.catch((err) => {
 			console.error('Failed creating course on backend', err)
@@ -151,7 +217,6 @@ export const saveCourse = (title: string): Course => {
 }
 
 export const updateCourse = (course: Course) => {
-	// Optimistic local update; then push to backend.
 	const storedCourses = getStoredCourses()
 	const existingCourseIndex = storedCourses.findIndex((item) => item.id === course.id)
 	const updatedCourses = [...storedCourses]
@@ -165,10 +230,16 @@ export const updateCourse = (course: Course) => {
 	window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCourses))
 	window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 
-	// If ID looks like a backend UUID, try to update backend. Temp IDs won't be sent.
 	if (!course.id.startsWith('temp-')) {
-		updateCourseApi(course.id, course as Partial<Course>)
-			.catch((err) => console.error('Failed to update course on backend', err))
+		updateCourseApi(course.id, {
+			...course,
+			level: course.level,
+			status: course.status,
+			tags: course.tags,
+		}).catch((err) => console.error('Failed to update course on backend', err))
+
+		syncCourseSyllabusApi(course.id, mapCourseToSyllabusTree(course))
+			.catch((err) => console.error('Failed to sync syllabus to backend', err))
 	}
 }
 

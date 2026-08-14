@@ -20,6 +20,27 @@ export interface CourseDto {
   category?: CategoryDto | null;
 }
 
+export interface SyllabusSubModuleNodeDto {
+  subModuleId?: string | null;
+  moduleId?: string | null;
+  subModuleName: string;
+  order: number | string;
+}
+
+export interface SyllabusModuleNodeDto {
+  moduleId?: string | null;
+  courseId: string;
+  moduleName: string;
+  order: number | string;
+  subModules?: SyllabusSubModuleNodeDto[];
+}
+
+export interface SyllabusTreeDto {
+  courseId: string;
+  courseName: string;
+  modules?: SyllabusModuleNodeDto[];
+}
+
 export interface LessonDto {
   lessonId: number;
   courseId?: number | null;

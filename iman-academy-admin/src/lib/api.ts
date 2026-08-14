@@ -1,5 +1,30 @@
 import { http, ensureCsrfCookie } from '../http'
 import type { Course } from '../types/course-types'
+import type { SyllabusTreeDto } from '../types'
+
+export function mapLevelToBackend(level?: Course['level'] | null): number {
+  switch (level) {
+    case 'intermediate':
+      return 1
+    case 'advanced':
+      return 2
+    case 'beginner':
+    default:
+      return 0
+  }
+}
+
+export function mapStatusToBackend(status?: Course['status'] | null): number {
+  switch (status) {
+    case 'published':
+      return 1
+    case 'archived':
+      return 2
+    case 'draft':
+    default:
+      return 0
+  }
+}
 
 function mapBackendLevel(level: unknown): Course['level'] {
   // Backend uses numeric CourseLevel; map to frontend strings.
@@ -53,13 +78,21 @@ export async function fetchCourses(): Promise<Course[]> {
 
 export async function createCourseApi(payload: Partial<Course>): Promise<Course> {
   await ensureCsrfCookie()
-  const { data } = await http.post<Course>('/api/courses', payload)
+  const { data } = await http.post<Course>('/api/courses', {
+    ...payload,
+    level: mapLevelToBackend(payload.level),
+    status: mapStatusToBackend(payload.status),
+  })
   return data
 }
 
 export async function updateCourseApi(id: string, payload: Partial<Course>): Promise<Course> {
   await ensureCsrfCookie()
-  const { data } = await http.put<Course>(`/api/courses/${id}`, payload)
+  const { data } = await http.put<Course>(`/api/courses/${id}`, {
+    ...payload,
+    level: mapLevelToBackend(payload.level),
+    status: mapStatusToBackend(payload.status),
+  })
   return data
 }
 
@@ -68,4 +101,25 @@ export async function deleteCourseApi(id: string): Promise<void> {
   await http.delete(`/api/courses/${id}`)
 }
 
-export default { fetchCourses, createCourseApi, updateCourseApi, deleteCourseApi }
+export async function fetchCourseSyllabusApi(courseId: string): Promise<SyllabusTreeDto> {
+  const { data } = await http.get<SyllabusTreeDto>(`/api/courses/syllabus/${courseId}`)
+  return data
+}
+
+export async function syncCourseSyllabusApi(
+  courseId: string,
+  payload: SyllabusTreeDto,
+): Promise<SyllabusTreeDto> {
+  await ensureCsrfCookie()
+  const { data } = await http.put<SyllabusTreeDto>(`/api/courses/syllabus/${courseId}/sync`, payload)
+  return data
+}
+
+export default {
+  fetchCourses,
+  createCourseApi,
+  updateCourseApi,
+  deleteCourseApi,
+  fetchCourseSyllabusApi,
+  syncCourseSyllabusApi,
+}

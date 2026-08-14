@@ -1,19 +1,66 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from './ui/Button'
 import { useCourses } from '../hooks/useCourses'
+import { fetchCourseSyllabusApi } from '../lib/api'
+import type { Module } from '../types/course-types'
+
+const mapBackendSyllabusToModules = (courseId: string, remoteModules: { moduleId?: string | null; moduleName?: string; order?: number | string; subModules?: Array<{ subModuleId?: string | null; subModuleName?: string; order?: number | string; moduleId?: string | null }> }[] = []): Module[] =>
+	remoteModules.map((module, moduleIndex) => ({
+		id: module.moduleId ?? `module-${courseId}-${moduleIndex}`,
+		courseId,
+		title: module.moduleName ?? `Module ${moduleIndex + 1}`,
+		order: Number(module.order ?? moduleIndex + 1),
+		status: 'draft',
+		subModules: (module.subModules ?? []).map((subModule, subModuleIndex) => ({
+			id: subModule.subModuleId ?? `submodule-${courseId}-${moduleIndex}-${subModuleIndex}`,
+			moduleId: subModule.moduleId ?? `module-${courseId}-${moduleIndex}`,
+			title: subModule.subModuleName ?? `Submodule ${subModuleIndex + 1}`,
+			order: Number(subModule.order ?? subModuleIndex + 1),
+			steps: [],
+		})),
+	}))
 
 export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 	const router = useRouter()
 	const courses = useCourses()
-	const cleanSlug = decodeURIComponent(courseSlug);
+	const cleanSlug = decodeURIComponent(courseSlug)
+	const [backendModules, setBackendModules] = useState<Module[]>([])
+	const [isLoading, setIsLoading] = useState(false)
 
 	const course = courses.find((item) => item.slug === cleanSlug)
 
+	useEffect(() => {
+		if (!course?.id || course.id.startsWith('temp-')) {
+			setBackendModules([])
+			return
+		}
+
+		let isMounted = true
+		setIsLoading(true)
+
+		fetchCourseSyllabusApi(course.id)
+			.then((tree) => {
+				if (!isMounted) return
+				setBackendModules(mapBackendSyllabusToModules(course.id, tree.modules ?? []))
+			})
+			.catch(() => {
+				if (isMounted) setBackendModules([...course.modules])
+			})
+			.finally(() => {
+				if (isMounted) setIsLoading(false)
+			})
+
+		return () => {
+			isMounted = false
+		}
+	}, [course?.id, course?.modules])
+
 	if (!course) return null
 
-	const modules = [...course.modules].sort((a, b) => a.order - b.order)
+	const modules = backendModules.length > 0 ? backendModules : [...course.modules].sort((a, b) => a.order - b.order)
 
 	return (
 		<div className='rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
@@ -27,7 +74,11 @@ export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 				</Button>
 			</div>
 
-			{modules.length === 0 ? (
+			{isLoading && modules.length === 0 ? (
+				<p className='mt-6 rounded-xl border border-dashed border-slate-300 p-5 text-sm text-slate-500'>
+					Загружаем содержание курса...
+				</p>
+			) : modules.length === 0 ? (
 				<p className='mt-6 rounded-xl border border-dashed border-slate-300 p-5 text-sm text-slate-500'>
 					В содержании пока нет модулей.
 				</p>

@@ -321,6 +321,106 @@
         }
       }
     },
+    "/api/courses/syllabus/{courseId}": {
+      "get": {
+        "tags": [
+          "CourseSyllabus"
+        ],
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyllabusTreeDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyllabusTreeDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyllabusTreeDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/courses/syllabus/{courseId}/sync": {
+      "put": {
+        "tags": [
+          "CourseSyllabus"
+        ],
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyllabusTreeDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyllabusTreeDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyllabusTreeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyllabusTreeDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyllabusTreeDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyllabusTreeDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/modules/{id}": {
       "get": {
         "tags": [
@@ -2792,6 +2892,87 @@
           }
         }
       },
+      "SyllabusModuleNodeDto": {
+        "type": "object",
+        "properties": {
+          "moduleId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "courseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "moduleName": {
+            "type": "string"
+          },
+          "order": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "subModules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyllabusSubModuleNodeDto"
+            }
+          }
+        }
+      },
+      "SyllabusSubModuleNodeDto": {
+        "type": "object",
+        "properties": {
+          "subModuleId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "moduleId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "subModuleName": {
+            "type": "string"
+          },
+          "order": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "SyllabusTreeDto": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courseName": {
+            "type": "string"
+          },
+          "modules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyllabusModuleNodeDto"
+            }
+          }
+        }
+      },
       "TokenResponse": {
         "type": "object",
         "properties": {
@@ -2971,6 +3152,9 @@
       "name": "Courses"
     },
     {
+      "name": "CourseSyllabus"
+    },
+    {
       "name": "Modules"
     },
     {
@@ -2987,3 +3171,5 @@
     }
   ]
 }
+
+
