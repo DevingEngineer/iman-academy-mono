@@ -19,7 +19,7 @@ public class SubModulesController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<SubModuleDto>> GetById(Guid id)
     {
-        var subModule = await _context.SubModules.FirstOrDefaultAsync(sm => sm.Id == id);
+        var subModule = await _context.SubModules.Include(sm=>sm.Steps).FirstOrDefaultAsync(sm => sm.Id == id);
         if (subModule is null) return NotFound();
         return Ok(subModule.ToDto());
     }

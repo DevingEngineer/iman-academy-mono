@@ -23,9 +23,14 @@ public class CoursesController : ControllerBase
         var courses = await _context.Courses
             .Include(c => c.CourseTags).ThenInclude(ct => ct.Tag)
             .OrderBy(c => c.Title)
+            .Select(c => new
+            {
+                Course = c,
+                ModulesCount = c.Modules.Count
+            })
             .ToListAsync();
 
-        return Ok(courses.Select(c => c.ToDto()).ToList());
+        return Ok(courses.Select(c => c.Course.ToDto(c.ModulesCount)).ToList());
     }
 
     [HttpGet("{id:guid}")]
@@ -33,10 +38,15 @@ public class CoursesController : ControllerBase
     {
         var course = await _context.Courses
             .Include(c => c.CourseTags).ThenInclude(ct => ct.Tag)
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .Select(c => new
+            {
+                Course = c,
+                ModulesCount = c.Modules.Count
+            })
+            .FirstOrDefaultAsync(c => c.Course.Id == id);
 
         if (course is null) return NotFound();
-        return Ok(course.ToDto());
+        return Ok(course.Course.ToDto(course.ModulesCount));
     }
 
     [HttpPost]
@@ -63,15 +73,23 @@ public class CoursesController : ControllerBase
         _context.Courses.Add(course);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetById), new { id = course.Id }, course.ToDto());
+        return CreatedAtAction(nameof(GetById), new { id = course.Id }, course.ToDto(0));
     }
 
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<CourseDto>> Update(Guid id, UpdateCourseDto dto)
     {
-        var course = await _context.Courses
-            .Include(c => c.CourseTags)
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var courseWithModulesCount = await _context.Courses
+            .Include(c => c.CourseTags).ThenInclude(ct => ct.Tag)
+            .Select(c => new
+            {
+                Course = c,
+                ModulesCount = c.Modules.Count
+            })
+            .FirstOrDefaultAsync(c => c.Course.Id == id);
+
+        var course = courseWithModulesCount?.Course;
+
 
         if (course is null) return NotFound();
 
@@ -90,7 +108,7 @@ public class CoursesController : ControllerBase
         await AttachTagsAsync(course, dto.Tags);
 
         await _context.SaveChangesAsync();
-        return Ok(course.ToDto());
+        return Ok(course.ToDto(courseWithModulesCount.ModulesCount));
     }
 
     [HttpDelete("{id:guid}")]

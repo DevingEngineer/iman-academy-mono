@@ -20,6 +20,7 @@ public class CourseDto
     public List<string> Tags { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public int ModulesCount { get; set; }
 }
 //public class CourseSyllabusDto : CourseDto
 //{
@@ -95,12 +96,14 @@ public class UpdateModuleDto : CreateModuleDto
 
 public class SubModuleDto
 {
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
     public Guid ModuleId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int Order { get; set; }
     public int? EstimatedDurationMinutes { get; set; }
+
+    public IEnumerable<StepDto> Steps{ get; set; }
 }
 
 public class CreateSubModuleDto
@@ -130,8 +133,8 @@ public class UpdateSubModuleDto : CreateSubModuleDto
 [JsonDerivedType(typeof(QuizStepDto), "Quiz")]
 public abstract class StepDto
 {
-    public Guid Id { get; set; }
-    public Guid SubModuleId { get; set; }
+    public Guid? Id { get; set; }
+    public Guid? SubModuleId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int Order { get; set; }
@@ -172,7 +175,7 @@ public class StepAttachmentDto
 
 public class QuizQuestionDto
 {
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
     public string Prompt { get; set; } = string.Empty;
     public QuestionType Type { get; set; }
     public string? CorrectAnswer { get; set; }
@@ -182,7 +185,7 @@ public class QuizQuestionDto
 
 public class QuizOptionDto
 {
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
     public string Text { get; set; } = string.Empty;
     public bool IsCorrect { get; set; }
 }
@@ -286,7 +289,7 @@ public static class MappingExtensions
 {
     // ---------- Course ----------
 
-    public static CourseDto ToDto(this Course course) => new()
+    public static CourseDto ToDto(this Course course, int modulesCount) => new()
     {
         Id = course.Id,
         Title = course.Title,
@@ -301,6 +304,7 @@ public static class MappingExtensions
         Tags = course.CourseTags.Select(ct => ct.Tag.Name).OrderBy(n => n).ToList(),
         CreatedAt = course.CreatedAt,
         UpdatedAt = course.UpdatedAt,
+        ModulesCount = modulesCount,
     };
 
     // ---------- Module ----------
@@ -326,6 +330,7 @@ public static class MappingExtensions
         Description = subModule.Description,
         Order = subModule.Order,
         EstimatedDurationMinutes = subModule.EstimatedDurationMinutes,
+        Steps = subModule.Steps.Select(s=>s.ToDto())
     };
 
     // ---------- Step (entity -> DTO) ----------

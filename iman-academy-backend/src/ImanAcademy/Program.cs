@@ -131,6 +131,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailSender>();
 builder.Services.AddScoped<GoogleSignInService>();
+builder.Services.AddScoped<SubModuleSyncService>();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
