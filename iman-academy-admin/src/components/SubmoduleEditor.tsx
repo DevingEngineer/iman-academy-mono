@@ -11,7 +11,7 @@ import type {
 	StepType,
 	SubModule,
 } from '../types/course-types'
-import { fetchSubModuleSyncApi } from '../lib/api'
+import { fetchSubModuleSyncApi, syncSubModuleApi  } from '../lib/api'
 import { updateCourse } from '../lib/course-storage'
 import { Button } from './ui/Button'
 import { EditorSyllabusNavigator } from './EditorSyllabusNavigator'
@@ -60,11 +60,11 @@ const createStep = (stepType: StepType, subModuleId: string, order: number): Ste
 		status: 'draft' as ContentStatus,
 	}
 
-	if (stepType === 'Content') return { ...base, stepType, body: '' }
-	if (stepType === 'Video') return { ...base, stepType, videoUrl: '', durationSeconds: 0 }
+	if (stepType === 'Content') return { stepType, ...base, body: '' }
+	if (stepType === 'Video') return { stepType, ...base, videoUrl: '', durationSeconds: 0 }
 	return {
-		...base,
 		stepType,
+		...base,
 		questions: [createQuestion()],
 		passingScorePercent: 70,
 		allowRetake: true,
@@ -84,6 +84,7 @@ type FormProps = {
 	moduleId: string
 	stepNumber: string
 	onDirtyChange: (isDirty: boolean) => void
+	onSaved: (saved: SubModule) => void
 }
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -96,10 +97,12 @@ const Field = ({ label, children }: { label: string; children: React.ReactNode }
 const inputClass = 'h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal focus:border-color_brand_primary'
 const textareaClass = 'min-h-24 rounded-lg border border-slate-300 p-3 text-sm font-normal focus:border-color_brand_primary'
 
-const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumber, onDirtyChange }: FormProps) => {
+const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumber, onDirtyChange, onSaved }: FormProps) => {
 	const router = useRouter()
 	const [draft, setDraft] = useState<SubModule>(() => clone(subModule))
 	const [newStepType, setNewStepType] = useState<StepType>('Content')
+	const [saving, setSaving] = useState(false)
+	const [saveError, setSaveError] = useState<string | null>(null)
 
 	const [activeStepIndex, setActiveStepIndex] = useState<number>(() => {
 		const num = Number(stepNumber)
@@ -193,24 +196,28 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 		}))
 	}
 
-	const save = () => {
+const save = async () => {
 		const invalidVideo = draft.steps.some((step) => step.stepType === 'Video' && step.durationSeconds <= 0)
 		if (invalidVideo) {
 			window.alert('Для видеоуроков укажите длительность в секундах.')
 			return
 		}
 
-		const savedSubmodule = { ...draft, steps: normalizeSteps(draft.steps) }
-		updateCourse({
-			...course,
-			updatedAt: new Date().toISOString(),
-			modules: course.modules.map((module) => module.id !== moduleId ? module : {
-				...module,
-				subModules: module.subModules.map((item) => item.id === savedSubmodule.id ? savedSubmodule : item),
-			}),
-		})
-		onDirtyChange(false)
-		setDraft(savedSubmodule)
+		const payload = { ...draft, steps: normalizeSteps(draft.steps) }
+
+		setSaving(true)
+		setSaveError(null)
+		try {
+			const saved = await syncSubModuleApi(payload)
+			setDraft(saved)
+			onDirtyChange(false)
+			onSaved(saved)
+		} catch (err) {
+			console.error('Error saving submodule:', err)
+			setSaveError(err instanceof Error ? err.message : 'Не удалось сохранить изменения')
+		} finally {
+			setSaving(false)
+		}
 	}
 
 	return (
@@ -219,13 +226,14 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 				<div>
 					<h2 className='text-lg font-semibold text-slate-900'>Редактирование подраздела</h2>
 					<p className='mt-1 text-sm text-slate-500'>Изменения сохраняются только после нажатия «Сохранить».</p>
+					{saveError && <p className='mt-1 text-sm text-red-500'>Ошибка: {saveError}</p>}
 				</div>
 				<div className='flex gap-3'>
-					<Button variant='outlined' onClick={() => {
+					<Button variant='outlined' disabled={saving} onClick={() => {
 						onDirtyChange(false)
 						router.push(`/courses/${courseSlug}/content`)
 					}}>Отмена</Button>
-					<Button onClick={save}>Сохранить</Button>
+					<Button onClick={save} disabled={saving}>{saving ? 'Сохранение…' : 'Сохранить'}</Button>
 				</div>
 			</div>
 
@@ -430,6 +438,7 @@ export const SubmoduleEditor = ({ lessonId, stepNumber }: { lessonId: string; st
 						moduleId={subModule.moduleId}
 						stepNumber={stepNumber}
 						onDirtyChange={setHasUnsavedChanges}
+						onSaved={setSubModule}
 					/>
 				</div>
 			</div>
