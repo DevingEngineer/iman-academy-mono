@@ -1,9 +1,9 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Course, Module } from '../types/course-types'
-import { useCourses } from '../hooks/useCourses'
+import { fetchCourses } from '../lib/api'
 import { updateCourse } from '../lib/course-storage'
 import { Button } from './ui/Button'
 
@@ -257,8 +257,19 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 }
 
 export const SyllabusEditor = ({ courseSlug }: { courseSlug: string }) => {
-	const courses = useCourses()
-	const cleanSlug = decodeURIComponent(courseSlug);
+	const [courses, setCourses] = useState<Course[]>([])
+	useEffect(() => {
+		let mounted = true
+		fetchCourses()
+			.then((data) => {
+				if (mounted) setCourses(data)
+			})
+			.catch(() => {})
+		return () => {
+			mounted = false
+		}
+	}, [])
+	const cleanSlug = decodeURIComponent(courseSlug)
 	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
 
 	if (!course) return <p className='text-sm text-slate-500'>Загрузка курса...</p>

@@ -1,7 +1,9 @@
-'use client'
+"use client"
 
+import { useEffect, useState } from 'react'
 import { CourseSidebar } from './CourseSidebar'
-import { useCourses } from '../hooks/useCourses'
+import type { Course } from '../types/course-types'
+import { fetchCourses } from '../lib/api'
 
 type CourseLayoutClientProps = {
 	children: React.ReactNode
@@ -9,7 +11,18 @@ type CourseLayoutClientProps = {
 }
 
 export const CourseLayoutClient = ({ children, courseSlug }: CourseLayoutClientProps) => {
-	const courses = useCourses()
+	const [courses, setCourses] = useState<Course[]>([])
+	useEffect(() => {
+		let mounted = true
+		fetchCourses()
+			.then((data) => {
+				if (mounted) setCourses(data)
+			})
+			.catch(() => {})
+		return () => {
+			mounted = false
+		}
+	}, [])
 	const cleanSlug = decodeURIComponent(courseSlug)
 	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
 

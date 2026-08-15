@@ -11,7 +11,7 @@ import type {
 	StepType,
 	SubModule,
 } from '../types/course-types'
-import { useCourses } from '../hooks/useCourses'
+import { fetchCourses } from '../lib/api'
 import { updateCourse } from '../lib/course-storage'
 import { Button } from './ui/Button'
 import { EditorSyllabusNavigator } from './EditorSyllabusNavigator'
@@ -347,7 +347,18 @@ const QuestionEditor = ({ question, number, stepId, updateQuestion, changeQuesti
 }
 
 export const SubmoduleEditor = ({ lessonId, stepNumber }: { lessonId: string; stepNumber: string }) => {
-	const courses = useCourses()
+	const [courses, setCourses] = useState<Course[]>([])
+	useEffect(() => {
+		let mounted = true
+		fetchCourses()
+			.then((data) => {
+				if (mounted) setCourses(data)
+			})
+			.catch(() => {})
+		return () => {
+			mounted = false
+		}
+	}, [])
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 	const lessonLocations = courses.flatMap((course) =>
 		course.modules.flatMap((courseModule) =>

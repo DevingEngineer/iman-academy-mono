@@ -1,9 +1,22 @@
 'use client'
 
-import { useCourses } from '../hooks/useCourses'
+import { useEffect, useState } from 'react'
+import { fetchCourses } from '../lib/api'
+import type { Course } from '../types/course-types'
 
 export const CourseOverview = ({ courseSlug }: { courseSlug: string }) => {
-	const courses = useCourses()
+	const [courses, setCourses] = useState<Course[]>([])
+	useEffect(() => {
+		let mounted = true
+		fetchCourses()
+			.then((data) => {
+				if (mounted) setCourses(data)
+			})
+			.catch(() => {})
+		return () => {
+			mounted = false
+		}
+	}, [])
 	const cleanSlug = decodeURIComponent(courseSlug)
 	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
 

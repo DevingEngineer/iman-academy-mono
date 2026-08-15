@@ -1,11 +1,10 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from './ui/Button'
-import { useCourses } from '../hooks/useCourses'
-import { fetchCourseSyllabusApi } from '../lib/api'
-import type { Module } from '../types/course-types'
+import { fetchCourses, fetchCourseSyllabusApi } from '../lib/api'
+import type { Course, Module } from '../types/course-types'
 
 const mapBackendSyllabusToModules = (courseId: string, remoteModules: { moduleId?: string | null; moduleName?: string; order?: number | string; subModules?: Array<{ subModuleId?: string | null; subModuleName?: string; order?: number | string; moduleId?: string | null }> }[] = []): Module[] =>
 	remoteModules.map((module, moduleIndex) => ({
@@ -23,12 +22,25 @@ const mapBackendSyllabusToModules = (courseId: string, remoteModules: { moduleId
 		})),
 	}))
 
+
 export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 	const router = useRouter()
-	const courses = useCourses()
+	const [courses, setCourses] = useState<Course[]>([])
 	const cleanSlug = decodeURIComponent(courseSlug)
 	const [backendModules, setBackendModules] = useState<Module[]>([])
 	const [isLoading, setIsLoading] = useState(false)
+
+	useEffect(() => {
+		let mounted = true
+		fetchCourses()
+			.then((data) => {
+				if (mounted) setCourses(data)
+			})
+			.catch(() => {})
+		return () => {
+			mounted = false
+		}
+	}, [])
 
 	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
 
