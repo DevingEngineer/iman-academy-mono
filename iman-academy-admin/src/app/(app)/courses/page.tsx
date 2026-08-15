@@ -43,7 +43,7 @@ const CoursesPage = () => {
 					{courses.map((course) => (
 						<li key={course.id}>
 							<Link
-								href={`/courses/${course.slug}`}
+								href={`/courses/${course.id}/description`}
 								className='flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 transition-colors hover:border-color_brand_primary hover:bg-slate-50'
 							>
 								<div>

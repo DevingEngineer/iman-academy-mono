@@ -10,8 +10,8 @@ type CourseLayoutClientProps = {
 
 export const CourseLayoutClient = ({ children, courseSlug }: CourseLayoutClientProps) => {
 	const courses = useCourses()
-	const cleanSlug = decodeURIComponent(courseSlug);
-	const course = courses.find((item) => item.slug === cleanSlug)
+	const cleanSlug = decodeURIComponent(courseSlug)
+	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
 
 	if (!course) {
 		return <p className='text-sm text-slate-500'>Загрузка курса...</p>
@@ -29,7 +29,7 @@ export const CourseLayoutClient = ({ children, courseSlug }: CourseLayoutClientP
 				</div>
 			</div>
 			<div className='flex items-start gap-6'>
-				<CourseSidebar courseSlug={course.slug} />
+				<CourseSidebar courseSlug={course.id} />
 				<div className='min-w-0 flex-1'>{children}</div>
 			</div>
 		</section>

@@ -60,7 +60,7 @@ export async function fetchCourses(): Promise<Course[]> {
   return (data ?? []).map((dto) => ({
     id: String(dto.id),
     title: String(dto.title ?? ''),
-    slug: dto.slug ?? '',
+    slug: String(dto.slug ?? dto.id ?? ''),
     description: dto.description ?? '',
     thumbnailUrl: dto.thumbnailUrl ?? undefined,
     instructorIds: [],

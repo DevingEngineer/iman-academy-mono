@@ -16,7 +16,7 @@ const CreateCoursePage = () => {
 		if (!title) return
 
 		const course = saveCourse(title)
-		router.push(`/courses/${course.slug}/content`)
+		router.push(`/courses/${course.id}/content`)
 	}
 
 	return (

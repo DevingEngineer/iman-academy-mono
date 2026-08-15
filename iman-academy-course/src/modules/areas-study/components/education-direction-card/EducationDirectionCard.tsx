@@ -30,7 +30,7 @@ export const EducationDirectionCard = ({
 				className='max-w-[175px] w-full max-h-[44px] sticky z-10 mt-auto'
 				variant='contained'
 			>
-				<Link href={`/courses/${id}`}>Смотреть курсы</Link>
+				<Link href={`/courses/${id}/description`}>Смотреть курсы</Link>
 			</Button>
 			<div className='absolute bottom-0 right-0 z-0 max-w-[250px] max-h-[250px] w750:max-w-[200px] w750:max-h-[200px]'>
 				<Image src={image} alt={title} width={250} height={250} />

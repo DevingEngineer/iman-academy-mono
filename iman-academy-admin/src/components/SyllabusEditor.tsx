@@ -259,7 +259,7 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 export const SyllabusEditor = ({ courseSlug }: { courseSlug: string }) => {
 	const courses = useCourses()
 	const cleanSlug = decodeURIComponent(courseSlug);
-	const course = courses.find((item) => item.slug === cleanSlug)
+	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
 
 	if (!course) return <p className='text-sm text-slate-500'>Загрузка курса...</p>
 

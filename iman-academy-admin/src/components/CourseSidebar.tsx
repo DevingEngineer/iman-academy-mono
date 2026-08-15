@@ -10,11 +10,9 @@ type CourseSidebarProps = {
 
 export const CourseSidebar = ({ courseSlug }: CourseSidebarProps) => {
 	const { getActiveLink } = useActiveLink()
-	
-
 	const baseHref = `/courses/${courseSlug}`
 	const links = [
-		{ label: 'Описание', href: baseHref },
+		{ label: 'Описание', href: `${baseHref}/description` },
 		{ label: 'Содержание', href: `${baseHref}/content` },
 		{ label: 'Настройки', href: `${baseHref}/settings` },
 	]
@@ -27,7 +25,7 @@ export const CourseSidebar = ({ courseSlug }: CourseSidebarProps) => {
 			<nav aria-label='Навигация по курсу'>
 				<ul className='space-y-1'>
 					{links.map((link) => {
-						const isActive = getActiveLink(link.href, 'exact')
+						const isActive = getActiveLink(link.href, 'parent')
 
 						return (
 							<li key={link.href}>

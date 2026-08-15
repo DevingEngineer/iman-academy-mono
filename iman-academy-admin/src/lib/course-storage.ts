@@ -124,20 +124,13 @@ export const getCourses = (): Course[] => {
 }
 
 export const createCourseSlug = (title: string, courses: Course[]) => {
-	const baseSlug =
-		title
-			.trim()
-			.toLocaleLowerCase()
-			.normalize('NFKD')
-			.replace(/[^\p{Letter}\p{Number}]+/gu, '-')
-			.replace(/^-+|-+$/g, '') || 'course'
-
+	const tempId = `course-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 	const existingSlugs = new Set(courses.map((course) => course.slug))
-	let slug = baseSlug
+	let slug = tempId
 	let suffix = 2
 
 	while (existingSlugs.has(slug)) {
-		slug = `${baseSlug}-${suffix}`
+		slug = `${tempId}-${suffix}`
 		suffix += 1
 	}
 
@@ -147,8 +140,8 @@ export const createCourseSlug = (title: string, courses: Course[]) => {
 export const saveCourse = (title: string): Course => {
 	const now = new Date().toISOString()
 	const courses = getCourses()
-	const slug = createCourseSlug(title, courses)
 	const tempId = `temp-course-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+	const slug = createCourseSlug(title, courses)
 	const course: Course = {
 		id: tempId,
 		title,
@@ -192,21 +185,33 @@ export const saveCourse = (title: string): Course => {
 			}
 
 			const current = getStoredCourses()
+			// Replace temp with backend course but keep a reference to local temp data
+			const temp = current.find((c) => c.id === tempId)
 			const replaced = current.map((c) => (c.id === tempId ? backendCourse : c))
 			window.localStorage.setItem(STORAGE_KEY, JSON.stringify(replaced))
 			window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 
-			try {
-				const syllabus = await fetchCourseSyllabusApi(String(created.id))
-				const refreshed = {
-					...backendCourse,
-					modules: mapSyllabusTreeToCourseModules(String(created.id), syllabus),
-				}
-				const finalCourses = getStoredCourses().map((c) => (c.id === tempId ? refreshed : c))
-				window.localStorage.setItem(STORAGE_KEY, JSON.stringify(finalCourses))
-				window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
-			} catch {
-				// no syllabus yet; keep the created course without modules
+			// If the user had added modules/submodules/steps locally before creation completed,
+			// push that syllabus to the backend immediately so edits aren't lost.
+			if (temp && Array.isArray(temp.modules) && temp.modules.length > 0) {
+				const tree = mapCourseToSyllabusTree({ ...backendCourse, modules: temp.modules })
+				syncCourseSyllabusApi(String(created.id), tree)
+					.then(async () => {
+						// Fetch refreshed syllabus from backend and store it
+						try {
+							const syllabus = await fetchCourseSyllabusApi(String(created.id))
+							const refreshed = {
+								...backendCourse,
+								modules: mapSyllabusTreeToCourseModules(String(created.id), syllabus),
+							}
+							const finalCourses = getStoredCourses().map((c) => (c.id === tempId ? refreshed : c))
+							window.localStorage.setItem(STORAGE_KEY, JSON.stringify(finalCourses))
+							window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
+						} catch {
+							// ignore
+						}
+					})
+					.catch((err) => console.error('Failed to sync syllabus after create', err))
 			}
 		})
 		.catch((err) => {

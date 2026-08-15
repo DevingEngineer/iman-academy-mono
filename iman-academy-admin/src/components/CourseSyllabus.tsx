@@ -30,11 +30,10 @@ export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 	const [backendModules, setBackendModules] = useState<Module[]>([])
 	const [isLoading, setIsLoading] = useState(false)
 
-	const course = courses.find((item) => item.slug === cleanSlug)
+	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
 
 	useEffect(() => {
 		if (!course?.id || course.id.startsWith('temp-')) {
-			setBackendModules([])
 			return
 		}
 
