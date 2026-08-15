@@ -1,5 +1,5 @@
 import { http, ensureCsrfCookie } from '../http'
-import type { Course } from '../types/course-types'
+import type { Course, SubModule } from '../types/course-types'
 import type { SyllabusTreeDto } from '../types'
 
 export function mapLevelToBackend(level?: Course['level'] | null): number {
@@ -115,6 +115,17 @@ export async function syncCourseSyllabusApi(
   return data
 }
 
+export async function fetchSubModuleSyncApi(subModuleId: string): Promise<SubModule | null> {
+  const { data } = await http.get<SubModule | null>(`/api/submodules-sync/${subModuleId}`)
+  return data ?? null
+}
+
+export async function syncSubModuleApi(payload: SubModule): Promise<SubModule> {
+  await ensureCsrfCookie()
+  const { data } = await http.put<SubModule>('/api/submodules-sync/sync', payload)
+  return data
+}
+
 export default {
   fetchCourses,
   createCourseApi,
@@ -122,4 +133,6 @@ export default {
   deleteCourseApi,
   fetchCourseSyllabusApi,
   syncCourseSyllabusApi,
+  fetchSubModuleSyncApi,
+  syncSubModuleApi,
 }

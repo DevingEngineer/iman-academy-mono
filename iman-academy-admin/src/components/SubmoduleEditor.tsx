@@ -11,14 +11,22 @@ import type {
 	StepType,
 	SubModule,
 } from '../types/course-types'
-import { fetchCourses } from '../lib/api'
+import { fetchSubModuleSyncApi } from '../lib/api'
 import { updateCourse } from '../lib/course-storage'
 import { Button } from './ui/Button'
 import { EditorSyllabusNavigator } from './EditorSyllabusNavigator'
-import dynamic from 'next/dynamic';
+import dynamic from 'next/dynamic'
 
-const createId = (prefix: string) =>
-	`${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+const createId = (_prefix?: string): string => {
+	if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+		return crypto.randomUUID()
+	}
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+		const r = (Math.random() * 16) | 0
+		const v = c === 'x' ? r : (r & 0x3) | 0x8
+		return v.toString(16)
+	})
+}
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T
 
@@ -63,11 +71,12 @@ const createStep = (stepType: StepType, subModuleId: string, order: number): Ste
 		timeLimitSeconds: undefined,
 	}
 }
-// Dynamically import with SSR disabled to prevent hydration or window errors
+
 const CustomContentCkEditor = dynamic(() => import('@/src/components/CustomContentCkEditor'), {
 	ssr: false,
 	loading: () => <div className='h-[300px] w-full animate-pulse rounded-lg bg-slate-100' />,
-});
+})
+
 type FormProps = {
 	course: Course
 	subModule: SubModule
@@ -92,13 +101,10 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 	const [draft, setDraft] = useState<SubModule>(() => clone(subModule))
 	const [newStepType, setNewStepType] = useState<StepType>('Content')
 
-	// 1. Store active step index in state initialized from URL prop
-    const [activeStepIndex, setActiveStepIndex] = useState<number>(() => {
-        const num = Number(stepNumber)
-        return Number.isInteger(num) && num > 0 ? num - 1 : 0
-    })
-
-
+	const [activeStepIndex, setActiveStepIndex] = useState<number>(() => {
+		const num = Number(stepNumber)
+		return Number.isInteger(num) && num > 0 ? num - 1 : 0
+	})
 
 	const selectedStepIndex = draft.steps.length === 0
 		? -1
@@ -112,16 +118,11 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 
 	useEffect(() => () => onDirtyChange(false), [onDirtyChange])
 
-	// useEffect(() => {
-	// 	const canonicalStepNumber = selectedStepIndex === -1 ? 1 : selectedStepIndex + 1
-	// 	if (stepNumber !== String(canonicalStepNumber)) {
-	// 		router.replace(`/courses/edit-lesson/${subModule.id}/step/${canonicalStepNumber}`)
-	// 	}
-	// }, [router, selectedStepIndex, stepNumber, subModule.id])
 	const navigateToStep = (index: number) => {
-       setActiveStepIndex(index)
-       window.history.replaceState(null, '', stepHref(index + 1))
-   }
+		setActiveStepIndex(index)
+		window.history.replaceState(null, '', stepHref(index + 1))
+	}
+
 	const setMetadata = (key: 'title' | 'description' | 'estimatedDurationMinutes', value: string) => {
 		setDraft((current) => ({
 			...current,
@@ -148,30 +149,23 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 	}
 
 	const addStep = () => {
-		// 1. Calculate the target step number once
-  		const nextStepNumber = draft.steps.length + 1;
-  
-		// 2. Build the step object
-		const step = createStep(newStepType, draft.id, nextStepNumber);
+		const nextStepNumber = draft.steps.length + 1
+		const step = createStep(newStepType, draft.id, nextStepNumber)
 
-		// 3. Update state safely using functional updater
 		setDraft((current) => ({
 			...current,
 			steps: [...current.steps, step],
-		}));
-		
-		// 4. Navigate using the calculated step number
-		
-		
+		}))
+
+		navigateToStep(nextStepNumber - 1)
 	}
 
 	const deleteSelectedStep = () => {
 		if (!selectedStep || !window.confirm('Удалить урок?')) return
 		const steps = normalizeSteps(draft.steps.filter((step) => step.id !== selectedStep.id))
 		setDraft((current) => ({ ...current, steps }))
-		//router.replace(stepHref(steps.length === 0 ? 1 : Math.min(selectedStepIndex, steps.length - 1) + 1))
 		const nextIndex = steps.length === 0 ? 0 : Math.min(selectedStepIndex, steps.length - 1)
-        navigateToStep(nextIndex)
+		navigateToStep(nextIndex)
 	}
 
 	const updateQuestion = (stepId: string, questionId: string, updater: (question: QuizQuestion) => QuizQuestion) => {
@@ -209,7 +203,7 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 		const savedSubmodule = { ...draft, steps: normalizeSteps(draft.steps) }
 		updateCourse({
 			...course,
-			updatedAt: new Date().toISOString() ,
+			updatedAt: new Date().toISOString(),
 			modules: course.modules.map((module) => module.id !== moduleId ? module : {
 				...module,
 				subModules: module.subModules.map((item) => item.id === savedSubmodule.id ? savedSubmodule : item),
@@ -297,13 +291,12 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 								</label>
 								<CustomContentCkEditor
 									value={step.body}
-									onChange={(data) => 
-									updateStep(step.id, (current) => 
-									current.stepType === 'Content' ? { ...current, body: data } : current
-								)
-								}
+									onChange={(data) =>
+										updateStep(step.id, (current) =>
+											current.stepType === 'Content' ? { ...current, body: data } : current
+										)
+									}
 								/>
-								
 							</div>
 						)}
 						{step.stepType === 'Video' && <div className='mt-4 grid gap-4 md:grid-cols-2'><Field label='URL видео'><input className={inputClass} type='url' value={step.videoUrl} onChange={(event) => updateStep(step.id, (current) => current.stepType === 'Video' ? { ...current, videoUrl: event.target.value } : current)} /></Field><Field label='Длительность (сек., обязательно)'><input className={inputClass} type='number' min='1' required value={step.durationSeconds || ''} onChange={(event) => updateStep(step.id, (current) => current.stepType === 'Video' ? { ...current, durationSeconds: Number(event.target.value) } : current)} /></Field></div>}
@@ -347,31 +340,73 @@ const QuestionEditor = ({ question, number, stepId, updateQuestion, changeQuesti
 }
 
 export const SubmoduleEditor = ({ lessonId, stepNumber }: { lessonId: string; stepNumber: string }) => {
-	const [courses, setCourses] = useState<Course[]>([])
+	const [subModule, setSubModule] = useState<SubModule | null>(null)
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+
 	useEffect(() => {
 		let mounted = true
-		fetchCourses()
+		setLoading(true)
+		setError(null)
+
+		fetchSubModuleSyncApi(lessonId)
 			.then((data) => {
-				if (mounted) setCourses(data)
+				if (!mounted) return
+				if (!data) {
+					setError('No submodule data found')
+					setLoading(false)
+					return
+				}
+				setSubModule(data)
+				setLoading(false)
 			})
-			.catch(() => {})
+			.catch((err) => {
+				if (mounted) {
+					console.error('Error loading submodule:', err)
+					setError(err?.message || 'Failed to fetch submodule')
+					setLoading(false)
+				}
+			})
+
 		return () => {
 			mounted = false
 		}
-	}, [])
-	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-	const lessonLocations = courses.flatMap((course) =>
-		course.modules.flatMap((courseModule) =>
-			courseModule.subModules
-				.filter((subModule) => subModule.id === lessonId && subModule.moduleId === courseModule.id && courseModule.courseId === course.id)
-				.map((subModule) => ({ course, courseModule, subModule }))
-		)
-	)
-	const lessonLocation = lessonLocations.length === 1 ? lessonLocations[0] : undefined
+	}, [lessonId])
 
-	if (!lessonLocation) return <p className='rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500'>Подраздел не найден.</p>
+	if (loading) return <p className='rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500'>Загрузка подраздела...</p>
 
-	const { course, courseModule, subModule } = lessonLocation
+	if (error) return <p className='rounded-xl border border-slate-200 bg-white p-6 text-sm text-red-500'>Ошибка: {error}</p>
+
+	if (!subModule) return <p className='rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500'>Подраздел не найден.</p>
+
+	// PLACEHOLDER: EditorSyllabusNavigator + updateCourse() below still expect a
+	// full Course tree (other modules, other sub-modules, slug, title). Fetching
+	// only this SubModule means we don't have that data. This shell has just
+	// enough shape for the components to render without crashing, but the
+	// navigator will only ever show this one module/sub-module, "Отмена" routes
+	// by moduleId instead of a real slug, and updateCourse() will overwrite the
+	// course's `modules` array with only this one module -- silently discarding
+	// any other modules/sub-modules already saved locally for this course.
+	// This needs either: (a) a real endpoint returning the course shell
+	// (id/slug/title + module/sub-module list, without full step bodies), or
+	// (b) passing courseSlug/full course down as route/query params instead of
+	// fetching it here. Let me know which and I'll wire it in properly.
+	const course: Course = {
+		id: subModule.moduleId,
+		title: '',
+		slug: subModule.moduleId,
+		updatedAt: new Date().toISOString(),
+		modules: [
+			{
+				id: subModule.moduleId,
+				courseId: subModule.moduleId,
+				title: '',
+				order: 1,
+				subModules: [subModule],
+			},
+		],
+	} as unknown as Course
 
 	return (
 		<section>
@@ -388,11 +423,11 @@ export const SubmoduleEditor = ({ lessonId, stepNumber }: { lessonId: string; st
 				/>
 				<div className='min-w-0 flex-1'>
 					<SubmoduleEditorForm
-						key={`${course.id}-${subModule.id}-${course.updatedAt}`}
+						key={`${subModule.id}-${stepNumber}`}
 						course={course}
 						subModule={subModule}
-						courseSlug={course.id}
-						moduleId={courseModule.id}
+						courseSlug={course.slug}
+						moduleId={subModule.moduleId}
 						stepNumber={stepNumber}
 						onDirtyChange={setHasUnsavedChanges}
 					/>

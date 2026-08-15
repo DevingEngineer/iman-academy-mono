@@ -992,6 +992,104 @@
         }
       }
     },
+    "/api/submodules-sync/{subModuleId}": {
+      "get": {
+        "tags": [
+          "SubModuleSync"
+        ],
+        "parameters": [
+          {
+            "name": "subModuleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubModuleDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubModuleDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubModuleDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/submodules-sync/sync": {
+      "put": {
+        "tags": [
+          "SubModuleSync"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubModuleDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubModuleDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubModuleDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubModuleDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubModuleDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubModuleDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/frontend/csrf-cookie-token": {
       "get": {
         "tags": [
@@ -1901,6 +1999,14 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "modulesCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -1967,10 +2073,20 @@
             ]
           },
           "status": {
-            "$ref": "#/components/schemas/ContentStatus"
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ContentStatus"
+              }
+            ]
           },
           "tags": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
             }
@@ -2209,7 +2325,10 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "text": {
@@ -2239,7 +2358,10 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "prompt": {
@@ -2428,11 +2550,17 @@
             }
           },
           "id": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "subModuleId": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "title": {
@@ -2504,11 +2632,17 @@
             }
           },
           "id": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "subModuleId": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "title": {
@@ -2577,11 +2711,17 @@
             ]
           },
           "id": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "subModuleId": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "title": {
@@ -2857,7 +2997,10 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "moduleId": {
@@ -2889,6 +3032,12 @@
               "string"
             ],
             "format": "int32"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StepDto"
+            }
           }
         }
       },
@@ -3058,10 +3207,20 @@
             ]
           },
           "status": {
-            "$ref": "#/components/schemas/ContentStatus"
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ContentStatus"
+              }
+            ]
           },
           "tags": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
             }
@@ -3164,6 +3323,9 @@
       "name": "SubModules"
     },
     {
+      "name": "SubModuleSync"
+    },
+    {
       "name": "AuthControllerFrontend"
     },
     {
@@ -3171,5 +3333,3 @@
     }
   ]
 }
-
-
