@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Course, Module } from '../types/course-types'
 import { fetchCourses } from '../lib/api'
-import { updateCourse } from '../lib/course-storage'
+import { updateCourse, getCourses, subscribeToCourses } from '../lib/course-storage'
 import { Button } from './ui/Button'
 
 const createId = (prefix: string) =>
@@ -260,13 +260,21 @@ export const SyllabusEditor = ({ courseSlug }: { courseSlug: string }) => {
 	const [courses, setCourses] = useState<Course[]>([])
 	useEffect(() => {
 		let mounted = true
-		fetchCourses()
-			.then((data) => {
-				if (mounted) setCourses(data)
-			})
-			.catch(() => {})
+
+		const load = () => {
+			if (!mounted) return
+			setCourses(getCourses())
+		}
+
+		load()
+		const unsubscribe = subscribeToCourses(() => {
+			if (!mounted) return
+			setCourses(getCourses())
+		})
+
 		return () => {
 			mounted = false
+			unsubscribe()
 		}
 	}, [])
 	const cleanSlug = decodeURIComponent(courseSlug)

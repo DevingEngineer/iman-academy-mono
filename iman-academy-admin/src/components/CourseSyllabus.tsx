@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from './ui/Button'
-import { fetchCourses, fetchCourseSyllabusApi } from '../lib/api'
-import type { Course, Module } from '../types/course-types'
+import { fetchCourseSyllabusApi } from '../lib/api'
+import type { Module } from '../types/course-types'
+import type { SyllabusTreeDto } from '../types'
 
 const mapBackendSyllabusToModules = (courseId: string, remoteModules: { moduleId?: string | null; moduleName?: string; order?: number | string; subModules?: Array<{ subModuleId?: string | null; subModuleName?: string; order?: number | string; moduleId?: string | null }> }[] = []): Module[] =>
 	remoteModules.map((module, moduleIndex) => ({
@@ -25,53 +26,38 @@ const mapBackendSyllabusToModules = (courseId: string, remoteModules: { moduleId
 
 export const CourseSyllabus = ({ courseSlug }: { courseSlug: string }) => {
 	const router = useRouter()
-	const [courses, setCourses] = useState<Course[]>([])
 	const cleanSlug = decodeURIComponent(courseSlug)
-	const [backendModules, setBackendModules] = useState<Module[]>([])
+	const [syllabusTree, setSyllabusTree] = useState<SyllabusTreeDto | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 
-	useEffect(() => {
-		let mounted = true
-		fetchCourses()
-			.then((data) => {
-				if (mounted) setCourses(data)
-			})
-			.catch(() => {})
-		return () => {
-			mounted = false
-		}
-	}, [])
-
-	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
 
 	useEffect(() => {
-		if (!course?.id || course.id.startsWith('temp-')) {
-			return
-		}
-
 		let isMounted = true
 		setIsLoading(true)
 
-		fetchCourseSyllabusApi(course.id)
+		fetchCourseSyllabusApi(cleanSlug)
 			.then((tree) => {
 				if (!isMounted) return
-				setBackendModules(mapBackendSyllabusToModules(course.id, tree.modules ?? []))
+				setSyllabusTree(tree)
 			})
 			.catch(() => {
-				if (isMounted) setBackendModules([...course.modules])
+				if (!isMounted) return
+				setSyllabusTree(null)
 			})
 			.finally(() => {
-				if (isMounted) setIsLoading(false)
+				if (!isMounted) return
+				setIsLoading(false)
 			})
 
 		return () => {
 			isMounted = false
 		}
-	}, [course?.id, course?.modules])
+	}, [cleanSlug])
 
-	if (!course) return null
-
-	const modules = backendModules.length > 0 ? backendModules : [...course.modules].sort((a, b) => a.order - b.order)
+	let modules: Module[] = []
+	if (syllabusTree) {
+		modules = mapBackendSyllabusToModules(syllabusTree.courseId ?? cleanSlug, syllabusTree.modules ?? [])
+	}
 
 	return (
 		<div className='rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
