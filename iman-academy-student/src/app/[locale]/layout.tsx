@@ -1,4 +1,6 @@
 import { routing } from '@/src/i18n/routing'
+import { AuthProvider } from '@/src/providers/AuthProvider'
+import Script from "next/script";
 import NextIntlProvider from '@/src/providers/NextIntlProvider'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
@@ -30,7 +32,13 @@ const RootLayout = async ({ children, params }: RootLayoutProps) => {
 	return (
 		<NextIntlProvider locale={locale}>
 			<html lang={locale}>
-				<body className={`${inter.variable} antialiased`}>{children}</body>
+				<body className={`${inter.variable} antialiased`}>
+					<AuthProvider>{children}</AuthProvider>
+					<Script
+						src='https://accounts.google.com/gsi/client'
+						strategy='afterInteractive'
+					/>
+				</body>
 			</html>
 		</NextIntlProvider>
 	)
