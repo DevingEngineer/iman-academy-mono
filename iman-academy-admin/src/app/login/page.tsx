@@ -68,9 +68,9 @@ export default function LoginPage() {
                             <label htmlFor='password' className='block text-xs text-color_text_primary'>
                                 Пароль
                             </label>
-                            <a href='/forgot-password' className='text-xs text-[#ADADAD] hover:text-color_text_primary'>
+                            {/* <a href='/forgot-password' className='text-xs text-[#ADADAD] hover:text-color_text_primary'>
                                 Забыли пароль?
-                            </a>
+                            </a> */}
                         </div>
                         <input
                             id='password'
@@ -93,12 +93,12 @@ export default function LoginPage() {
                     </Button>
                 </form>
 
-                <p className='text-sm text-[#ADADAD] text-center mt-7'>
+                {/* <p className='text-sm text-[#ADADAD] text-center mt-7'>
                     Нет аккаунта?{' '}
                     <a href='/register' className='text-color_text_primary hover:underline'>
                         Зарегистрироваться
                     </a>
-                </p>
+                </p> */}
             </div>
         </div>
     )
