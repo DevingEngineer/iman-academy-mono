@@ -1,0 +1,1 @@
+export { AllCourses } from './components/all-courses/AllCourses'

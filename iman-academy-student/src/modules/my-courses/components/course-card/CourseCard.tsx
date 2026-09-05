@@ -5,6 +5,7 @@ import { Course } from '../../types'
 
 type CourseCardProps = Course & {
 	onOpenCertificate?: () => void
+	isCatalog?: boolean
 }
 
 export const CourseCard = (props: CourseCardProps) => {
@@ -45,12 +46,12 @@ export const CourseCard = (props: CourseCardProps) => {
 							</div>
 						</div>
 						{!props.isCompleted && (
-							<Link href={`/courses/${props.id}`}>
+								<Link href={`/courses/${props.id}`}>
 								<Button
 									variant='contained'
 									className='max-h-[44px] rounded-[10px] px-5 text-[14px] font-medium hover:opacity-90'
 								>
-									Продолжить
+									{props.isCatalog ? 'Посмотреть' : 'Продолжить'}
 								</Button>
 							</Link>
 						)}

@@ -2,6 +2,9 @@ import { getAccessToken } from '@/src/lib/auth'
 import {
 	AuthApiError,
 	type CurrentUserResponse,
+	type CourseDto,
+	type SyllabusTreeDto,
+	type SubModuleDto,
 	type LoginRequest,
 	type ProblemDetails,
 	type RegisterRequest,
@@ -203,6 +206,32 @@ export async function refreshAccessToken(): Promise<TokenResponse | null> {
 export async function fetchCurrentUser(): Promise<CurrentUserResponse> {
 	return authRequest<CurrentUserResponse>(
 		'/api/auth/frontend/current-user',
+		{ method: 'GET' },
+		true
+	)
+}
+
+export async function fetchCourses(): Promise<CourseDto[]> {
+	return authRequest<CourseDto[]>('/api/courses', { method: 'GET' }, true)
+}
+
+export async function fetchCourse(courseId: string): Promise<CourseDto> {
+	return authRequest<CourseDto>(`/api/courses/${courseId}`, { method: 'GET' }, true)
+}
+
+export async function fetchCourseSyllabus(
+	courseId: string
+): Promise<SyllabusTreeDto> {
+	return authRequest<SyllabusTreeDto>(
+		`/api/courses/syllabus/${courseId}`,
+		{ method: 'GET' },
+		true
+	)
+}
+
+export async function fetchSubModule(subModuleId: string): Promise<SubModuleDto> {
+	return authRequest<SubModuleDto>(
+		`/api/submodules/${subModuleId}`,
 		{ method: 'GET' },
 		true
 	)

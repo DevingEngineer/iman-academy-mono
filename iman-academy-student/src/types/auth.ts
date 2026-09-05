@@ -22,6 +22,70 @@ export type CurrentUserResponse = {
 	emailConfirmed: boolean
 }
 
+export type CourseDto = {
+	id: string
+	title: string
+	slug: string | null
+	description: string | null
+	thumbnailUrl: string | null
+	level: number | null
+	language: string | null
+	price: number | string | null
+	currency: string | null
+	status: number
+	tags: string[]
+	createdAt: string
+	updatedAt: string
+	modulesCount: number | string
+}
+
+export type SyllabusSubModuleDto = {
+	subModuleId: string | null
+	moduleId: string | null
+	subModuleName: string
+	order: number | string
+}
+
+export type SyllabusModuleDto = {
+	moduleId: string | null
+	courseId: string
+	moduleName: string
+	order: number | string
+	subModules: SyllabusSubModuleDto[]
+}
+
+export type SyllabusTreeDto = {
+	courseId: string
+	courseName: string
+	modules: SyllabusModuleDto[]
+}
+
+export type StepDto = {
+	stepType: 'Content' | 'Video' | 'Quiz'
+	id: string | null
+	subModuleId: string | null
+	title: string
+	description: string | null
+	order: number | string
+	estimatedDurationMinutes: number | string | null
+	isFreePreview: boolean
+	status: number
+	body?: string
+	videoUrl?: string
+	transcript?: string | null
+	questions?: unknown[]
+}
+
+export type SubModuleDto = {
+	id: string | null
+	moduleId: string
+	title: string
+	description: string | null
+	order: number | string
+	estimatedDurationMinutes: number | string | null
+	steps: StepDto[]
+}
+
 export type ProblemDetails = {
 	type?: string | null
 	title?: string | null

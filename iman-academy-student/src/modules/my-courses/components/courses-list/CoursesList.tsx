@@ -3,7 +3,7 @@ import { CourseCard } from '../course-card/CourseCard'
 
 const COURSES: Course[] = [
 	{
-		id: 1,
+		id: '1',
 		title: 'Основы Акыда',
 		subtitle: 'Базовый уровень',
 		isCompleted: false,
@@ -12,7 +12,7 @@ const COURSES: Course[] = [
 		progress: 75,
 	},
 	{
-		id: 2,
+		id: '2',
 		title: 'Фикх: очищение и намаз',
 		subtitle: 'Практический курс',
 		isCompleted: false,
@@ -21,7 +21,7 @@ const COURSES: Course[] = [
 		progress: 75,
 	},
 	{
-		id: 3,
+		id: '3',
 		title: 'Чтение Корана с Тажуидом',
 		subtitle: 'Онлайн курс',
 		isCompleted: true,

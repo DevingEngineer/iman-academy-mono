@@ -1,4 +1,5 @@
 import MainLayout from '@/src/layouts/MainLayout'
+import { AllCourses } from '@/src/modules/all-courses'
 import { CoursesStats } from '@/src/modules/courses-stats'
 import { StudentProfileHeader } from '@/src/modules/student-profile-header'
 import { Metadata } from 'next'
@@ -13,6 +14,7 @@ const CoursesPage = () => {
 		<MainLayout>
 			<StudentProfileHeader />
 			<CoursesStats />
+			<AllCourses />
 		</MainLayout>
 	)
 }
