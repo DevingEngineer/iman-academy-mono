@@ -1,12 +1,13 @@
 import { Link } from '@/src/i18n/navigation'
 import Image from 'next/image'
 import Logo from '../../../public/logo/logo.png'
-import { BurgerMenuIcon } from '../icons/BurgerMenuIcon'
 import { FacebookIcon } from '../icons/FacebookIcon'
 import { InstagramIcon } from '../icons/InstagramIcon'
 import { PhoneIcon } from '../icons/PhoneIcon'
 import { LanguageSwitcher } from '../LanguageSwitcher'
 import { HeaderNav } from './HeaderNav'
+import { HeaderActions } from './HeaderActions'
+import { HeaderMobileNav } from './HeaderMobileNav'
 
 export const Header = () => {
 	return (
@@ -36,9 +37,10 @@ export const Header = () => {
 					</div>
 					<div className='flex items-center justify-between gap-[10px] px-9 py-[10px] w750:px-5 w550:px-[10px]'>
 						<HeaderNav />
-						<button className='hidden w750:block'>
-							<BurgerMenuIcon />
-						</button>
+						<HeaderMobileNav />
+						<div className='w750:hidden'>
+							<HeaderActions />
+						</div>
 					</div>
 				</div>
 			</div>

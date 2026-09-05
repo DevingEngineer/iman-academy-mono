@@ -4,7 +4,7 @@ import { useActiveLink } from '@/src/hooks/useActiveLink'
 import { Link } from '@/src/i18n/navigation'
 import { cn } from '@/src/lib/cn'
 
-const HEADER_NAV_LINKS = [
+export const HEADER_NAV_LINKS = [
 	{
 		path: '/',
 		label: 'Главная',

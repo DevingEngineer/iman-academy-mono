@@ -1,9 +1,32 @@
+'use client'
+
+import { Link } from '@/src/i18n/navigation'
+import { useAuth } from '@/src/providers/AuthProvider'
 import { EditIcon } from '@/src/components/icons/EditIcon'
 import { VerifiedIcon } from '@/src/components/icons/VerifiedIcon'
 import { Button } from '@/src/components/UI/Button'
 import Image from 'next/image'
+import { useState } from 'react'
 
 export const StudentProfileHeader = () => {
+	const { user, isAuthenticated, isLoading, logout } = useAuth()
+	const [isSigningOut, setIsSigningOut] = useState(false)
+	const displayName = isAuthenticated && user ? user.userName || user.email : 'Гость'
+	const profileStatus = isLoading
+		? 'Проверка авторизации...'
+		: isAuthenticated
+			? 'Студент'
+			: 'Вы не вошли'
+
+	const handleSignOut = async () => {
+		setIsSigningOut(true)
+		try {
+			await logout()
+		} finally {
+			setIsSigningOut(false)
+		}
+	}
+
 	return (
 		<header className='py-[32px] w-full w550:py-[16px]'>
 			<div className='px-[85px] pt-[53px] pb-[18px] rounded-3xl flex gap-5 justify-between w-full bg-[linear-gradient(90deg,#091E3A_0%,#091E3A_15%,#2F80ED_55%,#2D9EE0_100%)] w550:rounded-xl w1250:px-[60px] w1050:px-[40px] w850:px-[25px] w1050:pt-[35px] w950:pt-[25px] w550:px-[16px] w650:pt-4 w750:flex-col'>
@@ -23,17 +46,45 @@ export const StudentProfileHeader = () => {
 						<div>
 							<div className='flex items-center gap-2'>
 								<h5 className='text-xl leading-[32px] font-bold w650:text-xs w650:font-normal'>
-									Курманбек Бакиев
+									{displayName}
 								</h5>
-								<EditIcon className='w650:w-[13px] w650:h-[13px]' />
+								{isAuthenticated && (
+									<EditIcon className='w650:w-[13px] w650:h-[13px]' />
+								)}
 							</div>
 							<p className='body1 pt-1 pb-4 w650:py-0 w650:text-xs'>
-								Студент
+								{profileStatus}
 							</p>
 						</div>
-						<Button className='max-h-[41px] py-[9px] px-4 body1 !font-normal w650:text-xs w650:px-3 w650:py-[6px]'>
-							Доступ активен
-						</Button>
+						{isLoading ? (
+							<Button
+								className='max-h-[41px] px-4 py-[9px] body1 !font-normal w650:text-xs w650:px-3 w650:py-[6px]'
+								disabled
+							>
+								Проверка...
+							</Button>
+						) : isAuthenticated ? (
+							<div className='flex items-center gap-2'>
+								<Button className='max-h-[41px] py-[9px] px-4 body1 !font-normal w650:text-xs w650:px-3 w650:py-[6px]'>
+									Доступ активен
+								</Button>
+								<Button
+									variant='outlined'
+									className='max-h-[41px] py-[9px] px-4 body1 !font-normal w650:text-xs w650:px-3 w650:py-[6px]'
+									onClick={handleSignOut}
+									disabled={isSigningOut}
+								>
+									{isSigningOut ? 'Выход...' : 'Выйти'}
+								</Button>
+							</div>
+						) : (
+							<Link
+								href='/login'
+								className='flex max-h-[41px] items-center rounded-lg border-2 border-white px-4 py-[9px] body1 !font-normal text-white w650:text-xs w650:px-3 w650:py-[6px]'
+							>
+								Войти
+							</Link>
+						)}
 					</div>
 				</div>
 				<div className='text-white'>
