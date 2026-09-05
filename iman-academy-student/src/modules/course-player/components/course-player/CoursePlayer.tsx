@@ -5,7 +5,11 @@ import { LessonList } from '../lesson-list/LessonList'
 import { LessonMaterials } from '../lesson-materials/LessonMaterials'
 import { VideoPlayer } from '../video-player/VideoPlayer'
 
-export const CoursePlayer = () => {
+interface CoursePlayerProps {
+  courseId: string;
+}
+
+export const CoursePlayer = ({ courseId }: CoursePlayerProps) => {
 	return (
 		<section className='bg-[#FFFCF7] py-10'>
 			<div className='mb-8'>

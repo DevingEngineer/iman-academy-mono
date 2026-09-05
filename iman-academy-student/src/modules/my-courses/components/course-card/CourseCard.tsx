@@ -45,7 +45,7 @@ export const CourseCard = (props: CourseCardProps) => {
 							</div>
 						</div>
 						{!props.isCompleted && (
-							<Link href={`/courses/${props.id}/description`}>
+							<Link href={`/courses/${props.id}`}>
 								<Button
 									variant='contained'
 									className='max-h-[44px] rounded-[10px] px-5 text-[14px] font-medium hover:opacity-90'
