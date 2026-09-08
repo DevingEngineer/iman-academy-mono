@@ -1,40 +1,43 @@
+'use client'
+
+import { fetchMyCourses } from '@/src/lib/auth-api'
 import { Course } from '../../types'
 import { CourseCard } from '../course-card/CourseCard'
-
-const COURSES: Course[] = [
-	{
-		id: '1',
-		title: 'Основы Акыда',
-		subtitle: 'Базовый уровень',
-		isCompleted: false,
-		completedLessons: 12,
-		totalLessons: 18,
-		progress: 75,
-	},
-	{
-		id: '2',
-		title: 'Фикх: очищение и намаз',
-		subtitle: 'Практический курс',
-		isCompleted: false,
-		completedLessons: 6,
-		totalLessons: 12,
-		progress: 75,
-	},
-	{
-		id: '3',
-		title: 'Чтение Корана с Тажуидом',
-		subtitle: 'Онлайн курс',
-		isCompleted: true,
-		completedLessons: 15,
-		totalLessons: 15,
-		progress: 100,
-	},
-] as const
+import { useEffect, useState } from 'react'
 
 export const CoursesList = () => {
+	const [courses, setCourses] = useState<Course[]>([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(() => {
+		fetchMyCourses()
+			.then((data) => {
+				setCourses(
+					data.map((course) => ({
+						id: course.id,
+						title: course.title,
+						subtitle: course.description ?? '',
+						isCompleted: false,
+						completedLessons: 0,
+						totalLessons: Number(course.modulesCount),
+						progress: 0,
+					}))
+				)
+			})
+			.catch(() => setError('Не удалось загрузить ваши курсы.'))
+			.finally(() => setLoading(false))
+	}, [])
+
+	if (loading) return <p className='pt-8 text-secondary_text'>Загрузка курсов...</p>
+	if (error) return <p className='pt-8 text-secondary_text'>{error}</p>
+	if (courses.length === 0) {
+		return <p className='pt-8 text-secondary_text'>У вас пока нет доступных курсов.</p>
+	}
+
 	return (
 		<div className='pt-8'>
-			{COURSES.map((course) => (
+			{courses.map((course) => (
 				<CourseCard {...course} key={course.id} />
 			))}
 		</div>

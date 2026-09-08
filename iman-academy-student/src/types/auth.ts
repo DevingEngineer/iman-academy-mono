@@ -39,6 +39,15 @@ export type CourseDto = {
 	modulesCount: number | string
 }
 
+export type StudentEnrollmentDto = {
+	enrollmentId: string
+	status: number | string
+	enrolledAt: string
+	completedAt: string | null
+	progressPercent: number | string | null
+	course: CourseDto
+}
+
 export type SyllabusSubModuleDto = {
 	subModuleId: string | null
 	moduleId: string | null

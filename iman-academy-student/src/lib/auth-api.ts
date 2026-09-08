@@ -3,6 +3,7 @@ import {
 	AuthApiError,
 	type CurrentUserResponse,
 	type CourseDto,
+	type StudentEnrollmentDto,
 	type SyllabusTreeDto,
 	type SubModuleDto,
 	type LoginRequest,
@@ -213,6 +214,27 @@ export async function fetchCurrentUser(): Promise<CurrentUserResponse> {
 
 export async function fetchCourses(): Promise<CourseDto[]> {
 	return authRequest<CourseDto[]>('/api/courses', { method: 'GET' }, true)
+}
+
+export async function fetchMyCourses(): Promise<CourseDto[]> {
+	return authRequest<CourseDto[]>('/api/enrollments/my', { method: 'GET' }, true)
+}
+
+export async function requestEnrollment(courseId: string): Promise<void> {
+	await authRequest<void>('/api/enrollments/request', {
+		method: 'POST',
+		body: JSON.stringify({ courseId }),
+	}, true)
+}
+
+export async function fetchMyCourseEnrollment(
+	courseId: string
+): Promise<StudentEnrollmentDto> {
+	return authRequest<StudentEnrollmentDto>(
+		`/api/enrollments/my/${courseId}`,
+		{ method: 'GET' },
+		true
+	)
 }
 
 export async function fetchCourse(courseId: string): Promise<CourseDto> {

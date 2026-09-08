@@ -1,5 +1,6 @@
 import { PageHeader } from '@/src/components/ui/PageHeader'
 import { Purchases } from '@/src/modules/purchases'
+import { EnrollmentActions } from '@/src/modules/purchases/components/enrollment-actions/EnrollmentActions'
 
 const PurchasesPage = () => {
 	return (
@@ -9,6 +10,7 @@ const PurchasesPage = () => {
 				description='Статусы платежей, источники, методы, экспорт CSV и быстрые операции.'
 			/>
 			<Purchases />
+			<EnrollmentActions mode='approve' />
 		</>
 	)
 }

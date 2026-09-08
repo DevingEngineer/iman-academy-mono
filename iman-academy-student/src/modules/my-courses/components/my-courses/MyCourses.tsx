@@ -1,3 +1,4 @@
+import { Link } from '@/src/i18n/navigation'
 import { CoursesList } from '../courses-list/CoursesList'
 
 export const MyCourses = () => {
@@ -12,9 +13,12 @@ export const MyCourses = () => {
 							автоматически.
 						</p>
 					</div>
-					<button className='py-[7px] px-[14px] border border-border_devider body2 rounded-full !font-normal'>
+					<Link
+						href='/courses'
+						className='py-[7px] px-[14px] border border-border_devider body2 rounded-full !font-normal'
+					>
 						Перейти в каталог
-					</button>
+					</Link>
 				</div>
 				<CoursesList />
 			</div>

@@ -101,6 +101,68 @@ export async function deleteCourseApi(id: string): Promise<void> {
   await http.delete(`/api/courses/${id}`)
 }
 
+export async function enrollStudentsApi(courseId: string, studentIds: string[]): Promise<void> {
+  await ensureCsrfCookie()
+  await http.post('/api/admin/enrollments/enroll', { courseId, studentIds })
+}
+
+export async function approveEnrollmentApi(enrollmentId: string): Promise<void> {
+  await ensureCsrfCookie()
+  await http.post(`/api/admin/enrollments/${enrollmentId}/approve`)
+}
+
+export type AdminEnrollment = {
+  id: string
+  studentId: string
+  studentName: string
+  studentEmail: string
+  courseId: string
+  courseTitle: string
+  status: string | number
+  enrolledAt: string | null
+}
+
+function firstString(...values: unknown[]): string {
+  return values.find((value): value is string => typeof value === 'string' && value.length > 0) ?? ''
+}
+
+function normalizeAdminEnrollment(value: unknown): AdminEnrollment | null {
+  if (!value || typeof value !== 'object') return null
+
+  const item = value as Record<string, unknown>
+  const course = item.course && typeof item.course === 'object'
+    ? item.course as Record<string, unknown>
+    : {}
+  const student = item.student && typeof item.student === 'object'
+    ? item.student as Record<string, unknown>
+    : {}
+  const id = firstString(item.enrollmentId, item.id)
+
+  if (!id) return null
+
+  return {
+    id,
+    studentId: firstString(item.studentId, student.id, student.userId),
+    studentName: firstString(item.studentName, student.fullName, student.userName, student.name),
+    studentEmail: firstString(item.studentEmail, student.email),
+    courseId: firstString(item.courseId, course.id),
+    courseTitle: firstString(item.courseTitle, course.title),
+    status: typeof item.status === 'number' || typeof item.status === 'string' ? item.status : 'Unknown',
+    enrolledAt: typeof item.enrolledAt === 'string' ? item.enrolledAt : null,
+  }
+}
+
+export async function fetchAdminEnrollmentsApi(): Promise<AdminEnrollment[]> {
+  const { data } = await http.get<unknown>('/api/admin/enrollments')
+  const items = Array.isArray(data)
+    ? data
+    : data && typeof data === 'object' && Array.isArray((data as { items?: unknown }).items)
+      ? (data as { items: unknown[] }).items
+      : []
+
+  return items.map(normalizeAdminEnrollment).filter((item): item is AdminEnrollment => item !== null)
+}
+
 export async function fetchCourseSyllabusApi(courseId: string): Promise<SyllabusTreeDto> {
   const { data } = await http.get<SyllabusTreeDto>(`/api/courses/syllabus/${courseId}`)
   return data
@@ -131,6 +193,9 @@ export default {
   createCourseApi,
   updateCourseApi,
   deleteCourseApi,
+  enrollStudentsApi,
+  approveEnrollmentApi,
+  fetchAdminEnrollmentsApi,
   fetchCourseSyllabusApi,
   syncCourseSyllabusApi,
   fetchSubModuleSyncApi,

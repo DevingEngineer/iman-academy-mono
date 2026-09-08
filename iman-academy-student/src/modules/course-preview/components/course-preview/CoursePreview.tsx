@@ -2,8 +2,17 @@
 
 import { Button } from '@/src/components/UI/Button'
 import { Link } from '@/src/i18n/navigation'
-import { fetchCourse, fetchCourseSyllabus } from '@/src/lib/auth-api'
-import type { CourseDto, SyllabusTreeDto } from '@/src/types/auth'
+import {
+	fetchCourse,
+	fetchCourseSyllabus,
+	fetchMyCourseEnrollment,
+	requestEnrollment,
+} from '@/src/lib/auth-api'
+import type {
+	CourseDto,
+	StudentEnrollmentDto,
+	SyllabusTreeDto,
+} from '@/src/types/auth'
 import { useEffect, useState } from 'react'
 
 type CoursePreviewProps = {
@@ -14,6 +23,9 @@ export const CoursePreview = ({ courseId }: CoursePreviewProps) => {
 	const [course, setCourse] = useState<CourseDto | null>(null)
 	const [syllabus, setSyllabus] = useState<SyllabusTreeDto | null>(null)
 	const [error, setError] = useState<string | null>(null)
+	const [requestState, setRequestState] = useState<'idle' | 'loading' | 'sent'>('idle')
+	const [requestError, setRequestError] = useState<string | null>(null)
+	const [enrollment, setEnrollment] = useState<StudentEnrollmentDto | null>(null)
 
 	useEffect(() => {
 		Promise.all([fetchCourse(courseId), fetchCourseSyllabus(courseId)])
@@ -22,7 +34,35 @@ export const CoursePreview = ({ courseId }: CoursePreviewProps) => {
 				setSyllabus(syllabusData)
 			})
 			.catch(() => setError('Не удалось загрузить информацию о курсе.'))
+
+		fetchMyCourseEnrollment(courseId)
+			.then(setEnrollment)
+			.catch((enrollmentError: unknown) => {
+				if (!isMissingEnrollment(enrollmentError)) {
+					setRequestError('Не удалось загрузить статус заявки.')
+				}
+			})
 	}, [courseId])
+
+	const handleEnrollmentRequest = async () => {
+		setRequestState('loading')
+		setRequestError(null)
+
+		try {
+			await requestEnrollment(courseId)
+			setRequestState('sent')
+			void fetchMyCourseEnrollment(courseId)
+				.then((nextEnrollment) => {
+					setEnrollment(nextEnrollment)
+					setRequestState('idle')
+				})
+		} catch {
+			setRequestState('idle')
+			setRequestError('Не удалось отправить заявку. Попробуйте ещё раз.')
+		}
+	}
+
+	const enrollmentButton = getEnrollmentButton(enrollment, requestState)
 
 	if (error) {
 		return <p className='py-10 text-secondary_text'>{error}</p>
@@ -52,11 +92,33 @@ export const CoursePreview = ({ courseId }: CoursePreviewProps) => {
 								</p>
 							)}
 						</div>
-						<Link href='/payment'>
-							<Button variant='contained' className='shrink-0 px-6'>
-								Купить курс
-							</Button>
-						</Link>
+						<div className='flex shrink-0 flex-col items-end gap-1'>
+							{!enrollment && (
+								<Button
+									variant='contained'
+									className='px-6'
+									onClick={handleEnrollmentRequest}
+									disabled={enrollmentButton.disabled}
+								>
+									{enrollmentButton.label}
+								</Button>
+							)}
+							{enrollment && requestState !== 'sent' && (
+								<div className='text-right'>
+									<p className='text-sm font-medium text-primary_text'>
+										{enrollmentButton.label}
+									</p>
+									<p className='mt-1 text-xs text-secondary_text'>
+										Заявка от {formatEnrollmentDate(enrollment.enrolledAt)}
+									</p>
+								</div>
+							)}
+							{requestError && (
+								<p className='max-w-[220px] text-right text-sm text-red-600'>
+									{requestError}
+								</p>
+							)}
+						</div>
 					</div>
 
 					{course.description && (
@@ -120,4 +182,48 @@ export const CoursePreview = ({ courseId }: CoursePreviewProps) => {
 			</div>
 		</section>
 	)
+}
+
+function isMissingEnrollment(error: unknown): boolean {
+	return typeof error === 'object' && error !== null && 'status' in error &&
+		(error as { status?: number }).status === 404
+}
+
+function getEnrollmentButton(
+	enrollment: StudentEnrollmentDto | null,
+	requestState: 'idle' | 'loading' | 'sent'
+): { label: string; disabled: boolean } {
+	if (requestState === 'loading') return { label: 'Отправка...', disabled: true }
+	if (requestState === 'sent') return { label: 'Заявка отправлена', disabled: true }
+
+	if (!enrollment) return { label: 'Запросить доступ', disabled: false }
+
+	const status = enrollment.status
+	const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : status
+	if (normalizedStatus === 'approved' || normalizedStatus === 'enrolled' || normalizedStatus === 1) {
+		return { label: 'Вы зачислены', disabled: true }
+	}
+	if (normalizedStatus === 'pending' || normalizedStatus === 'requested' || normalizedStatus === 0) {
+		return { label: 'Заявка на рассмотрении', disabled: true }
+	}
+	if (normalizedStatus === 'rejected' || normalizedStatus === 'declined' || normalizedStatus === 2) {
+		return { label: 'Заявка отклонена', disabled: true }
+	}
+	if (normalizedStatus === 'completed' || normalizedStatus === 3) {
+		return { label: 'Курс завершён', disabled: true }
+	}
+
+	return { label: `Статус заявки: ${String(status)}`, disabled: true }
+}
+
+function formatEnrollmentDate(value: string | null | undefined): string {
+	if (!value) return 'дата не указана'
+
+	const date = new Date(value)
+	if (Number.isNaN(date.getTime())) return value
+
+	return new Intl.DateTimeFormat('ru-RU', {
+		dateStyle: 'short',
+		timeStyle: 'short',
+	}).format(date)
 }
