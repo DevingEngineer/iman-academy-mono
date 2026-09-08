@@ -32,10 +32,10 @@ public enum QuestionType
 
 public enum EnrollmentStatus
 {
+    PendingRequest,
+    Paid,
     Active,
-    Completed,
-    Cancelled,
-    Expired
+    Cancelled
 }
 
 public enum AttemptStatus

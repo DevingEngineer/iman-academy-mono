@@ -17,12 +17,16 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestWebAppF
     // Available for arranging state the API can't create, or asserting DB
     // state the API's response DTOs don't expose.
     protected readonly ImanAcademyContext DbContext;
+    protected readonly IntegrationTestWebAppFactory Factory;
+
+    protected IServiceProvider ServiceProvider => _scope.ServiceProvider;
 
     protected BaseIntegrationTest(IntegrationTestWebAppFactory factory)
     {
         _scope = factory.Services.CreateScope();
         Client = factory.CreateClient();
         DbContext = _scope.ServiceProvider.GetRequiredService<ImanAcademyContext>();
+        Factory = factory;
     }
 
     public void Dispose()

@@ -243,8 +243,7 @@ namespace ImanAcademy.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("ApplicationUserId", "CourseId")
-                        .IsUnique();
+                    b.HasIndex("ApplicationUserId", "CourseId");
 
                     b.ToTable("Enrollments");
                 });

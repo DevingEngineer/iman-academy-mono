@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using System.Text.Json.Serialization;
+using ImanAcademy.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, configuration) =>
@@ -134,6 +135,7 @@ builder.Services.AddAntiforgery(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailSender>();
+builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<GoogleSignInService>();
 builder.Services.AddScoped<SubModuleSyncService>();
 builder.Services.AddAuthorization();

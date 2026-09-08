@@ -119,11 +119,10 @@ public partial class ImanAcademyContext : IdentityDbContext<ApplicationUser, Ide
                 .HasForeignKey(en => en.CourseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // One *active* enrollment per ApplicationUser/course - re-enrollment after
-            // Cancelled/Expired is allowed, so this can't be a plain unique index
-            // on (ApplicationUserId, CourseId).
+            // Active enrollment uniqueness is enforced by EnrollmentService so that
+            // cancelled enrollment history can be retained for re-enrollment.
             e.HasIndex(en => new { en.ApplicationUserId, en.CourseId })
-                .IsUnique(); // 0 = EnrollmentStatus.Active
+                .IsUnique(false);
         });
 
         // ---------- Module ----------
