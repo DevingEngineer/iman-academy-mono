@@ -33,4 +33,10 @@
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.7" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Controllers\CourseManageAdminOnly\" />
+	  <Folder Include="Controllers\CourseManageStudentsOnly\" />
+	  <Folder Include="Controllers\CourseManageAnyRole\" />
+	</ItemGroup>
+
 </Project>
