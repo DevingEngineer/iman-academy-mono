@@ -1,4 +1,5 @@
 using ImanAcademy.DTOs;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace ImanAcademy.Controllers.CourseManage;
 public partial class CoursesController
 {
     [HttpGet]
+    [Tags("CourseManageStudentsOnly")]
     public async Task<ActionResult<List<CourseDto>>> GetAll()
     {
         var courses = await _context.Courses
@@ -19,6 +21,7 @@ public partial class CoursesController
     }
 
     [HttpGet("{id:guid}")]
+    [Tags("CourseManageStudentsOnly")]
     public async Task<ActionResult<CourseDto>> GetById(Guid id)
     {
         var course = await _context.Courses
@@ -31,6 +34,7 @@ public partial class CoursesController
     }
 
     [HttpGet("{courseId:guid}/modules")]
+    [Tags("CourseManageStudentsOnly")]
     public async Task<ActionResult<List<ModuleDto>>> GetModules(Guid courseId)
     {
         if (!await _context.Courses.AnyAsync(c => c.Id == courseId)) return NotFound();

@@ -5,12 +5,13 @@ using ImanAcademy.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ImanAcademy.Controllers.Admin
+namespace ImanAcademy.Controllers.CourseManage.CourseManageAdminsOnly
 {
     [ApiController]
     [Route("api/admin/enrollments")]
     [Authorize]
     //[Authorize(Roles = "Admin")]
+    [Tags("CourseManageAdminsOnly")]
     public class EnrollmentsAdminController : ControllerBase
     {
         private readonly IEnrollmentService _enrollmentService;

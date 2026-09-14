@@ -2,12 +2,14 @@ using ImanAcademy.DTOs;
 using ImanAcademy.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OpenApi;
 
 namespace ImanAcademy.Controllers.CourseManage;
 
 public partial class CoursesController
 {
     [HttpPost]
+    [Tags("CourseManageAdminsOnly")]
     public async Task<ActionResult<CourseDto>> Create(CreateCourseDto dto)
     {
         var course = new Course { Id = Guid.NewGuid(), Title = dto.Title, Slug = dto.Slug, Description = dto.Description, ThumbnailUrl = dto.ThumbnailUrl, Level = dto.Level, Language = dto.Language, Price = dto.Price, Currency = dto.Currency, Status = dto.Status ?? ContentStatus.Draft, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
@@ -18,6 +20,7 @@ public partial class CoursesController
     }
 
     [HttpPut("{id:guid}")]
+    [Tags("CourseManageAdminsOnly")]
     public async Task<ActionResult<CourseDto>> Update(Guid id, UpdateCourseDto dto)
     {
         var courseWithModulesCount = await _context.Courses.Include(c => c.CourseTags).ThenInclude(ct => ct.Tag).Select(c => new { Course = c, ModulesCount = c.Modules.Count }).FirstOrDefaultAsync(c => c.Course.Id == id);
@@ -31,6 +34,7 @@ public partial class CoursesController
     }
 
     [HttpDelete("{id:guid}")]
+    [Tags("CourseManageAdminsOnly")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var course = await _context.Courses.FindAsync(id);
@@ -41,6 +45,7 @@ public partial class CoursesController
     }
 
     [HttpPost("{courseId:guid}/modules")]
+    [Tags("CourseManageAdminsOnly")]
     public async Task<ActionResult<ModuleDto>> CreateModule(Guid courseId, CreateModuleDto dto)
     {
         if (!await _context.Courses.AnyAsync(c => c.Id == courseId)) return NotFound();

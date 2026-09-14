@@ -1,12 +1,14 @@
 using ImanAcademy.DTOs;
 using ImanAcademy.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OpenApi;
 
 namespace ImanAcademy.Controllers.CourseManage;
 
 public partial class CourseSyllabusController
 {
     [HttpPut("{courseId:guid}/sync")]
+    [Tags("CourseManageAdminsOnly")]
     public async Task<ActionResult<SyllabusTreeDto>> Sync(Guid courseId, [FromBody] SyllabusTreeDto dto, CancellationToken ct)
     {
         var moduleIds = dto.Modules.Where(m => m.ModuleId.HasValue).Select(m => m.ModuleId!.Value).ToList();

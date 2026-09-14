@@ -1,12 +1,14 @@
 using ImanAcademy.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OpenApi;
 
 namespace ImanAcademy.Controllers.CourseManage;
 
 public partial class ModulesController
 {
     [HttpPut("{id:guid}")]
+    [Tags("CourseManageAdminsOnly")]
     public async Task<ActionResult<ModuleDto>> Update(Guid id, UpdateModuleDto dto)
     {
         var module = await _context.Modules.FindAsync(id);
@@ -17,6 +19,7 @@ public partial class ModulesController
     }
 
     [HttpDelete("{id:guid}")]
+    [Tags("CourseManageAdminsOnly")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var module = await _context.Modules.FindAsync(id);
@@ -27,6 +30,7 @@ public partial class ModulesController
     }
 
     [HttpPost("{moduleId:guid}/submodules")]
+    [Tags("CourseManageAdminsOnly")]
     public async Task<ActionResult<SubModuleDto>> CreateSubModule(Guid moduleId, CreateSubModuleDto dto)
     {
         if (!await _context.Modules.AnyAsync(m => m.Id == moduleId)) return NotFound();

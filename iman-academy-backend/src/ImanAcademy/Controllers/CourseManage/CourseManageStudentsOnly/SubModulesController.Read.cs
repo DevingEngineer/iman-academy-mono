@@ -1,5 +1,6 @@
 using ImanAcademy.DTOs;
 using ImanAcademy.Models;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace ImanAcademy.Controllers.CourseManage;
 public partial class SubModulesController
 {
     [HttpGet("{id:guid}")]
+    [Tags("CourseManageStudentsOnly")]
     public async Task<ActionResult<SubModuleDto>> GetById(Guid id)
     {
         var subModule = await _context.SubModules.Include(sm => sm.Steps).FirstOrDefaultAsync(sm => sm.Id == id);
@@ -16,6 +18,7 @@ public partial class SubModulesController
     }
 
     [HttpGet("{subModuleId:guid}/steps")]
+    [Tags("CourseManageStudentsOnly")]
     public async Task<ActionResult<List<StepDto>>> GetSteps(Guid subModuleId)
     {
         if (!await _context.SubModules.AnyAsync(sm => sm.Id == subModuleId)) return NotFound();

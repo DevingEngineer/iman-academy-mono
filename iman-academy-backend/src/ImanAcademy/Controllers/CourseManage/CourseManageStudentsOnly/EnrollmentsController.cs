@@ -9,10 +9,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ImanAcademy.Controllers
+namespace ImanAcademy.Controllers.CourseManage.CourseManageStudentsOnly
 {
     [ApiController]
     [Route("api/enrollments")]
+    [Tags("CourseManageStudentsOnly")]
     public class EnrollmentsController : ControllerBase
     {
         private readonly IEnrollmentService _enrollmentService;
