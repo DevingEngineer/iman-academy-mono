@@ -11,6 +11,22 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Controllers\CourseManageAdminOnly\**" />
+	  <Compile Remove="Controllers\CourseManageAnyRole\**" />
+	  <Compile Remove="Controllers\CourseManageStudentsOnly\**" />
+	  <Content Remove="Controllers\CourseManageAdminOnly\**" />
+	  <Content Remove="Controllers\CourseManageAnyRole\**" />
+	  <Content Remove="Controllers\CourseManageStudentsOnly\**" />
+	  <EmbeddedResource Remove="Controllers\CourseManageAdminOnly\**" />
+	  <EmbeddedResource Remove="Controllers\CourseManageAnyRole\**" />
+	  <EmbeddedResource Remove="Controllers\CourseManageStudentsOnly\**" />
+	  <None Remove="Controllers\CourseManageAdminOnly\**" />
+	  <None Remove="Controllers\CourseManageAnyRole\**" />
+	  <None Remove="Controllers\CourseManageStudentsOnly\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AWSSDK.S3" Version="4.0.103.3" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.75.0" />
 		<PackageReference Include="MailKit" Version="4.17.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.10" />
@@ -30,14 +46,13 @@
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+		<PackageReference Include="Supabase" Version="8.1.1" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.7" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Folder Include="Controllers\Admin\" />
-	  <Folder Include="Controllers\CourseManageAdminOnly\" />
-	  <Folder Include="Controllers\CourseManageStudentsOnly\" />
-	  <Folder Include="Controllers\CourseManageAnyRole\" />
+	  <Folder Include="wwwroot\" />
 	</ItemGroup>
 
 </Project>

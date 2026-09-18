@@ -131,6 +131,8 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
+builder.Services.Configure<S3StorageOptions>(builder.Configuration.GetSection("S3Storage"));
+builder.Services.AddSingleton<IFileStorageService, SupabaseS3StorageService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
