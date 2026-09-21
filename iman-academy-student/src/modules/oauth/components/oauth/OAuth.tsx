@@ -1,6 +1,5 @@
 import { AppleIcon } from '@/src/components/icons/AppleIcon'
 import { FacebookIcon } from '@/src/components/icons/FacebookIcon'
-import { GoogleIcon } from '@/src/components/icons/GoogleIcon'
 import { Button } from '@/src/components/UI/Button'
 import  GoogleSignInButton from '@/src/components/GoogleSignInButton'
 
