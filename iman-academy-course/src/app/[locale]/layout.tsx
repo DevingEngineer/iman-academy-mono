@@ -1,5 +1,6 @@
 import { routing } from '@/src/i18n/routing'
 import { AuthProvider } from '@/src/providers/AuthProvider'
+import { Analytics } from '@vercel/analytics/react'
 import NextIntlProvider from '@/src/providers/NextIntlProvider'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
@@ -34,6 +35,7 @@ const RootLayout = async ({ children, params }: RootLayoutProps) => {
 			<html lang={locale}>
 				<body className={`${inter.variable} antialiased`}>
 					<AuthProvider>{children}</AuthProvider>
+					<Analytics />
 					<Script
 						src='https://accounts.google.com/gsi/client'
 						strategy='afterInteractive'
