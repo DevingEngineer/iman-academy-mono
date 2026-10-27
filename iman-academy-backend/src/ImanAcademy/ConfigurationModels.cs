@@ -8,3 +8,12 @@ public class S3StorageOptions
     public string Endpoint { get; set; } = string.Empty;  // e.g. https://<project-ref>.storage.supabase.co/storage/v1/s3
     public string BucketName { get; set; } = string.Empty;
 }
+public class EmailOptions
+{
+    public string Host { get; set; } = string.Empty;
+    public int Port { get; set; } = 587;
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string FromAddress { get; set; } = string.Empty;
+
+}

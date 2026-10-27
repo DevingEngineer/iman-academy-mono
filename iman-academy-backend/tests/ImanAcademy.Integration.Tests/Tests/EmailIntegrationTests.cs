@@ -4,6 +4,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using MimeKit;
 using Supabase;
 using System;
@@ -67,12 +68,58 @@ public class EmailIntegrationTests : IClassFixture<ConfigFixture>
         Assert.True(smtp.IsConnected == false); // disconnected cleanly
     }
 }
-public class EmailOptions
-{
-    public string Host { get; set; } = string.Empty;
-    public int Port { get; set; } = 587;
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-    public string FromAddress { get; set; } = string.Empty;
 
+
+[Trait("Category", "Integration")]
+public class SmtpEmailSenderIntegrationTests : IClassFixture<ConfigFixture>
+{
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _config;
+
+    public SmtpEmailSenderIntegrationTests(ConfigFixture fixture)
+    {
+        _config = fixture.Configuration;
+
+        var emailOptions = _config.GetSection("Email").Get<EmailOptions>()
+                           ?? throw new InvalidOperationException("Email section missing from configuration.");
+
+        _emailService = new SmtpEmailSender(Options.Create(emailOptions));
+    }
+
+    [Fact]
+    public async Task SendEmailAsync_WithValidMessage_SendsWithoutThrowing()
+    {
+        // Arrange
+        var recipient = _config["Email:TestRecipient"];
+        Assert.False(string.IsNullOrWhiteSpace(recipient),
+            "Set Email:TestRecipient in appsettings.Test.json or user secrets before running this test.");
+
+        var subject = $"Integration test - {DateTime.UtcNow:O}";
+        var htmlMessage = "<p>Automated integration test email from SmtpEmailSender. Safe to ignore.</p>";
+
+        // Act
+        var exception = await Record.ExceptionAsync(() =>
+            _emailService.SendEmailAsync(recipient!, subject, htmlMessage));
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task SendEmailAsync_WithMissingHost_ThrowsRatherThanHangingOrSilentlyFailing()
+    {
+        // Arrange — bad host so the connect step fails fast and loud
+        var badOptions = Options.Create(new EmailOptions
+        {
+            Host = "smtp.invalid.nonexistent-domain.test",
+            Port = 587,
+            FromAddress = "noreply@example.com"
+        });
+
+        var sender = new SmtpEmailSender(badOptions);
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(() =>
+            sender.SendEmailAsync("someone@example.com", "test", "<p>test</p>"));
+    }
 }

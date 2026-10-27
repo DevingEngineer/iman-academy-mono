@@ -1,5 +1,6 @@
 ﻿using MimeKit;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
 
 namespace ImanAcademy;
 
@@ -9,32 +10,31 @@ public interface IEmailService
 }
 public class SmtpEmailSender : IEmailService
 {
-    private readonly IConfiguration _config;
+    private readonly EmailOptions _emailOptions;
 
-    public SmtpEmailSender(IConfiguration config)
+    public SmtpEmailSender(IOptions<EmailOptions> emailOptions)
     {
-        _config = config;
+        _emailOptions = emailOptions.Value;
     }
 
     public async Task SendEmailAsync(string toEmail, string subject, string htmlMessage)
     {
-        var smtpSection = _config.GetSection("Smtp");
 
         var message = new MimeMessage();
-        message.From.Add(MailboxAddress.Parse(smtpSection["FromAddress"]));
+        message.From.Add(MailboxAddress.Parse(_emailOptions.FromAddress));
         message.To.Add(MailboxAddress.Parse(toEmail));
         message.Subject = subject;
         message.Body = new TextPart("html") { Text = htmlMessage };
 
         using var client = new SmtpClient();
         await client.ConnectAsync(
-            smtpSection["Host"],
-            int.Parse(smtpSection["Port"]!),
+            _emailOptions.Host,
+            _emailOptions.Port,
             MailKit.Security.SecureSocketOptions.StartTls);
 
-        var user = smtpSection["Username"];
+        var user = _emailOptions.Username;
         if (!string.IsNullOrEmpty(user))
-            await client.AuthenticateAsync(user, smtpSection["Password"]);
+            await client.AuthenticateAsync(user, _emailOptions.Password);
 
         await client.SendAsync(message);
         await client.DisconnectAsync(true);

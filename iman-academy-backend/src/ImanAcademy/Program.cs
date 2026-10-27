@@ -16,6 +16,10 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration)
 );
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.Configure<S3StorageOptions>(builder.Configuration.GetSection("S3Storage"));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Smtp"));
+
+
 // Add services to the container.
 
 builder.Services.AddControllers()
@@ -64,6 +68,19 @@ builder.Services.AddCors(options =>
                    .AllowAnyMethod()
                    .AllowAnyHeader()
                    .AllowCredentials(); // Required if you pass cookies or HttpOnly tokens
+
+            //policy.WithOrigins("https://iman-academy-admin.vercel.app") // Your Next.js local URL
+            //      .AllowAnyHeader()
+            //      .AllowAnyMethod()
+            //      .AllowCredentials()
+            //      .WithOrigins("https://iman-academy-course.vercel.app") // Your Next.js local URL
+            //       .AllowAnyMethod()
+            //       .AllowAnyHeader()
+            //       .AllowCredentials() // Required if you pass cookies or HttpOnly tokens
+            //        .WithOrigins("https://iman-academy-student.vercel.app") // Your Next.js local URL
+            //       .AllowAnyMethod()
+            //       .AllowAnyHeader()
+            //       .AllowCredentials(); // Required if you 
         });
 });
 
@@ -131,7 +148,6 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
-builder.Services.Configure<S3StorageOptions>(builder.Configuration.GetSection("S3Storage"));
 builder.Services.AddSingleton<IFileStorageService, SupabaseS3StorageService>();
 
 builder.Services.AddAuthorization();
@@ -143,6 +159,12 @@ builder.Services.AddScoped<SubModuleSyncService>();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
+builder.Services.AddAntiforgery(options =>
+{
+    // Disables the strict SSL requirement for antiforgery cookies
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -154,7 +176,6 @@ if (true || app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("frontendCorsPolicy");
-app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
