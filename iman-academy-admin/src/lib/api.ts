@@ -52,48 +52,60 @@ function mapBackendStatus(status: unknown): Course['status'] {
         return 'draft'
     }
   }
+  if (status === 'published' || status === 'archived' || status === 'draft') {
+    return status
+  }
   return 'draft'
 }
 
-export async function fetchCourses(): Promise<Course[]> {
-  const { data } = await http.get<any[]>('/api/courses')
-  return (data ?? []).map((dto) => ({
+export function mapBackendCourse(dto: any): Course {
+  return {
     id: String(dto.id),
     title: String(dto.title ?? ''),
     slug: String(dto.slug ?? dto.id ?? ''),
     description: dto.description ?? '',
     thumbnailUrl: dto.thumbnailUrl ?? undefined,
-    instructorIds: [],
+    instructorIds: Array.isArray(dto.instructorIds) ? dto.instructorIds : [],
     tags: Array.isArray(dto.tags) ? dto.tags : [],
     level: mapBackendLevel(dto.level),
-    language: dto.language ?? 'en',
+    language: dto.language ?? 'ru',
     price: typeof dto.price === 'number' ? dto.price : Number(dto.price ?? 0) || 0,
-    currency: dto.currency ?? 'USD',
+    currency: dto.currency ?? 'KGS',
     status: mapBackendStatus(dto.status),
     createdAt: dto.createdAt ?? new Date().toISOString(),
     updatedAt: dto.updatedAt ?? new Date().toISOString(),
     modules: [],
-  }))
+  }
+}
+
+export async function fetchCourses(): Promise<Course[]> {
+  const { data } = await http.get<any[]>('/api/courses')
+  return (data ?? []).map(mapBackendCourse)
+}
+
+export async function fetchCourseById(id: string): Promise<Course> {
+  const { data } = await http.get<any>(`/api/courses/${id}`)
+  return mapBackendCourse(data)
 }
 
 export async function createCourseApi(payload: Partial<Course>): Promise<Course> {
   await ensureCsrfCookie()
-  const { data } = await http.post<Course>('/api/courses', {
+  const { data } = await http.post<any>('/api/courses', {
     ...payload,
     level: mapLevelToBackend(payload.level),
     status: mapStatusToBackend(payload.status),
   })
-  return data
+  return mapBackendCourse(data)
 }
 
 export async function updateCourseApi(id: string, payload: Partial<Course>): Promise<Course> {
   await ensureCsrfCookie()
-  const { data } = await http.put<Course>(`/api/courses/${id}`, {
+  const { data } = await http.put<any>(`/api/courses/${id}`, {
     ...payload,
     level: mapLevelToBackend(payload.level),
     status: mapStatusToBackend(payload.status),
   })
-  return data
+  return mapBackendCourse(data)
 }
 
 export async function deleteCourseApi(id: string): Promise<void> {
@@ -190,6 +202,7 @@ export async function syncSubModuleApi(payload: SubModule): Promise<SubModule> {
 
 export default {
   fetchCourses,
+  fetchCourseById,
   createCourseApi,
   updateCourseApi,
   deleteCourseApi,

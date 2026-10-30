@@ -1,66 +1,174 @@
 'use client'
 
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/src/components/ui/PageHeader'
-import { useEffect, useState } from 'react'
-import type { Course } from '@/src/types/course-types'
-import { fetchCourses } from '@/src/lib/api'
+import { Button } from '@/src/components/ui/Button'
+import { PlusIcon } from '@/src/components/icons/PlusIcon'
+import { useCourses } from '@/src/hooks/useCourses'
+import { deleteCourse, updateCourse } from '@/src/lib/course-storage'
+import { CourseListItem } from '@/src/components/courses/CourseListItem'
+import { CourseDeleteModal } from '@/src/components/courses/CourseDeleteModal'
+import { CourseMetrics } from '@/src/components/courses/CourseMetrics'
+import { CourseFilterBar } from '@/src/components/courses/CourseFilterBar'
+import { CourseEmptyState } from '@/src/components/courses/CourseEmptyState'
+import type { Course, ContentStatus, CourseLevel } from '@/src/types/course-types'
 
 const CoursesPage = () => {
-	const [courses, setCourses] = useState<Course[]>([])
-	const [loading, setLoading] = useState(true)
+	const courses = useCourses()
+	const [searchQuery, setSearchQuery] = useState('')
+	const [statusFilter, setStatusFilter] = useState<'all' | ContentStatus>('all')
+	const [levelFilter, setLevelFilter] = useState<'all' | CourseLevel>('all')
+	const [sortBy, setSortBy] = useState<'updated' | 'title' | 'price'>('updated')
 
-	useEffect(() => {
-		let mounted = true
-		fetchCourses()
-			.then((data) => mounted && setCourses(data))
-			.catch(() => {
-				// keep empty on error; UI can still create courses
+	const [courseToDelete, setCourseToDelete] = useState<Course | null>(null)
+	const [isDeleting, setIsDeleting] = useState(false)
+	const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null)
+
+	const stats = useMemo(() => {
+		const total = courses.length
+		const published = courses.filter((c) => c.status === 'published').length
+		const drafts = courses.filter((c) => c.status === 'draft').length
+		const archived = courses.filter((c) => c.status === 'archived').length
+		return { total, published, drafts, archived }
+	}, [courses])
+
+	const filteredCourses = useMemo(() => {
+		return courses
+			.filter((course) => {
+				const query = searchQuery.toLowerCase().trim()
+				if (query) {
+					const titleMatch = course.title.toLowerCase().includes(query)
+					const slugMatch = course.slug.toLowerCase().includes(query)
+					const descMatch = (course.description ?? '').toLowerCase().includes(query)
+					const tagsMatch = course.tags?.some((t) => t.toLowerCase().includes(query))
+					if (!titleMatch && !slugMatch && !descMatch && !tagsMatch) return false
+				}
+
+				if (statusFilter !== 'all' && course.status !== statusFilter) {
+					return false
+				}
+
+				if (levelFilter !== 'all' && course.level !== levelFilter) {
+					return false
+				}
+
+				return true
 			})
-			.finally(() => mounted && setLoading(false))
+			.sort((a, b) => {
+				if (sortBy === 'title') {
+					return a.title.localeCompare(b.title)
+				}
+				if (sortBy === 'price') {
+					return (a.price ?? 0) - (b.price ?? 0)
+				}
+				const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime()
+				const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime()
+				return dateB - dateA
+			})
+	}, [courses, searchQuery, statusFilter, levelFilter, sortBy])
 
-		return () => {
-			mounted = false
+	const handleStatusChange = async (course: Course, nextStatus: ContentStatus) => {
+		if (course.status === nextStatus) return
+		try {
+			setStatusUpdatingId(course.id)
+			updateCourse({
+				...course,
+				status: nextStatus,
+				updatedAt: new Date().toISOString(),
+			})
+		} finally {
+			setStatusUpdatingId(null)
 		}
-	}, [])
+	}
+
+	const handleDeleteConfirm = async () => {
+		if (!courseToDelete) return
+		try {
+			setIsDeleting(true)
+			await deleteCourse(courseToDelete.id)
+			setCourseToDelete(null)
+		} catch (error) {
+			console.error('Ошибка при удалении курса', error)
+			alert('Не удалось удалить курс. Попробуйте ещё раз.')
+		} finally {
+			setIsDeleting(false)
+		}
+	}
+
+	const resetFilters = () => {
+		setSearchQuery('')
+		setStatusFilter('all')
+		setLevelFilter('all')
+	}
 
 	return (
-		<>
-			<PageHeader
-				title='Управление курсами'
-				description='Поиск, фильтры и массовые действия; создание, редактирование и публикация.'
+		<div className='space-y-6'>
+			<div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+				<PageHeader
+					title='Управление курсами'
+					description='Создание, редактирование программ, настройки публикаций и аналитика курсов.'
+				/>
+				<Link href='/courses/create'>
+					<Button className='flex items-center gap-2 whitespace-nowrap shadow-sm'>
+						<PlusIcon className='h-5 w-5' />
+						<span>Создать курс</span>
+					</Button>
+				</Link>
+			</div>
+
+			<CourseMetrics
+				stats={stats}
+				statusFilter={statusFilter}
+				onStatusFilterChange={setStatusFilter}
 			/>
 
-			<div className='mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
-				<div className='mb-4 flex items-center justify-between'>
-					<h2 className='text-lg font-semibold text-slate-900'>Список курсов</h2>
-					<span className='rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600'>
-						{loading ? 'Загрузка...' : `${courses.length} курса`}
-					</span>
+			<CourseFilterBar
+				searchQuery={searchQuery}
+				onSearchQueryChange={setSearchQuery}
+				levelFilter={levelFilter}
+				onLevelFilterChange={setLevelFilter}
+				sortBy={sortBy}
+				onSortByChange={setSortBy}
+			/>
+
+			<div className='rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
+				<div className='flex items-center justify-between border-b border-slate-200 px-6 py-4'>
+					<h2 className='text-lg font-semibold text-slate-900'>
+						Список курсов
+						<span className='ml-2 text-sm font-normal text-slate-500'>
+							({filteredCourses.length} из {courses.length})
+						</span>
+					</h2>
 				</div>
 
-				<ul className='space-y-3'>
-					{courses.map((course) => (
-						<li key={course.id}>
-							<Link
-								href={`/courses/${course.id}/description`}
-								className='flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 transition-colors hover:border-color_brand_primary hover:bg-slate-50'
-							>
-								<div>
-									<p className='font-medium text-slate-900'>{course.title}</p>
-									<p className='text-sm text-slate-500'>
-										{course.level} • {course.modules.length} модулей
-									</p>
-								</div>
-								<span className='rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700'>
-									{course.status}
-								</span>
-							</Link>
-						</li>
-					))}
-				</ul>
+				{filteredCourses.length === 0 ? (
+					<CourseEmptyState
+						hasCourses={courses.length > 0}
+						onResetFilters={resetFilters}
+					/>
+				) : (
+					<ul className='divide-y divide-slate-100'>
+						{filteredCourses.map((course) => (
+							<CourseListItem
+								key={course.id}
+								course={course}
+								isUpdating={statusUpdatingId === course.id}
+								onStatusChange={(status) => handleStatusChange(course, status)}
+								onDeleteClick={() => setCourseToDelete(course)}
+							/>
+						))}
+					</ul>
+				)}
 			</div>
-		</>
+
+			<CourseDeleteModal
+				course={courseToDelete}
+				isDeleting={isDeleting}
+				onClose={() => setCourseToDelete(null)}
+				onConfirm={handleDeleteConfirm}
+			/>
+		</div>
 	)
 }
 

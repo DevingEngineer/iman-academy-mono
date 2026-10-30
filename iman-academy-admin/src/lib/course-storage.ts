@@ -1,14 +1,14 @@
 import type { Course, Module, SubModule } from '../types/course-types'
 import { TEMPORARY_COURSES } from '../consts/courses'
 import {
-  fetchCourses,
-  createCourseApi,
-  updateCourseApi,
-  deleteCourseApi,
-  fetchCourseSyllabusApi,
-  syncCourseSyllabusApi,
-  mapLevelToBackend,
-  mapStatusToBackend,
+	fetchCourses,
+	createCourseApi,
+	updateCourseApi,
+	deleteCourseApi,
+	fetchCourseSyllabusApi,
+	syncCourseSyllabusApi,
+	mapLevelToBackend,
+	mapStatusToBackend,
 } from './api'
 import type { SyllabusTreeDto } from '../types'
 
@@ -19,53 +19,53 @@ let cachedCourses: Course[] = TEMPORARY_COURSES
 let hasSyncedWithBackend = false
 
 const isPersistedEntityId = (value?: string | null): value is string =>
-  !!value && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value)
+	!!value && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value)
 
 const mapSyllabusTreeToCourseModules = (courseId: string, tree: SyllabusTreeDto): Module[] =>
-  (tree.modules ?? []).map((module, moduleIndex) => ({
-    id: module.moduleId ?? `module-${courseId}-${moduleIndex}`,
-    courseId,
-    title: module.moduleName ?? `Module ${moduleIndex + 1}`,
-    order: Number(module.order ?? 0),
-    status: 'draft',
-    subModules: (module.subModules ?? []).map((subModule, subModuleIndex) => ({
-      id: subModule.subModuleId ?? `submodule-${courseId}-${moduleIndex}-${subModuleIndex}`,
-      moduleId: subModule.moduleId ?? `module-${courseId}-${moduleIndex}`,
-      title: subModule.subModuleName,
-      order: Number(subModule.order ?? 0),
-      steps: [],
-    })),
-  }))
+	(tree.modules ?? []).map((module, moduleIndex) => ({
+		id: module.moduleId ?? `module-${courseId}-${moduleIndex}`,
+		courseId,
+		title: module.moduleName ?? `Module ${moduleIndex + 1}`,
+		order: Number(module.order ?? 0),
+		status: 'draft',
+		subModules: (module.subModules ?? []).map((subModule, subModuleIndex) => ({
+			id: subModule.subModuleId ?? `submodule-${courseId}-${moduleIndex}-${subModuleIndex}`,
+			moduleId: subModule.moduleId ?? `module-${courseId}-${moduleIndex}`,
+			title: subModule.subModuleName,
+			order: Number(subModule.order ?? 0),
+			steps: [],
+		})),
+	}))
 
 const mapCourseToSyllabusTree = (course: Course): SyllabusTreeDto => ({
-  courseId: course.id,
-  courseName: course.title,
-  modules: course.modules.map((module, moduleIndex) => ({
-    moduleId: isPersistedEntityId(module.id) ? module.id : null,
-    courseId: course.id,
-    moduleName: module.title,
-    order: Number(module.order ?? 0),
-    subModules: module.subModules.map((subModule, subModuleIndex) => ({
-      subModuleId: isPersistedEntityId(subModule.id) ? subModule.id : null,
-      moduleId: isPersistedEntityId(subModule.moduleId) ? subModule.moduleId : null,
-      subModuleName: subModule.title,
-      order: Number(subModule.order ?? 0),
-    })),
-  })),
+	courseId: course.id,
+	courseName: course.title,
+	modules: course.modules.map((module, moduleIndex) => ({
+		moduleId: isPersistedEntityId(module.id) ? module.id : null,
+		courseId: course.id,
+		moduleName: module.title,
+		order: Number(module.order ?? 0),
+		subModules: module.subModules.map((subModule, subModuleIndex) => ({
+			subModuleId: isPersistedEntityId(subModule.id) ? subModule.id : null,
+			moduleId: isPersistedEntityId(subModule.moduleId) ? subModule.moduleId : null,
+			subModuleName: subModule.title,
+			order: Number(subModule.order ?? 0),
+		})),
+	})),
 })
 
 const hydrateCourseFromBackend = async (course: Course): Promise<Course> => {
-  if (!course.id || course.id.startsWith('temp-')) return course
+	if (!course.id || course.id.startsWith('temp-')) return course
 
-  try {
-    const syllabus = await fetchCourseSyllabusApi(course.id)
-    return {
-      ...course,
-      modules: mapSyllabusTreeToCourseModules(course.id, syllabus),
-    }
-  } catch {
-    return course
-  }
+	try {
+		const syllabus = await fetchCourseSyllabusApi(course.id)
+		return {
+			...course,
+			modules: mapSyllabusTreeToCourseModules(course.id, syllabus),
+		}
+	} catch {
+		return course
+	}
 }
 
 const isCourse = (value: unknown): value is Course => {
@@ -123,37 +123,139 @@ export const getCourses = (): Course[] => {
 	return cachedCourses
 }
 
-export const createCourseSlug = (title: string, courses: Course[]) => {
-	const tempId = `course-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-	const existingSlugs = new Set(courses.map((course) => course.slug))
-	let slug = tempId
+export type CreateCourseInput = {
+	title: string
+	slug?: string
+	description?: string
+	thumbnailUrl?: string
+	instructorIds?: string[]
+	tags?: string[]
+	level?: Course['level']
+	language?: string
+	price?: number
+	currency?: string
+	status?: Course['status']
+}
+
+export const slugify = (text: string): string => {
+	const ruMap: Record<string, string> = {
+		а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh',
+		з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o',
+		п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts',
+		ч: 'ch', ш: 'sh', щ: 'shch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
+		ә: 'a', ғ: 'g', қ: 'q', ң: 'n', ө: 'o', ұ: 'u', ү: 'u', һ: 'h', і: 'i',
+	}
+
+	const transliterated = text
+		.toLowerCase()
+		.split('')
+		.map((char) => ruMap[char] ?? char)
+		.join('')
+
+	return transliterated
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '') || `course-${Date.now().toString(36)}`
+}
+
+export const createCourseSlug = (title: string, courses: Course[]): string => {
+	const base = slugify(title)
+	const existingSlugs = new Set(courses.map((course) => course.slug.toLowerCase()))
+	let slug = base
 	let suffix = 2
 
-	while (existingSlugs.has(slug)) {
-		slug = `${tempId}-${suffix}`
+	while (existingSlugs.has(slug.toLowerCase())) {
+		slug = `${base}-${suffix}`
 		suffix += 1
 	}
 
 	return slug
 }
 
-export const saveCourse = (title: string): Course => {
+export const getCourseById = (idOrSlug: string): Course | undefined => {
+	const clean = decodeURIComponent(idOrSlug)
+	return getCourses().find((c) => c.id === clean || c.slug === clean)
+}
+
+export const createCourseAsync = async (input: string | CreateCourseInput): Promise<Course> => {
 	const now = new Date().toISOString()
 	const courses = getCourses()
+	const data: CreateCourseInput = typeof input === 'string' ? { title: input } : input
+	const title = data.title.trim()
+	const rawSlug = data.slug?.trim() ? slugify(data.slug) : createCourseSlug(title, courses)
+	const slug = rawSlug || createCourseSlug(title, courses)
+
+	const payload: Partial<Course> = {
+		title,
+		slug,
+		description: data.description?.trim() ?? '',
+		thumbnailUrl: data.thumbnailUrl?.trim() || undefined,
+		instructorIds: data.instructorIds ?? [],
+		tags: data.tags ?? [],
+		level: data.level ?? 'beginner',
+		language: data.language ?? 'ru',
+		price: typeof data.price === 'number' ? data.price : Number(data.price ?? 0) || 0,
+		currency: data.currency ?? 'KGS',
+		status: data.status ?? 'draft',
+	}
+
+	try {
+		const created = await createCourseApi(payload)
+		const currentStored = getStoredCourses()
+		const updatedStored = [...currentStored.filter((c) => c.id !== created.id), created]
+		window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStored))
+		cachedStoredCourses = ''
+		window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
+		return created
+	} catch (err) {
+		console.warn('Backend course creation failed, using local storage fallback', err)
+		const tempId = `temp-course-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+		const fallbackCourse: Course = {
+			id: tempId,
+			title: payload.title!,
+			slug: payload.slug!,
+			description: payload.description ?? '',
+			thumbnailUrl: payload.thumbnailUrl,
+			instructorIds: payload.instructorIds ?? [],
+			tags: payload.tags ?? [],
+			level: payload.level ?? 'beginner',
+			language: payload.language ?? 'ru',
+			price: payload.price ?? 0,
+			currency: payload.currency ?? 'KGS',
+			status: payload.status ?? 'draft',
+			createdAt: now,
+			updatedAt: now,
+			modules: [],
+		}
+
+		const currentStored = getStoredCourses()
+		const updatedStored = [...currentStored, fallbackCourse]
+		window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStored))
+		cachedStoredCourses = ''
+		window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
+		return fallbackCourse
+	}
+}
+
+export const saveCourse = (titleOrInput: string | CreateCourseInput): Course => {
+	const now = new Date().toISOString()
+	const courses = getCourses()
+	const data: CreateCourseInput = typeof titleOrInput === 'string' ? { title: titleOrInput } : titleOrInput
+	const title = data.title.trim()
 	const tempId = `temp-course-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-	const slug = createCourseSlug(title, courses)
+	const slug = data.slug?.trim() ? slugify(data.slug) : createCourseSlug(title, courses)
 	const course: Course = {
 		id: tempId,
 		title,
 		slug,
-		description: '',
-		instructorIds: [],
-		tags: [],
-		level: 'beginner',
-		language: 'ru',
-		price: 0,
-		currency: 'KZT',
-		status: 'draft',
+		description: data.description?.trim() ?? '',
+		thumbnailUrl: data.thumbnailUrl?.trim() || undefined,
+		instructorIds: data.instructorIds ?? [],
+		tags: data.tags ?? [],
+		level: data.level ?? 'beginner',
+		language: data.language ?? 'ru',
+		price: typeof data.price === 'number' ? data.price : Number(data.price ?? 0) || 0,
+		currency: data.currency ?? 'KGS',
+		status: data.status ?? 'draft',
 		createdAt: now,
 		updatedAt: now,
 		modules: [],
@@ -161,6 +263,7 @@ export const saveCourse = (title: string): Course => {
 
 	const storedCourses = [...getStoredCourses(), course]
 	window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storedCourses))
+	cachedStoredCourses = ''
 	window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 
 	createCourseApi({
@@ -173,6 +276,7 @@ export const saveCourse = (title: string): Course => {
 		currency: course.currency,
 		status: course.status,
 		tags: course.tags,
+		thumbnailUrl: course.thumbnailUrl,
 	})
 		.then(async (created) => {
 			const backendCourse: Course = {
@@ -185,19 +289,16 @@ export const saveCourse = (title: string): Course => {
 			}
 
 			const current = getStoredCourses()
-			// Replace temp with backend course but keep a reference to local temp data
 			const temp = current.find((c) => c.id === tempId)
 			const replaced = current.map((c) => (c.id === tempId ? backendCourse : c))
 			window.localStorage.setItem(STORAGE_KEY, JSON.stringify(replaced))
+			cachedStoredCourses = ''
 			window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 
-			// If the user had added modules/submodules/steps locally before creation completed,
-			// push that syllabus to the backend immediately so edits aren't lost.
 			if (temp && Array.isArray(temp.modules) && temp.modules.length > 0) {
 				const tree = mapCourseToSyllabusTree({ ...backendCourse, modules: temp.modules })
 				syncCourseSyllabusApi(String(created.id), tree)
 					.then(async () => {
-						// Fetch refreshed syllabus from backend and store it
 						try {
 							const syllabus = await fetchCourseSyllabusApi(String(created.id))
 							const refreshed = {
@@ -206,6 +307,7 @@ export const saveCourse = (title: string): Course => {
 							}
 							const finalCourses = getStoredCourses().map((c) => (c.id === tempId ? refreshed : c))
 							window.localStorage.setItem(STORAGE_KEY, JSON.stringify(finalCourses))
+							cachedStoredCourses = ''
 							window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
 						} catch {
 							// ignore
@@ -219,6 +321,28 @@ export const saveCourse = (title: string): Course => {
 		})
 
 	return course
+}
+
+export const deleteCourse = async (id: string): Promise<void> => {
+	const storedCourses = getStoredCourses().filter((c) => c.id !== id && c.slug !== id)
+	window.localStorage.setItem(STORAGE_KEY, JSON.stringify(storedCourses))
+	cachedStoredCourses = ''
+	cachedCourses = cachedCourses.filter((c) => c.id !== id && c.slug !== id)
+	window.dispatchEvent(new Event(COURSES_UPDATED_EVENT))
+
+	const isTemporary = id.startsWith('temp-') ||
+		id === 'course-react-basics' ||
+		id === 'course-typescript-for-beginners' ||
+		id === 'course-ui-ux-design'
+
+	if (!isTemporary) {
+		try {
+			await deleteCourseApi(id)
+		} catch (err) {
+			console.error('Failed to delete course on backend', err)
+			throw err
+		}
+	}
 }
 
 export const updateCourse = (course: Course) => {

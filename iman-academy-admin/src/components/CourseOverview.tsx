@@ -1,41 +1,132 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { fetchCourses } from '../lib/api'
-import type { Course } from '../types/course-types'
+import { useCourse } from '../hooks/useCourses'
+import { fetchAdminEnrollmentsApi, fetchCourseSyllabusApi } from '../lib/api'
+import { CourseOverviewHero } from './courses/CourseOverviewHero'
+import { CourseCurriculumSummary } from './courses/CourseCurriculumSummary'
+import type { Module } from '../types/course-types'
 
 export const CourseOverview = ({ courseSlug }: { courseSlug: string }) => {
-	const [courses, setCourses] = useState<Course[]>([])
+	const { course, loading } = useCourse(courseSlug)
+	const [enrolledCount, setEnrolledCount] = useState<number | null>(null)
+	const [modules, setModules] = useState<Module[]>([])
+	const [isLoadingSyllabus, setIsLoadingSyllabus] = useState(false)
+
 	useEffect(() => {
-		let mounted = true
-		fetchCourses()
-			.then((data) => {
-				if (mounted) setCourses(data)
+		if (!course?.id) return
+
+		// Fetch enrolled students count
+		fetchAdminEnrollmentsApi()
+			.then((list) => {
+				const matching = list.filter((e) => e.courseId === course.id)
+				setEnrolledCount(matching.length)
 			})
-			.catch(() => {})
-		return () => {
-			mounted = false
+			.catch(() => setEnrolledCount(0))
+
+		// Fetch syllabus if modules are not loaded
+		if (course.modules && course.modules.length > 0) {
+			setModules(course.modules)
+		} else if (!course.id.startsWith('temp-')) {
+			setIsLoadingSyllabus(true)
+			fetchCourseSyllabusApi(course.id)
+				.then((tree) => {
+					const mapped: Module[] = (tree.modules ?? []).map((m, idx) => ({
+						id: m.moduleId ?? `mod-${idx}`,
+						courseId: course.id,
+						title: m.moduleName || `Модуль ${idx + 1}`,
+						order: Number(m.order ?? idx + 1),
+						status: 'draft',
+						subModules: (m.subModules ?? []).map((s, sIdx) => ({
+							id: s.subModuleId ?? `sub-${idx}-${sIdx}`,
+							moduleId: m.moduleId ?? `mod-${idx}`,
+							title: s.subModuleName,
+							order: Number(s.order ?? sIdx + 1),
+							steps: [],
+						})),
+					}))
+					setModules(mapped)
+				})
+				.catch(() => setModules([]))
+				.finally(() => setIsLoadingSyllabus(false))
 		}
-	}, [])
-	const cleanSlug = decodeURIComponent(courseSlug)
-	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
+	}, [course?.id, course?.modules])
+
+	if (loading && !course) {
+		return (
+			<div className='rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-sm'>
+				Загрузка информации о курсе...
+			</div>
+		)
+	}
 
 	if (!course) return null
 
+	const formattedPrice =
+		course.price && course.price > 0
+			? `${course.price.toLocaleString()} ${course.currency}`
+			: 'Бесплатно'
+
+	const formattedCreatedDate = course.createdAt
+		? new Date(course.createdAt).toLocaleDateString('ru-RU', {
+				day: 'numeric',
+				month: 'short',
+				year: 'numeric',
+		  })
+		: 'Не указано'
+
+	const formattedUpdatedDate = course.updatedAt
+		? new Date(course.updatedAt).toLocaleDateString('ru-RU', {
+				day: 'numeric',
+				month: 'short',
+				year: 'numeric',
+		  })
+		: 'Не указано'
+
 	return (
 		<div className='space-y-6'>
-			<div className='rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
-				<h2 className='text-lg font-semibold text-slate-900'>Описание курса</h2>
-				<p className='mt-2 text-sm text-slate-500'>{course.description || 'Описание ещё не добавлено.'}</p>
-				<dl className='mt-6 grid gap-4 sm:grid-cols-3'>
-					<div className='rounded-xl bg-slate-50 p-4'><dt className='text-sm text-slate-500'>Уровень</dt><dd className='mt-1 font-medium text-slate-900'>{course.level}</dd></div>
-					<div className='rounded-xl bg-slate-50 p-4'><dt className='text-sm text-slate-500'>Модули</dt><dd className='mt-1 font-medium text-slate-900'>{course.modules.length}</dd></div>
-					<div className='rounded-xl bg-slate-50 p-4'><dt className='text-sm text-slate-500'>Статус</dt><dd className='mt-1 font-medium text-slate-900'>{course.status}</dd></div>
-				</dl>
+			{/* Top Hero Card */}
+			<CourseOverviewHero course={course} />
+
+			{/* Metrics Dashboard */}
+			<div className='grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4'>
+				<div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+					<p className='text-xs font-medium text-slate-500'>Студенты на курсе</p>
+					<p className='mt-1 text-2xl font-bold text-slate-900'>
+						{enrolledCount !== null ? enrolledCount : '...'}
+					</p>
+					<p className='mt-1 text-[11px] text-slate-400'>Активные зачисления</p>
+				</div>
+
+				<div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+					<p className='text-xs font-medium text-slate-500'>Модулей в программе</p>
+					<p className='mt-1 text-2xl font-bold text-slate-900'>{modules.length}</p>
+					<p className='mt-1 text-[11px] text-slate-400'>Тематических разделов</p>
+				</div>
+
+				<div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+					<p className='text-xs font-medium text-slate-500'>Стоимость доступа</p>
+					<p className='mt-1 text-xl font-bold text-slate-900 truncate'>{formattedPrice}</p>
+					<p className='mt-1 text-[11px] text-slate-400'>
+						{course.price && course.price > 0 ? 'Платное обучение' : 'Свободный доступ'}
+					</p>
+				</div>
+
+				<div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+					<p className='text-xs font-medium text-slate-500'>Последнее обновление</p>
+					<p className='mt-1 text-lg font-bold text-slate-900 truncate'>{formattedUpdatedDate}</p>
+					<p className='mt-1 text-[11px] text-slate-400'>Создан: {formattedCreatedDate}</p>
+				</div>
 			</div>
-			<div className='rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500'>
-				Здесь появятся статистика курса и последние действия.
-			</div>
+
+			{/* Curriculum Preview */}
+			<CourseCurriculumSummary
+				courseId={course.id}
+				modules={modules}
+				isLoading={isLoadingSyllabus}
+			/>
 		</div>
 	)
 }
+
+export default CourseOverview
