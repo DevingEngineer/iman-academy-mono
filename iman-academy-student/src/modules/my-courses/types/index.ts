@@ -6,4 +6,10 @@ export type Course = {
 	isCompleted: boolean
 	totalLessons: number
 	completedLessons: number
+	thumbnailUrl?: string | null
+	level?: number | string | null
+	tags?: string[]
+	modulesCount?: number
+	isCatalog?: boolean
 }
+

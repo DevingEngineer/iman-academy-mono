@@ -21,6 +21,10 @@ export const CoursesList = () => {
 						isCompleted: false,
 						completedLessons: 0,
 						totalLessons: Number(course.modulesCount),
+						modulesCount: Number(course.modulesCount),
+						thumbnailUrl: course.thumbnailUrl,
+						level: course.level,
+						tags: course.tags,
 						progress: 0,
 					}))
 				)
@@ -43,3 +47,4 @@ export const CoursesList = () => {
 		</div>
 	)
 }
+
