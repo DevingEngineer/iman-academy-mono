@@ -2,7 +2,7 @@
 
 import { Button } from '@/src/components/UI/Button'
 import { Link } from '@/src/i18n/navigation'
-import { fetchSubModule } from '@/src/lib/auth-api'
+import { fetchStep, fetchSubModule } from '@/src/lib/auth-api'
 import { formatDurationMinutes, formatSecondsToTime } from '@/src/lib/course-utils'
 import type { QuizStepDto, StepDto, SubModuleDto } from '@/src/types/auth'
 import { useEffect, useState } from 'react'
@@ -13,65 +13,162 @@ type SubmoduleLearningProps = {
 	subModuleId: string
 }
 
+type StepRequestState = {
+	id: string
+	step: StepDto | null
+	error: string | null
+}
+
+type SubmoduleRequestState = {
+	id: string
+	subModule: SubModuleDto | null
+	error: string | null
+}
+
+const normalizeStepType = (stepType: unknown) =>
+	typeof stepType === 'string' ? stepType.toLowerCase() : ''
+
+const getRuntimeStepType = (step: StepDto) => {
+	const declaredType = normalizeStepType(step.stepType)
+	if (declaredType) return declaredType
+
+	if ('questions' in step && Array.isArray(step.questions)) return 'quiz'
+	if ('videoUrl' in step && typeof step.videoUrl === 'string') return 'video'
+	if ('body' in step && typeof step.body === 'string') return 'content'
+
+	return ''
+}
+
+const getStepTypeLabel = (stepType: unknown) => {
+	switch (normalizeStepType(stepType)) {
+		case 'quiz':
+			return 'Тест'
+		case 'video':
+			return 'Видео'
+		case 'content':
+			return 'Материал'
+		default:
+			return 'Шаг'
+	}
+}
+
+const getStepTypeStyles = (stepType: unknown) => {
+	switch (normalizeStepType(stepType)) {
+		case 'quiz':
+			return 'bg-violet-50 text-violet-700 ring-violet-100'
+		case 'video':
+			return 'bg-blue-50 text-blue-700 ring-blue-100'
+		case 'content':
+			return 'bg-emerald-50 text-emerald-700 ring-emerald-100'
+		default:
+			return 'bg-gray-100 text-gray-700 ring-gray-200'
+	}
+}
+
 const StepContent = ({ step }: { step: StepDto }) => {
-	if (step.stepType === 'Video' && step.videoUrl) {
+	const stepType = getRuntimeStepType(step)
+
+	if (stepType === 'video' && 'videoUrl' in step) {
+		if (!step.videoUrl) {
+			return (
+				<div className='rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center'>
+					<p className='font-medium text-primary_text'>Видео пока недоступно</p>
+					<p className='mt-2 text-sm text-secondary_text'>
+						Ссылка на видео для этого шага ещё не добавлена.
+					</p>
+				</div>
+			)
+		}
+
 		return (
-			<div className='space-y-6'>
-				<div className='overflow-hidden rounded-2xl bg-black'>
-					<video controls className='w-full aspect-video' src={step.videoUrl}>
+			<div className='space-y-5'>
+				<div className='overflow-hidden rounded-2xl bg-black shadow-sm ring-1 ring-black/5'>
+					<video
+						controls
+						className='aspect-video w-full'
+						src={step.videoUrl}
+					>
 						Ваш браузер не поддерживает воспроизведение видео.
 					</video>
 				</div>
 
-				{step.durationSeconds ? (
-					<p className='text-xs text-secondary_text'>
-						Длительность: {formatSecondsToTime(step.durationSeconds)}
-					</p>
-				) : null}
+				<div className='flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-sm text-blue-900'>
+					{step.durationSeconds ? (
+						<span>
+							<span className='font-semibold'>Длительность:</span>{' '}
+							{formatSecondsToTime(step.durationSeconds)}
+						</span>
+					) : null}
+					{step.captionsUrl ? (
+						<a
+							href={step.captionsUrl}
+							target='_blank'
+							rel='noopener noreferrer'
+							className='font-semibold underline underline-offset-2 hover:no-underline'
+						>
+							Открыть субтитры
+						</a>
+					) : null}
+				</div>
 
 				{step.transcript && (
-					<div className='rounded-xl border border-gray-100 bg-[#FAFAFC] p-5'>
-						<h4 className='text-sm font-semibold text-primary_text mb-2'>Конспект / Транскрипт</h4>
-						<p className='text-sm text-secondary_text whitespace-pre-line leading-relaxed'>
+					<details className='group rounded-2xl border border-gray-200 bg-white' open>
+						<summary className='cursor-pointer list-none px-5 py-4 text-sm font-semibold text-primary_text'>
+							<span className='flex items-center justify-between'>
+								Конспект и транскрипт
+								<span className='text-secondary_text transition-transform group-open:rotate-180'>⌄</span>
+							</span>
+						</summary>
+						<p className='border-t border-gray-100 px-5 py-4 text-sm leading-relaxed text-secondary_text whitespace-pre-line'>
 							{step.transcript}
 						</p>
-					</div>
+					</details>
 				)}
 			</div>
 		)
 	}
 
-	if (step.stepType === 'Quiz') {
+	if (stepType === 'quiz') {
 		return <QuizStepPlayer step={step as QuizStepDto} />
 	}
 
-	if (step.body) {
+	if ('body' in step && step.body) {
 		return (
-			<div className='space-y-6'>
-				<div
-					className='prose max-w-none text-primary_text'
-					dangerouslySetInnerHTML={{ __html: step.body }}
-				/>
+			<div className='space-y-8'>
+				<div className='rounded-2xl border border-gray-100 bg-white px-5 py-1 shadow-sm sm:px-7'>
+					<div
+						className='prose prose-slate max-w-none py-5 text-primary_text sm:py-7'
+						dangerouslySetInnerHTML={{ __html: step.body }}
+					/>
+				</div>
 
-				{step.attachments && step.attachments.length > 0 && (
-					<div className='mt-8 rounded-xl border border-[#E6E8EC] bg-[#FAFAFC] p-5'>
-						<h4 className='text-sm font-semibold text-primary_text mb-3'>
-							Прикреплённые материалы ({step.attachments.length})
-						</h4>
-						<ul className='space-y-2'>
+				{'attachments' in step && step.attachments && step.attachments.length > 0 && (
+					<div className='rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5'>
+						<div className='mb-4'>
+							<h4 className='text-sm font-semibold text-primary_text'>
+								Дополнительные материалы
+							</h4>
+							<p className='mt-1 text-xs text-secondary_text'>
+								Файлы, которые помогут закрепить материал.
+							</p>
+						</div>
+						<ul className='grid gap-3 sm:grid-cols-2'>
 							{step.attachments.map((file) => (
 								<li
 									key={file.id}
-									className='flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3 text-sm'
+									className='flex min-w-0 items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-3 text-sm'
 								>
-									<span className='truncate font-medium text-primary_text'>{file.name}</span>
+									<div className='min-w-0'>
+										<span className='block truncate font-medium text-primary_text'>{file.name}</span>
+										<span className='mt-1 block text-xs text-secondary_text'>{file.mimeType}</span>
+									</div>
 									<a
 										href={file.url}
 										target='_blank'
 										rel='noopener noreferrer'
-										className='shrink-0 rounded-md bg-[#2563EB] px-3 py-1 text-xs font-medium text-white hover:opacity-90'
+										className='shrink-0 rounded-lg bg-[#2563EB] px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90'
 									>
-										Скачать
+										Открыть
 									</a>
 								</li>
 							))}
@@ -82,29 +179,73 @@ const StepContent = ({ step }: { step: StepDto }) => {
 		)
 	}
 
-	return <p className='text-secondary_text'>Содержание шага пока не добавлено.</p>
+	return (
+		<div className='rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center'>
+			<p className='font-medium text-primary_text'>Содержание пока не добавлено</p>
+			<p className='mt-2 text-sm text-secondary_text'>
+				Попробуйте вернуться к этому шагу позже.
+			</p>
+		</div>
+	)
 }
 
 export const SubmoduleLearning = ({ courseId, subModuleId }: SubmoduleLearningProps) => {
-	const [subModule, setSubModule] = useState<SubModuleDto | null>(null)
+	const [submoduleRequest, setSubmoduleRequest] =
+		useState<SubmoduleRequestState | null>(null)
 	const [selectedStepId, setSelectedStepId] = useState<string | null>(null)
-	const [error, setError] = useState<string | null>(null)
-	const [isLoading, setIsLoading] = useState(true)
+	const [stepRequest, setStepRequest] = useState<StepRequestState | null>(null)
 
 	useEffect(() => {
-		setIsLoading(true)
-		setError(null)
 		fetchSubModule(subModuleId)
 			.then((data) => {
 				const steps = [...data.steps].sort(
 					(first, second) => Number(first.order) - Number(second.order)
 				)
-				setSubModule({ ...data, steps })
+				setSubmoduleRequest({
+					id: subModuleId,
+					subModule: { ...data, steps },
+					error: null,
+				})
 				setSelectedStepId(steps[0]?.id ?? null)
 			})
-			.catch(() => setError('Не удалось загрузить содержание подмодуля.'))
-			.finally(() => setIsLoading(false))
+			.catch(() =>
+				setSubmoduleRequest({
+					id: subModuleId,
+					subModule: null,
+					error: 'Не удалось загрузить содержание подмодуля.',
+				})
+			)
 	}, [subModuleId])
+
+	useEffect(() => {
+		if (!selectedStepId) return
+
+		let cancelled = false
+
+		fetchStep(selectedStepId)
+			.then((data) => {
+				if (!cancelled) setStepRequest({ id: selectedStepId, step: data, error: null })
+			})
+			.catch(() => {
+				if (!cancelled) {
+					setStepRequest({
+						id: selectedStepId,
+						step: null,
+						error: 'Не удалось загрузить содержание шага.',
+					})
+				}
+			})
+
+		return () => {
+			cancelled = true
+		}
+	}, [selectedStepId])
+
+	const isLoading = submoduleRequest?.id !== subModuleId
+	const subModule =
+		submoduleRequest?.id === subModuleId ? submoduleRequest.subModule : null
+	const error =
+		submoduleRequest?.id === subModuleId ? submoduleRequest.error : null
 
 	if (isLoading) {
 		return (
@@ -141,6 +282,12 @@ export const SubmoduleLearning = ({ courseId, subModuleId }: SubmoduleLearningPr
 	const currentStepIndex = subModule.steps.findIndex((s) => s.id === selectedStepId)
 	const selectedStep = subModule.steps[currentStepIndex >= 0 ? currentStepIndex : 0]
 	const activeIndex = currentStepIndex >= 0 ? currentStepIndex : 0
+	const isStepLoading =
+		!!selectedStep && stepRequest?.id !== selectedStep.id
+	const stepError =
+		stepRequest?.id === selectedStep?.id ? stepRequest.error : null
+	const selectedStepWithDetails =
+		stepRequest?.id === selectedStepId ? stepRequest.step : null
 
 	const hasPrev = activeIndex > 0
 	const hasNext = activeIndex < subModule.steps.length - 1
@@ -158,7 +305,7 @@ export const SubmoduleLearning = ({ courseId, subModuleId }: SubmoduleLearningPr
 			)}
 
 			<header className='mb-8 rounded-[16px] border border-[#E6E8EC] bg-white p-6 shadow-sm'>
-				<div className='flex items-center justify-between gap-4'>
+				<div className='flex items-start justify-between gap-4'>
 					<div>
 						<span className='rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-[#2563EB]'>
 							Подмодуль
@@ -180,36 +327,44 @@ export const SubmoduleLearning = ({ courseId, subModuleId }: SubmoduleLearningPr
 			</header>
 
 			<div className='grid grid-cols-[280px_minmax(0,1fr)] gap-8 w850:grid-cols-1'>
-				<aside className='rounded-[16px] border border-[#E6E8EC] bg-white p-4 shadow-sm self-start'>
-					<h2 className='px-2 pb-3 text-[16px] font-semibold text-primary_text border-b border-gray-100'>
-						Шаги ({subModule.steps.length})
-					</h2>
+				<aside className='self-start rounded-[16px] border border-[#E6E8EC] bg-white p-4 shadow-sm'>
+					<div className='flex items-center justify-between border-b border-gray-100 px-2 pb-3'>
+						<h2 className='text-[16px] font-semibold text-primary_text'>
+							Шаги
+						</h2>
+						<span className='rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-secondary_text'>
+							{activeIndex + 1}/{subModule.steps.length}
+						</span>
+					</div>
 					<nav className='mt-3 space-y-1.5' aria-label='Шаги подмодуля'>
 						{subModule.steps.map((step, index) => {
 							const isSelected = step.id === selectedStep?.id
-							const stepBadge =
-								step.stepType === 'Quiz'
-									? 'Тест'
-									: step.stepType === 'Video'
-										? 'Видео'
-										: 'Текст'
+							const stepBadge = getStepTypeLabel(getRuntimeStepType(step))
 
 							return (
 								<button
 									key={step.id ?? index}
 									type='button'
 									onClick={() => setSelectedStepId(step.id)}
-									className={`w-full rounded-[10px] p-3 text-left transition-colors ${
+									className={`w-full rounded-xl border p-3 text-left transition-all ${
 										isSelected
-											? 'bg-accent_brand text-primary_text font-semibold'
-											: 'hover:bg-[#F9FAFB] text-primary_text'
+											? 'border-blue-200 bg-blue-50 text-primary_text shadow-sm'
+											: 'border-transparent text-primary_text hover:border-gray-200 hover:bg-[#F9FAFB]'
 									}`}
 								>
-									<span className='block text-sm leading-snug'>
-										{index + 1}. {step.title}
-									</span>
-									<span className='mt-1 block text-xs text-secondary_text'>
-										{stepBadge}
+									<span className='flex items-start gap-3'>
+										<span className='flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-bold text-secondary_text ring-1 ring-gray-200'>
+											{index + 1}
+										</span>
+										<span className='min-w-0'>
+											<span className='block text-sm font-semibold leading-snug'>{step.title}</span>
+											<span className='mt-2 flex items-center gap-2 text-xs text-secondary_text'>
+												<span className={`rounded-full px-2 py-0.5 font-medium ring-1 ${getStepTypeStyles(getRuntimeStepType(step))}`}>
+													{stepBadge}
+												</span>
+												{step.estimatedDurationMinutes ? `~${step.estimatedDurationMinutes} мин.` : null}
+											</span>
+										</span>
 									</span>
 								</button>
 							)
@@ -217,19 +372,30 @@ export const SubmoduleLearning = ({ courseId, subModuleId }: SubmoduleLearningPr
 					</nav>
 				</aside>
 
-				<article className='min-h-[460px] rounded-[16px] border border-[#E6E8EC] bg-white p-8 w750:p-5 shadow-sm flex flex-col justify-between'>
+				<article className='flex min-h-[460px] flex-col justify-between rounded-[16px] border border-[#E6E8EC] bg-white p-8 shadow-sm w750:p-5'>
 					{selectedStep ? (
 						<div>
-							<div className='mb-8 border-b border-[#E6E8EC] pb-5'>
-								<div className='flex items-center gap-2 text-xs text-secondary_text mb-2'>
-									<span className='rounded bg-gray-100 px-2 py-0.5 font-medium'>
-										{selectedStep.stepType}
+							<div className='mb-8 border-b border-[#E6E8EC] pb-6'>
+								<div className='mb-3 flex flex-wrap items-center gap-2 text-xs text-secondary_text'>
+									<span className={`rounded-full px-2.5 py-1 font-semibold ring-1 ${getStepTypeStyles(selectedStepWithDetails?.stepType ?? selectedStep.stepType)}`}>
+										{getStepTypeLabel(
+											selectedStepWithDetails
+												? getRuntimeStepType(selectedStepWithDetails)
+												: getRuntimeStepType(selectedStep)
+										)}
 									</span>
 									{selectedStep.estimatedDurationMinutes && (
-										<span>~{selectedStep.estimatedDurationMinutes} мин.</span>
+										<span className='rounded-full bg-gray-100 px-2.5 py-1'>
+											~{selectedStep.estimatedDurationMinutes} мин.
+										</span>
 									)}
 								</div>
-								<h2 className='h2 text-primary_text'>{selectedStep.title}</h2>
+								<div className='flex items-start justify-between gap-4'>
+									<h2 className='h2 text-primary_text'>{selectedStep.title}</h2>
+									<span className='hidden shrink-0 text-xs font-medium text-secondary_text sm:block'>
+										Шаг {activeIndex + 1} из {subModule.steps.length}
+									</span>
+								</div>
 								{selectedStep.description && (
 									<p className='mt-2 body1 text-secondary_text'>
 										{selectedStep.description}
@@ -237,20 +403,28 @@ export const SubmoduleLearning = ({ courseId, subModuleId }: SubmoduleLearningPr
 								)}
 							</div>
 
-							<StepContent step={selectedStep} />
+							{isStepLoading ? (
+								<div className='space-y-4' aria-live='polite'>
+									<div className='h-5 w-32 animate-pulse rounded bg-gray-200' />
+									<div className='h-32 w-full animate-pulse rounded-2xl bg-gray-100' />
+								</div>
+							) : stepError ? (
+								<p className='text-secondary_text'>{stepError}</p>
+							) : selectedStepWithDetails ? (
+								<StepContent step={selectedStepWithDetails} />
+							) : null}
 						</div>
 					) : (
 						<p className='text-secondary_text'>В этом подмодуле пока нет шагов.</p>
 					)}
 
-					{/* Navigation Footer */}
 					{subModule.steps.length > 0 && (
-						<div className='mt-12 flex items-center justify-between border-t border-[#E6E8EC] pt-6'>
+						<div className='mt-12 flex items-center justify-between gap-3 border-t border-[#E6E8EC] pt-6'>
 							<Button
 								variant='outlined'
 								onClick={() => setSelectedStepId(subModule.steps[activeIndex - 1]?.id ?? null)}
 								disabled={!hasPrev}
-								className='px-4'
+								className='px-4 !text-primary_text'
 							>
 								← Предыдущий шаг
 							</Button>

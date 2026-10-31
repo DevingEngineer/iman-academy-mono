@@ -6,6 +6,7 @@ import {
 	type StudentEnrollmentDto,
 	type SyllabusTreeDto,
 	type SubModuleDto,
+	type StepDto,
 	type LoginRequest,
 	type ProblemDetails,
 	type RegisterRequest,
@@ -257,6 +258,10 @@ export async function fetchSubModule(subModuleId: string): Promise<SubModuleDto>
 		{ method: 'GET' },
 		true
 	)
+}
+
+export async function fetchStep(stepId: string): Promise<StepDto> {
+	return authRequest<StepDto>(`/api/steps/${stepId}`, { method: 'GET' }, true)
 }
 
 export async function loginWithGoogleIdToken(

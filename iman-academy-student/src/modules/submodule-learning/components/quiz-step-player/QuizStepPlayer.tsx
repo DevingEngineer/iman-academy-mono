@@ -6,7 +6,10 @@ import type { QuizQuestionDto, QuizStepDto } from '@/src/types/auth'
 import { useState } from 'react'
 
 export const QuizStepPlayer = ({ step }: { step: QuizStepDto }) => {
-	const questions: QuizQuestionDto[] = step.questions ?? []
+	const questions: QuizQuestionDto[] = (step.questions ?? []).map((question) => ({
+		...question,
+		options: question.options ?? [],
+	}))
 	const passingScore = step.passingScorePercent ?? 70
 	const allowRetake = step.allowRetake ?? true
 
@@ -24,7 +27,13 @@ export const QuizStepPlayer = ({ step }: { step: QuizStepDto }) => {
 
 	const currentQ = questions[currentIndex]
 	const qKey = currentQ.id ?? String(currentIndex)
-	const isMulti = currentQ.type === 'MultiChoice' || String(currentQ.type) === '1'
+	const normalizedQuestionType = String(currentQ.type)
+		.toLowerCase()
+		.replaceAll('-', '')
+		.replaceAll('_', '')
+	const isMulti =
+		normalizedQuestionType === 'multichoice' ||
+		normalizedQuestionType === '1'
 
 	const toggleOption = (key: string) => {
 		if (isSubmitted) return
@@ -96,6 +105,24 @@ export const QuizStepPlayer = ({ step }: { step: QuizStepDto }) => {
 
 	return (
 		<div className='space-y-6'>
+			<div className='rounded-2xl border border-violet-100 bg-violet-50/60 p-5'>
+				<div className='flex flex-wrap items-start justify-between gap-4'>
+					<div>
+						<p className='text-sm font-semibold text-violet-900'>Проверьте свои знания</p>
+						<p className='mt-1 text-sm text-violet-800/80'>
+							Ответьте на все вопросы и завершите тест, чтобы увидеть результат.
+						</p>
+					</div>
+					<div className='flex gap-2 text-xs font-medium text-violet-900'>
+						<span className='rounded-full bg-white px-3 py-1.5 ring-1 ring-violet-200'>
+							{questions.length} вопросов
+						</span>
+						<span className='rounded-full bg-white px-3 py-1.5 ring-1 ring-violet-200'>
+							От {passingScore}%
+						</span>
+					</div>
+				</div>
+			</div>
 			<div>
 				<div className='mb-2 flex items-center justify-between text-xs text-secondary_text'>
 					<span>Вопрос {currentIndex + 1} из {questions.length}</span>
@@ -105,7 +132,7 @@ export const QuizStepPlayer = ({ step }: { step: QuizStepDto }) => {
 					<div className='h-full rounded-full bg-[#2563EB] transition-all' style={{ width: `${progress}%` }} />
 				</div>
 			</div>
-			<div className='flex flex-wrap gap-2'>
+			<div className='flex flex-wrap gap-2' aria-label='Навигация по вопросам'>
 				{questions.map((q, idx) => {
 					const k = q.id ?? String(idx)
 					const hasAns = (answers[k] ?? []).length > 0
@@ -114,6 +141,8 @@ export const QuizStepPlayer = ({ step }: { step: QuizStepDto }) => {
 							key={k}
 							type='button'
 							onClick={() => setCurrentIndex(idx)}
+							aria-label={`Перейти к вопросу ${idx + 1}`}
+							aria-current={idx === currentIndex ? 'step' : undefined}
 							className={cn('h-8 w-8 rounded-lg text-xs font-semibold', idx === currentIndex ? 'bg-[#2563EB] text-white' : hasAns ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700')}
 						>
 							{idx + 1}
@@ -121,9 +150,14 @@ export const QuizStepPlayer = ({ step }: { step: QuizStepDto }) => {
 					)
 				})}
 			</div>
-			<div className='rounded-2xl border border-gray-100 bg-[#FAFAFC] p-6'>
-				<p className='text-xs text-secondary_text mb-2'>{isMulti ? 'Выберите один или несколько ответов' : 'Выберите один правильный ответ'}</p>
-				<h3 className='text-lg font-semibold text-primary_text mb-6'>{currentQ.prompt}</h3>
+			<div className='rounded-2xl border border-gray-100 bg-[#FAFAFC] p-6 shadow-sm'>
+				<div className='mb-5 flex items-center justify-between gap-3'>
+					<p className='text-xs font-medium text-secondary_text'>
+						{isMulti ? 'Выберите один или несколько ответов' : 'Выберите один правильный ответ'}
+					</p>
+					<span className='text-xs text-secondary_text'>{currentQ.points > 0 ? `${currentQ.points} балл.` : '1 балл'}</span>
+				</div>
+				<h3 className='mb-6 text-lg font-semibold leading-relaxed text-primary_text'>{currentQ.prompt}</h3>
 				<div className='space-y-3'>
 					{currentQ.options.map((opt, optIdx) => {
 						const optKey = opt.id ?? opt.text
@@ -144,14 +178,26 @@ export const QuizStepPlayer = ({ step }: { step: QuizStepDto }) => {
 					})}
 				</div>
 			</div>
-			<div className='flex items-center justify-between pt-2'>
-				<Button variant='outlined' onClick={() => setCurrentIndex((p) => Math.max(0, p - 1))} disabled={currentIndex === 0} className='px-4'>
+			<div className='flex items-center justify-between gap-3 pt-2'>
+				<Button
+					variant='outlined'
+					onClick={() => setCurrentIndex((p) => Math.max(0, p - 1))}
+					disabled={currentIndex === 0}
+					className='px-4 !text-primary_text'
+				>
 					← Назад
 				</Button>
 				{currentIndex < questions.length - 1 ? (
 					<Button variant='contained' onClick={() => setCurrentIndex((p) => p + 1)} className='px-5'>Следующий →</Button>
 				) : (
-					<Button variant='contained' onClick={() => setIsSubmitted(true)} className='px-6'>Завершить тест</Button>
+					<Button
+						variant='contained'
+						onClick={() => setIsSubmitted(true)}
+						disabled={answered < questions.length}
+						className='px-6'
+					>
+						Завершить тест
+					</Button>
 				)}
 			</div>
 		</div>
