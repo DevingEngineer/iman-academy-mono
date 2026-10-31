@@ -10,12 +10,12 @@ type PageProps = {
 }
 
 const SubmodulePage = async ({ params }: PageProps) => {
-	const { subModuleId } = await params
+	const { id, subModuleId } = await params
 
 	return (
 		<MainLayout>
 			<StudentProfileHeader />
-			<SubmoduleLearning subModuleId={subModuleId} />
+			<SubmoduleLearning courseId={id} subModuleId={subModuleId} />
 		</MainLayout>
 	)
 }

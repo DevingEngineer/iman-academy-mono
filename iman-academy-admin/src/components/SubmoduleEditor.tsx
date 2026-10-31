@@ -11,8 +11,9 @@ import type {
 	StepType,
 	SubModule,
 } from '../types/course-types'
-import { fetchSubModuleSyncApi, syncSubModuleApi  } from '../lib/api'
-import { updateCourse } from '../lib/course-storage'
+import { fetchSubModuleSyncApi, syncSubModuleApi, fetchCourseSyllabusApi } from '../lib/api'
+import { mapSyllabusTreeToCourseModules } from '../lib/course-storage'
+import type { SyllabusTreeDto } from '../types'
 import { Button } from './ui/Button'
 import { EditorSyllabusNavigator } from './EditorSyllabusNavigator'
 import dynamic from 'next/dynamic'
@@ -34,6 +35,7 @@ const normalizeSteps = (steps: Step[]) =>
 	steps.map((step, index) => ({
 		...step,
 		order: index + 1,
+		status: (step.status ? String(step.status).toLowerCase() : 'draft') as ContentStatus,
 	}))
 
 const createQuestion = (): QuizQuestion => ({
@@ -196,8 +198,10 @@ const SubmoduleEditorForm = ({ course, subModule, courseSlug, moduleId, stepNumb
 		}))
 	}
 
-const save = async () => {
-		const invalidVideo = draft.steps.some((step) => step.stepType === 'Video' && step.durationSeconds <= 0)
+	const save = async () => {
+		const invalidVideo = draft.steps.some(
+			(step) => step.stepType === 'Video' && (!step.durationSeconds || Number(step.durationSeconds) <= 0)
+		)
 		if (invalidVideo) {
 			window.alert('Для видеоуроков укажите длительность в секундах.')
 			return
@@ -209,9 +213,13 @@ const save = async () => {
 		setSaveError(null)
 		try {
 			const saved = await syncSubModuleApi(payload)
-			setDraft(saved)
+			const normalized: SubModule = {
+				...saved,
+				steps: normalizeSteps(saved.steps ?? []),
+			}
+			setDraft(normalized)
 			onDirtyChange(false)
-			onSaved(saved)
+			onSaved(normalized)
 		} catch (err) {
 			console.error('Error saving submodule:', err)
 			setSaveError(err instanceof Error ? err.message : 'Не удалось сохранить изменения')
@@ -286,7 +294,7 @@ const save = async () => {
 
 						<div className='mt-4 grid gap-4 md:grid-cols-2'>
 							<Field label='Название'><input className={inputClass} value={step.title} onChange={(event) => updateStep(step.id, (current) => ({ ...current, title: event.target.value } ))} /></Field>
-							<Field label='Статус'><select className={inputClass} value={step.status} onChange={(event) => updateStep(step.id, (current) => ({ ...current, status: event.target.value as ContentStatus  }))}><option value='draft'>Черновик</option><option value='published'>Опубликован</option><option value='archived'>Архив</option></select></Field>
+							<Field label='Статус'><select className={inputClass} value={step.status ? step.status.toLowerCase() : 'draft'} onChange={(event) => updateStep(step.id, (current) => ({ ...current, status: event.target.value as ContentStatus }))}><option value='draft'>Черновик</option><option value='published'>Опубликован</option><option value='archived'>Архив</option></select></Field>
 							<Field label='Оценочная длительность (мин.)'><input className={inputClass} type='number' min='0' value={step.estimatedDurationMinutes ?? ''} onChange={(event) => updateStep(step.id, (current) => ({ ...current, estimatedDurationMinutes: event.target.value === '' ? undefined : Number(event.target.value) }))} /></Field>
 							<label className='flex items-center gap-2 self-end pb-2 text-sm text-slate-700'><input type='checkbox' checked={step.isFreePreview ?? false} onChange={(event) => updateStep(step.id, (current) => ({ ...current, isFreePreview: event.target.checked } ))} />Бесплатный предпросмотр</label>
 							<div className='md:col-span-2'><Field label='Описание (необязательно)'><textarea className={textareaClass} value={step.description ?? ''} onChange={(event) => updateStep(step.id, (current) => ({ ...current, description: event.target.value } ))} /></Field></div>
@@ -349,6 +357,7 @@ const QuestionEditor = ({ question, number, stepId, updateQuestion, changeQuesti
 
 export const SubmoduleEditor = ({ lessonId, stepNumber }: { lessonId: string; stepNumber: string }) => {
 	const [subModule, setSubModule] = useState<SubModule | null>(null)
+	const [syllabusTree, setSyllabusTree] = useState<SyllabusTreeDto | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
@@ -366,8 +375,21 @@ export const SubmoduleEditor = ({ lessonId, stepNumber }: { lessonId: string; st
 					setLoading(false)
 					return
 				}
-				setSubModule(data)
+				const normalized: SubModule = {
+					...data,
+					steps: normalizeSteps(data.steps ?? []),
+				}
+				setSubModule(normalized)
 				setLoading(false)
+
+				const courseIdentifier = normalized.courseSlug || normalized.courseId
+				if (courseIdentifier) {
+					fetchCourseSyllabusApi(courseIdentifier)
+						.then((tree) => {
+							if (mounted && tree) setSyllabusTree(tree)
+						})
+						.catch(() => {})
+				}
 			})
 			.catch((err) => {
 				if (mounted) {
@@ -388,32 +410,27 @@ export const SubmoduleEditor = ({ lessonId, stepNumber }: { lessonId: string; st
 
 	if (!subModule) return <p className='rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500'>Подраздел не найден.</p>
 
-	// PLACEHOLDER: EditorSyllabusNavigator + updateCourse() below still expect a
-	// full Course tree (other modules, other sub-modules, slug, title). Fetching
-	// only this SubModule means we don't have that data. This shell has just
-	// enough shape for the components to render without crashing, but the
-	// navigator will only ever show this one module/sub-module, "Отмена" routes
-	// by moduleId instead of a real slug, and updateCourse() will overwrite the
-	// course's `modules` array with only this one module -- silently discarding
-	// any other modules/sub-modules already saved locally for this course.
-	// This needs either: (a) a real endpoint returning the course shell
-	// (id/slug/title + module/sub-module list, without full step bodies), or
-	// (b) passing courseSlug/full course down as route/query params instead of
-	// fetching it here. Let me know which and I'll wire it in properly.
+	const courseSlug = subModule.courseSlug || subModule.courseId || subModule.moduleId
+	const courseTitle = subModule.courseTitle || syllabusTree?.courseName || 'Курс'
+	const courseId = subModule.courseId || syllabusTree?.courseId || subModule.moduleId
+
 	const course: Course = {
-		id: subModule.moduleId,
-		title: '',
-		slug: subModule.moduleId,
+		id: courseId,
+		title: courseTitle,
+		slug: courseSlug,
 		updatedAt: new Date().toISOString(),
-		modules: [
-			{
-				id: subModule.moduleId,
-				courseId: subModule.moduleId,
-				title: '',
-				order: 1,
-				subModules: [subModule],
-			},
-		],
+		modules: syllabusTree && syllabusTree.modules && syllabusTree.modules.length > 0
+			? mapSyllabusTreeToCourseModules(courseId, syllabusTree)
+			: [
+				{
+					id: subModule.moduleId,
+					courseId,
+					title: '',
+					order: 1,
+					status: 'draft',
+					subModules: [subModule],
+				},
+			],
 	} as unknown as Course
 
 	return (

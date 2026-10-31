@@ -28,11 +28,11 @@ export type CourseDto = {
 	slug: string | null
 	description: string | null
 	thumbnailUrl: string | null
-	level: number | null
+	level: number | string | null
 	language: string | null
 	price: number | string | null
 	currency: string | null
-	status: number
+	status: number | string
 	tags: string[]
 	createdAt: string
 	updatedAt: string
@@ -69,8 +69,29 @@ export type SyllabusTreeDto = {
 	modules: SyllabusModuleDto[]
 }
 
-export type StepDto = {
-	stepType: 'Content' | 'Video' | 'Quiz'
+export type StepAttachmentDto = {
+	id: string
+	name: string
+	url: string
+	mimeType: string
+}
+
+export type QuizOptionDto = {
+	id?: string | null
+	text: string
+	isCorrect?: boolean
+}
+
+export type QuizQuestionDto = {
+	id?: string | null
+	prompt: string
+	type: 'SingleChoice' | 'MultiChoice' | 'TrueFalse' | 'ShortAnswer' | number | string
+	correctAnswer?: string | null
+	points: number
+	options: QuizOptionDto[]
+}
+
+export type BaseStepDto = {
 	id: string | null
 	subModuleId: string | null
 	title: string
@@ -78,12 +99,44 @@ export type StepDto = {
 	order: number | string
 	estimatedDurationMinutes: number | string | null
 	isFreePreview: boolean
-	status: number
+	status: number | string
+}
+
+export type ContentStepDto = BaseStepDto & {
+	stepType: 'Content'
+	body: string
+	attachments?: StepAttachmentDto[]
+}
+
+export type VideoStepDto = BaseStepDto & {
+	stepType: 'Video'
+	videoUrl: string
+	durationSeconds?: number | null
+	captionsUrl?: string | null
+	transcript?: string | null
+}
+
+export type QuizStepDto = BaseStepDto & {
+	stepType: 'Quiz'
+	passingScorePercent: number
+	allowRetake: boolean
+	timeLimitSeconds?: number | null
+	questions: QuizQuestionDto[]
+}
+
+export type StepDto = ContentStepDto | VideoStepDto | QuizStepDto | (BaseStepDto & {
+	stepType: string
 	body?: string
 	videoUrl?: string
+	durationSeconds?: number | null
+	captionsUrl?: string | null
 	transcript?: string | null
-	questions?: unknown[]
-}
+	attachments?: StepAttachmentDto[]
+	passingScorePercent?: number
+	allowRetake?: boolean
+	timeLimitSeconds?: number | null
+	questions?: QuizQuestionDto[]
+})
 
 export type SubModuleDto = {
 	id: string | null

@@ -27,7 +27,6 @@ export function mapStatusToBackend(status?: Course['status'] | null): number {
 }
 
 function mapBackendLevel(level: unknown): Course['level'] {
-  // Backend uses numeric CourseLevel; map to frontend strings.
   if (typeof level === 'number') {
     switch (level) {
       case 1:
@@ -37,6 +36,12 @@ function mapBackendLevel(level: unknown): Course['level'] {
       default:
         return 'beginner'
     }
+  }
+  if (typeof level === 'string') {
+    const lower = level.toLowerCase()
+    if (lower === 'intermediate') return 'intermediate'
+    if (lower === 'advanced') return 'advanced'
+    return 'beginner'
   }
   return 'beginner'
 }
@@ -52,48 +57,69 @@ function mapBackendStatus(status: unknown): Course['status'] {
         return 'draft'
     }
   }
+  if (typeof status === 'string') {
+    const lower = status.toLowerCase()
+    if (lower === 'published') return 'published'
+    if (lower === 'archived') return 'archived'
+    return 'draft'
+  }
   return 'draft'
 }
 
-export async function fetchCourses(): Promise<Course[]> {
-  const { data } = await http.get<any[]>('/api/courses')
-  return (data ?? []).map((dto) => ({
+export function mapBackendCourse(dto: any): Course {
+  const modulesCount =
+    typeof dto.modulesCount === 'number'
+      ? dto.modulesCount
+      : Number(dto.modulesCount) || (Array.isArray(dto.modules) ? dto.modules.length : 0)
+
+  return {
     id: String(dto.id),
     title: String(dto.title ?? ''),
     slug: String(dto.slug ?? dto.id ?? ''),
     description: dto.description ?? '',
     thumbnailUrl: dto.thumbnailUrl ?? undefined,
-    instructorIds: [],
+    instructorIds: Array.isArray(dto.instructorIds) ? dto.instructorIds : [],
     tags: Array.isArray(dto.tags) ? dto.tags : [],
     level: mapBackendLevel(dto.level),
-    language: dto.language ?? 'en',
+    language: dto.language ?? 'ru',
     price: typeof dto.price === 'number' ? dto.price : Number(dto.price ?? 0) || 0,
-    currency: dto.currency ?? 'USD',
+    currency: dto.currency ?? 'KGS',
     status: mapBackendStatus(dto.status),
     createdAt: dto.createdAt ?? new Date().toISOString(),
     updatedAt: dto.updatedAt ?? new Date().toISOString(),
-    modules: [],
-  }))
+    modulesCount,
+    modules: Array.isArray(dto.modules) ? dto.modules : [],
+  }
+}
+
+export async function fetchCourses(): Promise<Course[]> {
+  const { data } = await http.get<any[]>('/api/courses')
+  return (data ?? []).map(mapBackendCourse)
+}
+
+export async function fetchCourseById(id: string): Promise<Course> {
+  const { data } = await http.get<any>(`/api/courses/${id}`)
+  return mapBackendCourse(data)
 }
 
 export async function createCourseApi(payload: Partial<Course>): Promise<Course> {
   await ensureCsrfCookie()
-  const { data } = await http.post<Course>('/api/courses', {
+  const { data } = await http.post<any>('/api/courses', {
     ...payload,
     level: mapLevelToBackend(payload.level),
     status: mapStatusToBackend(payload.status),
   })
-  return data
+  return mapBackendCourse(data)
 }
 
 export async function updateCourseApi(id: string, payload: Partial<Course>): Promise<Course> {
   await ensureCsrfCookie()
-  const { data } = await http.put<Course>(`/api/courses/${id}`, {
+  const { data } = await http.put<any>(`/api/courses/${id}`, {
     ...payload,
     level: mapLevelToBackend(payload.level),
     status: mapStatusToBackend(payload.status),
   })
-  return data
+  return mapBackendCourse(data)
 }
 
 export async function deleteCourseApi(id: string): Promise<void> {
@@ -190,6 +216,7 @@ export async function syncSubModuleApi(payload: SubModule): Promise<SubModule> {
 
 export default {
   fetchCourses,
+  fetchCourseById,
   createCourseApi,
   updateCourseApi,
   deleteCourseApi,
