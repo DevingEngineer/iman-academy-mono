@@ -3,8 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Course, Module } from '../types/course-types'
-import { fetchCourses } from '../lib/api'
-import { updateCourse, getCourses, subscribeToCourses } from '../lib/course-storage'
+import { fetchCourseSyllabusApi, syncCourseSyllabusApi } from '../lib/api'
+import {
+	updateCourse,
+	mapSyllabusTreeToCourseModules,
+	mapCourseToSyllabusTree,
+} from '../lib/course-storage'
+import { useCourse } from '../hooks/useCourses'
 import { Button } from './ui/Button'
 
 const createId = (prefix: string) =>
@@ -36,6 +41,20 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 	const [draft, setDraft] = useState(() => normalizeOrders(course))
 	const [newModuleTitle, setNewModuleTitle] = useState('')
 	const [newSubModuleTitles, setNewSubModuleTitles] = useState<Record<string, string>>({})
+	const [isSaving, setIsSaving] = useState(false)
+
+	useEffect(() => {
+		if (course.id && !course.id.startsWith('temp-')) {
+			fetchCourseSyllabusApi(course.id)
+				.then((tree) => {
+					if (tree && Array.isArray(tree.modules) && tree.modules.length > 0) {
+						const mapped = mapSyllabusTreeToCourseModules(course.id, tree)
+						setDraft((cur) => normalizeOrders({ ...cur, modules: mapped }))
+					}
+				})
+				.catch(() => {})
+		}
+	}, [course.id])
 
 	const updateDraft = (updater: (current: Course) => Course) => {
 		setDraft((current) => normalizeOrders(updater(current)))
@@ -117,13 +136,20 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 		}))
 	}
 
-	const save = () => {
-		updateCourse({
-			...normalizeOrders(draft),
-			updatedAt: new Date().toISOString(),
-			
-		})
-		router.push(`/courses/${courseSlug}/content`)
+	const save = async () => {
+		setIsSaving(true)
+		try {
+			const normalized = normalizeOrders(draft)
+			const tree = mapCourseToSyllabusTree(normalized)
+			await syncCourseSyllabusApi(course.id, tree)
+			updateCourse(normalized)
+			router.push(`/courses/${courseSlug}/content`)
+		} catch (err) {
+			console.error('Failed to sync syllabus to backend', err)
+			alert('Не удалось сохранить содержание курса. Попробуйте еще раз.')
+		} finally {
+			setIsSaving(false)
+		}
 	}
 
 	return (
@@ -137,7 +163,9 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 					<Button variant='outlined' onClick={() => router.push(`/courses/${courseSlug}/content`)}>
 						Отмена
 					</Button>
-					<Button onClick={save}>Сохранить</Button>
+					<Button onClick={save} disabled={isSaving}>
+						{isSaving ? 'Сохранение...' : 'Сохранить'}
+					</Button>
 				</div>
 			</div>
 
@@ -257,30 +285,16 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 }
 
 export const SyllabusEditor = ({ courseSlug }: { courseSlug: string }) => {
-	const [courses, setCourses] = useState<Course[]>([])
-	useEffect(() => {
-		let mounted = true
+	const { course, loading } = useCourse(courseSlug)
 
-		const load = () => {
-			if (!mounted) return
-			setCourses(getCourses())
-		}
+	if (loading && !course) return <p className='text-sm text-slate-500'>Загрузка курса...</p>
+	if (!course) return <p className='text-sm text-red-500'>Курс не найден</p>
 
-		load()
-		const unsubscribe = subscribeToCourses(() => {
-			if (!mounted) return
-			setCourses(getCourses())
-		})
-
-		return () => {
-			mounted = false
-			unsubscribe()
-		}
-	}, [])
-	const cleanSlug = decodeURIComponent(courseSlug)
-	const course = courses.find((item) => item.id === cleanSlug || item.slug === cleanSlug)
-
-	if (!course) return <p className='text-sm text-slate-500'>Загрузка курса...</p>
-
-	return <SyllabusEditorForm key={`${course.id}-${course.updatedAt}`} course={course} courseSlug={courseSlug} />
+	return (
+		<SyllabusEditorForm
+			key={`${course.id}-${course.updatedAt}`}
+			course={course}
+			courseSlug={courseSlug}
+		/>
+	)
 }

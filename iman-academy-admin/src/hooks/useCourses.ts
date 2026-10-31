@@ -1,110 +1,80 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { TEMPORARY_COURSES } from '../consts/courses'
-import { getCourses, getCourseById, subscribeToCourses } from '../lib/course-storage'
+import { subscribeToCourses } from '../lib/course-storage'
 import { fetchCourses, fetchCourseById } from '../lib/api'
 import type { Course } from '../types/course-types'
 
 export const useCourses = (): Course[] => {
-	const [courses, setCourses] = useState<Course[]>(() => {
-		if (typeof window === 'undefined') return TEMPORARY_COURSES
-		const local = getCourses()
-		return local.length > 0 ? local : TEMPORARY_COURSES
-	})
+	const [courses, setCourses] = useState<Course[]>([])
 
-	const sync = useCallback(() => {
-		setCourses(getCourses())
+	const load = useCallback(() => {
+		fetchCourses()
+			.then((data) => setCourses(data))
+			.catch((err) => console.error('Failed to load courses from backend', err))
 	}, [])
 
 	useEffect(() => {
-		let mounted = true
-
-		fetchCourses()
-			.then((data) => {
-				if (mounted && data.length > 0) {
-					setCourses(data)
-				}
-			})
-			.catch(() => {
-				if (mounted) setCourses(getCourses())
-			})
-
-		const unsubscribe = subscribeToCourses(sync)
+		load()
+		const unsubscribe = subscribeToCourses(load)
 
 		return () => {
-			mounted = false
 			unsubscribe()
 		}
-	}, [sync])
+	}, [load])
 
 	return courses
 }
 
 export const useCourse = (slugOrId?: string) => {
 	const clean = slugOrId ? decodeURIComponent(slugOrId) : ''
-	const [course, setCourse] = useState<Course | null>(() => {
-		if (!clean) return null
-		return getCourseById(clean) ?? null
-	})
-	const [loading, setLoading] = useState<boolean>(!course)
+	const [course, setCourse] = useState<Course | null>(null)
+	const [loading, setLoading] = useState<boolean>(true)
 	const [error, setError] = useState<string | null>(null)
 
-	const refresh = useCallback(() => {
-		if (!clean) return
-		const cached = getCourseById(clean)
-		if (cached) {
-			setCourse(cached)
-		}
-	}, [clean])
-
-	useEffect(() => {
+	const load = useCallback(() => {
 		if (!clean) {
 			setCourse(null)
 			setLoading(false)
 			return
 		}
 
-		let mounted = true
-		const cached = getCourseById(clean)
-		if (cached) {
-			setCourse(cached)
-			setLoading(false)
-		} else {
-			setLoading(true)
-		}
+		setLoading(true)
 
-		const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(clean)
+		const isUuid =
+			/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
+				clean
+			)
 
-		const fetcher = isUuid ? fetchCourseById(clean) : fetchCourses().then((list) => {
-			const found = list.find((c) => c.slug === clean || c.id === clean)
-			if (!found) throw new Error('Course not found')
-			return found
-		})
+		const fetcher = isUuid
+			? fetchCourseById(clean)
+			: fetchCourses().then((list) => {
+					const found = list.find((c) => c.slug === clean || c.id === clean)
+					if (!found) throw new Error('Курс не найден')
+					return found
+			  })
 
 		fetcher
 			.then((data) => {
-				if (mounted) {
-					setCourse(data)
-					setError(null)
-				}
+				setCourse(data)
+				setError(null)
 			})
 			.catch((err) => {
-				if (mounted && !cached) {
-					setError(err?.message || 'Не удалось загрузить данные курса')
-				}
+				setError(err?.message || 'Не удалось загрузить данные курса')
 			})
 			.finally(() => {
-				if (mounted) setLoading(false)
+				setLoading(false)
 			})
+	}, [clean])
 
-		const unsubscribe = subscribeToCourses(refresh)
+	useEffect(() => {
+		load()
+		const unsubscribe = subscribeToCourses(load)
 
 		return () => {
-			mounted = false
 			unsubscribe()
 		}
-	}, [clean, refresh])
+	}, [load])
 
-	return { course, loading, error, refresh }
+	return { course, loading, error, refresh: load }
 }

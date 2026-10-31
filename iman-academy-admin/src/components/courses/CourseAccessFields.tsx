@@ -69,7 +69,7 @@ export const CourseAccessFields = ({
 							className='h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-color_brand_primary focus:outline-none'
 						>
 							<option value='ru'>Русский</option>
-							<option value='kk'>Қазақша</option>
+							<option value='ky'>Кыргызча</option>
 							<option value='en'>English</option>
 						</select>
 					</div>
@@ -118,7 +118,7 @@ export const CourseAccessFields = ({
 								onChange={(e) => onCurrencyChange(e.target.value)}
 								className='h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-color_brand_primary focus:outline-none'
 							>
-								<option value='KGS'>KGS (₸)</option>
+								<option value='KGS'>KGS (сом)</option>
 								<option value='USD'>USD ($)</option>
 								<option value='RUB'>RUB (₽)</option>
 							</select>

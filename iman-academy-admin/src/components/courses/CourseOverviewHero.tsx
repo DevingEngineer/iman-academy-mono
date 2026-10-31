@@ -32,7 +32,8 @@ const levelLabels: Record<CourseLevel, string> = {
 
 const languageLabels: Record<string, string> = {
 	ru: 'Русский',
-	kk: 'Қазақша',
+	ky: 'Кыргызча',
+	kk: 'Кыргызча',
 	en: 'English',
 }
 

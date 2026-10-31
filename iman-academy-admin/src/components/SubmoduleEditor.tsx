@@ -12,7 +12,6 @@ import type {
 	SubModule,
 } from '../types/course-types'
 import { fetchSubModuleSyncApi, syncSubModuleApi  } from '../lib/api'
-import { updateCourse } from '../lib/course-storage'
 import { Button } from './ui/Button'
 import { EditorSyllabusNavigator } from './EditorSyllabusNavigator'
 import dynamic from 'next/dynamic'
