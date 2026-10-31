@@ -162,6 +162,7 @@ export const saveCourse = (titleOrInput: string | CreateCourseInput): Course => 
 		status: data.status ?? 'draft',
 		createdAt: now,
 		updatedAt: now,
+		modulesCount: 0,
 		modules: [],
 	}
 

@@ -31,6 +31,7 @@ export interface Course {
   status: ContentStatus;
   createdAt: string; // ISO date
   updatedAt: string; // ISO date
+  modulesCount?: number;
   modules: Module[];
 }
 

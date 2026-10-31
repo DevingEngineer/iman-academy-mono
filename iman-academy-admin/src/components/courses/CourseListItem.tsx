@@ -33,12 +33,31 @@ type CourseListItemProps = {
 	onDeleteClick: () => void
 }
 
+const formatDate = (isoDate?: string | null): string => {
+	if (!isoDate) return ''
+	try {
+		return new Date(isoDate).toLocaleDateString('ru-RU', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric',
+		})
+	} catch {
+		return ''
+	}
+}
+
 export const CourseListItem = ({
 	course,
 	onDeleteClick,
 }: CourseListItemProps) => {
 	const statusInfo = statusLabels[course.status] ?? statusLabels.draft
-	const modulesCount = course.modules?.length ?? 0
+	const modulesCount =
+		typeof course.modulesCount === 'number'
+			? course.modulesCount
+			: course.modules?.length ?? 0
+
+	const createdFormatted = formatDate(course.createdAt)
+	const updatedFormatted = formatDate(course.updatedAt)
 
 	return (
 		<li className='group flex flex-col gap-4 p-5 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center sm:justify-between'>
@@ -111,6 +130,28 @@ export const CourseListItem = ({
 							</>
 						)}
 					</div>
+
+					{(createdFormatted || updatedFormatted) && (
+						<div className='mt-1.5 flex flex-wrap items-center gap-x-3 text-[11px] text-slate-400'>
+							{createdFormatted && (
+								<span>
+									Создан:{' '}
+									<span className='font-medium text-slate-600'>
+										{createdFormatted}
+									</span>
+								</span>
+							)}
+							{createdFormatted && updatedFormatted && <span>•</span>}
+							{updatedFormatted && (
+								<span>
+									Обновлен:{' '}
+									<span className='font-medium text-slate-600'>
+										{updatedFormatted}
+									</span>
+								</span>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 

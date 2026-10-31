@@ -27,7 +27,6 @@ export function mapStatusToBackend(status?: Course['status'] | null): number {
 }
 
 function mapBackendLevel(level: unknown): Course['level'] {
-  // Backend uses numeric CourseLevel; map to frontend strings.
   if (typeof level === 'number') {
     switch (level) {
       case 1:
@@ -37,6 +36,12 @@ function mapBackendLevel(level: unknown): Course['level'] {
       default:
         return 'beginner'
     }
+  }
+  if (typeof level === 'string') {
+    const lower = level.toLowerCase()
+    if (lower === 'intermediate') return 'intermediate'
+    if (lower === 'advanced') return 'advanced'
+    return 'beginner'
   }
   return 'beginner'
 }
@@ -52,13 +57,21 @@ function mapBackendStatus(status: unknown): Course['status'] {
         return 'draft'
     }
   }
-  if (status === 'published' || status === 'archived' || status === 'draft') {
-    return status
+  if (typeof status === 'string') {
+    const lower = status.toLowerCase()
+    if (lower === 'published') return 'published'
+    if (lower === 'archived') return 'archived'
+    return 'draft'
   }
   return 'draft'
 }
 
 export function mapBackendCourse(dto: any): Course {
+  const modulesCount =
+    typeof dto.modulesCount === 'number'
+      ? dto.modulesCount
+      : Number(dto.modulesCount) || (Array.isArray(dto.modules) ? dto.modules.length : 0)
+
   return {
     id: String(dto.id),
     title: String(dto.title ?? ''),
@@ -74,7 +87,8 @@ export function mapBackendCourse(dto: any): Course {
     status: mapBackendStatus(dto.status),
     createdAt: dto.createdAt ?? new Date().toISOString(),
     updatedAt: dto.updatedAt ?? new Date().toISOString(),
-    modules: [],
+    modulesCount,
+    modules: Array.isArray(dto.modules) ? dto.modules : [],
   }
 }
 

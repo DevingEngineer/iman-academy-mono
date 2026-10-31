@@ -100,7 +100,9 @@ export const CourseOverview = ({ courseSlug }: { courseSlug: string }) => {
 
 				<div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
 					<p className='text-xs font-medium text-slate-500'>Модулей в программе</p>
-					<p className='mt-1 text-2xl font-bold text-slate-900'>{modules.length}</p>
+					<p className='mt-1 text-2xl font-bold text-slate-900'>
+						{modules.length > 0 ? modules.length : course.modulesCount ?? 0}
+					</p>
 					<p className='mt-1 text-[11px] text-slate-400'>Тематических разделов</p>
 				</div>
 
