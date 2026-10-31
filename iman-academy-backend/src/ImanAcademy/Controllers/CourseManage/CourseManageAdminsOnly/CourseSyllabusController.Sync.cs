@@ -7,17 +7,20 @@ namespace ImanAcademy.Controllers.CourseManage;
 
 public partial class CourseSyllabusController
 {
-    [HttpPut("{courseId:guid}/sync")]
+    [HttpPut("{courseIdOrSlug}/sync")]
     [Tags("CourseManageAdminsOnly")]
-    public async Task<ActionResult<SyllabusTreeDto>> Sync(Guid courseId, [FromBody] SyllabusTreeDto dto, CancellationToken ct)
+    public async Task<ActionResult<SyllabusTreeDto>> Sync(string courseIdOrSlug, [FromBody] SyllabusTreeDto dto, CancellationToken ct)
     {
         var moduleIds = dto.Modules.Where(m => m.ModuleId.HasValue).Select(m => m.ModuleId!.Value).ToList();
         if (moduleIds.Distinct().Count() != moduleIds.Count) return BadRequest("Payload contains a duplicate ModuleId.");
         var subModuleIds = dto.Modules.SelectMany(m => m.SubModules).Where(sm => sm.SubModuleId.HasValue).Select(sm => sm.SubModuleId!.Value).ToList();
         if (subModuleIds.Distinct().Count() != subModuleIds.Count) return BadRequest("Payload contains a duplicate SubModuleId.");
         await using var tx = await _context.Database.BeginTransactionAsync(ct);
-        var course = await LoadCourseWithTreeAsync(courseId, asTracking: true, ct);
+        var course = Guid.TryParse(courseIdOrSlug, out var parsedCourseId)
+            ? await LoadCourseWithTreeAsync(parsedCourseId, asTracking: true, ct)
+            : await LoadCourseWithTreeBySlugAsync(courseIdOrSlug, asTracking: true, ct);
         if (course is null) return NotFound();
+        var courseId = course.Id;
         if (!string.IsNullOrWhiteSpace(dto.CourseName) && dto.CourseName != course.Title) { course.Title = dto.CourseName; course.UpdatedAt = DateTime.UtcNow; }
         var existingModules = course.Modules.ToDictionary(m => m.Id);
         var existingSubModules = course.Modules.SelectMany(m => m.SubModules).ToDictionary(sm => sm.Id);

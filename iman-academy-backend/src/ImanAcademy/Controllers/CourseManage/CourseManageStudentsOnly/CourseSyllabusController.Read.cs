@@ -6,11 +6,14 @@ namespace ImanAcademy.Controllers.CourseManage;
 
 public partial class CourseSyllabusController
 {
-    [HttpGet("{courseId:guid}")]
+    [HttpGet("{courseIdOrSlug}")]
     [Tags("CourseManageStudentsOnly")]
-    public async Task<ActionResult<SyllabusTreeDto>> GetTree(Guid courseId, CancellationToken ct)
+    public async Task<ActionResult<SyllabusTreeDto>> GetTree(string courseIdOrSlug, CancellationToken ct)
     {
-        var course = await LoadCourseWithTreeAsync(courseId, asTracking: false, ct);
+        var course = Guid.TryParse(courseIdOrSlug, out var courseId)
+            ? await LoadCourseWithTreeAsync(courseId, asTracking: false, ct)
+            : await LoadCourseWithTreeBySlugAsync(courseIdOrSlug, asTracking: false, ct);
+
         if (course is null)
             return NotFound();
 

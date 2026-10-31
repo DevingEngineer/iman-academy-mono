@@ -12,7 +12,7 @@ public static class TestDataHelpers
 {
     public static readonly JsonSerializerOptions JsonOptions = new()
     {
-        Converters = { new JsonStringEnumConverter() },
+        Converters = { new QuestionTypeJsonConverter(), new JsonStringEnumConverter() },
         PropertyNameCaseInsensitive = true
     };
     public static async Task<CourseDto> CreateCourseAsync(this HttpClient client, string? title = null)

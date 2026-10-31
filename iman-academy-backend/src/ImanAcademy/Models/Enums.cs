@@ -1,4 +1,6 @@
-﻿namespace ImanAcademy.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace ImanAcademy.Models;
 
 
 public enum ContentStatus
@@ -22,6 +24,7 @@ public enum StepType
     Quiz
 }
 
+[JsonConverter(typeof(QuestionTypeJsonConverter))]
 public enum QuestionType
 {
     SingleChoice,

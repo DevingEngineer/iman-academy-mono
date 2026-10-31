@@ -28,6 +28,16 @@ public partial class CourseSyllabusController : ControllerBase
         return await query.FirstOrDefaultAsync(c => c.Id == courseId, ct);
     }
 
+    private async Task<Course?> LoadCourseWithTreeBySlugAsync(string slug, bool asTracking, CancellationToken ct)
+    {
+        IQueryable<Course> query = _context.Courses.Include(c => c.Modules).ThenInclude(m => m.SubModules);
+
+        if (!asTracking)
+            query = query.AsNoTracking();
+
+        return await query.FirstOrDefaultAsync(c => c.Slug == slug, ct);
+    }
+
     private static SyllabusTreeDto BuildTreeDto(Course course) => new()
     {
         CourseId = course.Id,

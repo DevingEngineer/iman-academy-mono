@@ -8,12 +8,13 @@ public class SubModuleSyncService
 
     public SubModuleSyncService(ImanAcademyContext db) => _db = db;
 
-    public async Task<SubModuleDto> GetBySubModuleAsync(Guid subModuleId, CancellationToken ct)
+    public async Task<SubModuleDto?> GetBySubModuleAsync(Guid subModuleId, CancellationToken ct)
     {
         var subModule = await _db.SubModules.AsNoTracking()
-           .FirstOrDefaultAsync(s => s.Id == subModuleId);
+           .Include(s => s.Module).ThenInclude(m => m.Course)
+           .FirstOrDefaultAsync(s => s.Id == subModuleId, ct);
 
-       
+        if (subModule == null) return null;
 
         // 3 queries total for steps, regardless of how many sub-modules/steps exist.
         var contentSteps = await _db.Set<ContentStep>().AsNoTracking()
@@ -30,19 +31,18 @@ public class SubModuleSyncService
             .Where(q => q.SubModuleId == subModuleId)
             .ToListAsync(ct);
 
-        var contentBySubModule = contentSteps.ToLookup(c => c.SubModuleId);
-        var videoBySubModule = videoSteps.ToLookup(v => v.SubModuleId);
-        var quizBySubModule = quizSteps.ToLookup(q => q.SubModuleId);
-
         var steps = new List<StepDto>();
-        steps.AddRange(contentBySubModule[subModule.Id].Select(c=>c.ToDto()));
-        steps.AddRange(videoBySubModule[subModule.Id].Select(v=>v.ToDto()));
-        steps.AddRange(quizBySubModule[subModule.Id].Select(q=>q.ToDto()));
+        steps.AddRange(contentSteps.Select(c => c.ToDto()));
+        steps.AddRange(videoSteps.Select(v => v.ToDto()));
+        steps.AddRange(quizSteps.Select(q => q.ToDto()));
 
         return new SubModuleDto
         {
             Id = subModule.Id,
             ModuleId = subModule.ModuleId,
+            CourseId = subModule.Module?.CourseId,
+            CourseSlug = subModule.Module?.Course?.Slug,
+            CourseTitle = subModule.Module?.Course?.Title,
             Title = subModule.Title,
             Description = subModule.Description,
             Order = subModule.Order,
@@ -55,11 +55,11 @@ public class SubModuleSyncService
     {
         SubModule subModule;
 
-        if (dto.Id is Guid subModuleId)
+        if (dto.Id != Guid.Empty)
         {
             subModule = await _db.SubModules
-                .FirstOrDefaultAsync(s => s.Id == subModuleId, ct)
-                ?? throw new KeyNotFoundException($"SubModule {subModuleId} not found.");
+                .FirstOrDefaultAsync(s => s.Id == dto.Id, ct)
+                ?? throw new KeyNotFoundException($"SubModule {dto.Id} not found.");
         }
         else
         {
@@ -68,7 +68,7 @@ public class SubModuleSyncService
         }
 
         subModule.ModuleId = dto.ModuleId;
-        subModule.Title = dto.Title;
+        subModule.Title = string.IsNullOrWhiteSpace(dto.Title) ? "Подраздел" : dto.Title.Trim();
         subModule.Description = dto.Description;
         subModule.Order = dto.Order;
         subModule.EstimatedDurationMinutes = dto.EstimatedDurationMinutes;
@@ -117,7 +117,7 @@ public class SubModuleSyncService
             }
             else
             {
-                AddStep(subModule.Id, CreateStep(stepDto, forcedId: stepDto.Id ?? Guid.NewGuid()));
+                AddStep(subModule.Id, CreateStep(stepDto, forcedId: (stepDto.Id.HasValue && stepDto.Id.Value != Guid.Empty) ? stepDto.Id.Value : Guid.NewGuid()));
             }
         }
 
@@ -149,8 +149,8 @@ public class SubModuleSyncService
         {
             ContentStepDto c => new ContentStep
             {
-                Body = c.Body,
-                Attachments = c.Attachments.Select(a => new StepAttachment
+                Body = c.Body ?? string.Empty,
+                Attachments = (c.Attachments ?? new()).Select(a => new StepAttachment
                 {
                     Id = a.Id == Guid.Empty ? Guid.NewGuid() : a.Id,
                     Name = a.Name,
@@ -160,7 +160,7 @@ public class SubModuleSyncService
             },
             VideoStepDto v => new VideoStep
             {
-                VideoUrl = v.VideoUrl,
+                VideoUrl = v.VideoUrl ?? string.Empty,
                 DurationSeconds = v.DurationSeconds,
                 CaptionsUrl = v.CaptionsUrl,
                 Transcript = v.Transcript
@@ -170,7 +170,7 @@ public class SubModuleSyncService
                 PassingScorePercent = q.PassingScorePercent,
                 AllowRetake = q.AllowRetake,
                 TimeLimitSeconds = q.TimeLimitSeconds,
-                Questions = q.Questions.Select(CreateQuestion).ToList()
+                Questions = (q.Questions ?? new()).Select(CreateQuestion).ToList()
             },
             _ => throw new NotSupportedException($"Unsupported step type '{dto.GetType().Name}'.")
         };
@@ -187,9 +187,9 @@ public class SubModuleSyncService
         switch (entity, dto)
         {
             case (ContentStep ce, ContentStepDto cd):
-                ce.Body = cd.Body;
+                ce.Body = cd.Body ?? string.Empty;
                 SyncChildren(
-                    ce.Attachments, cd.Attachments,
+                    ce.Attachments, cd.Attachments ?? new(),
                     dtoId: a => a.Id == Guid.Empty ? null : a.Id,
                     entityId: a => a.Id,
                     create: a => new StepAttachment
@@ -204,7 +204,7 @@ public class SubModuleSyncService
                 break;
 
             case (VideoStep ve, VideoStepDto vd):
-                ve.VideoUrl = vd.VideoUrl;
+                ve.VideoUrl = vd.VideoUrl ?? string.Empty;
                 ve.DurationSeconds = vd.DurationSeconds;
                 ve.CaptionsUrl = vd.CaptionsUrl;
                 ve.Transcript = vd.Transcript;
@@ -215,7 +215,7 @@ public class SubModuleSyncService
                 qe.AllowRetake = qd.AllowRetake;
                 qe.TimeLimitSeconds = qd.TimeLimitSeconds;
                 SyncChildren(
-                    qe.Questions, qd.Questions,
+                    qe.Questions, qd.Questions ?? new(),
                     dtoId: q => q.Id,
                     entityId: q => q.Id,
                     create: q => { var e = CreateQuestion(q); e.QuizStepId = qe.Id; return e; },
@@ -247,7 +247,7 @@ public class SubModuleSyncService
 
     private static void ApplyCommon(Step entity, StepDto dto)
     {
-        entity.Title = dto.Title;
+        entity.Title = string.IsNullOrWhiteSpace(dto.Title) ? "Урок" : dto.Title.Trim();
         entity.Description = dto.Description;
         entity.Order = dto.Order;
         entity.EstimatedDurationMinutes = dto.EstimatedDurationMinutes;
@@ -259,16 +259,21 @@ public class SubModuleSyncService
 
     private static QuizQuestion CreateQuestion(QuizQuestionDto q) => new()
     {
-        Id = q.Id ?? Guid.NewGuid(),
+        Id = (q.Id.HasValue && q.Id.Value != Guid.Empty) ? q.Id.Value : Guid.NewGuid(),
         Prompt = q.Prompt,
         Type = q.Type,
         CorrectAnswer = q.CorrectAnswer,
         Points = q.Points,
-        Options = q.Options.Select(o => new QuizOption
+        Options = (q.Options ?? new()).Select(o =>
         {
-            Id = o.Id ?? Guid.NewGuid(),
-            Text = o.Text,
-            IsCorrect = o.IsCorrect
+            var optId = (o.Id.HasValue && o.Id.Value != Guid.Empty) ? o.Id.Value : Guid.NewGuid();
+            var isCorrect = o.IsCorrect || (q.CorrectOptionIds != null && q.CorrectOptionIds.Contains(optId));
+            return new QuizOption
+            {
+                Id = optId,
+                Text = o.Text,
+                IsCorrect = isCorrect
+            };
         }).ToList()
     };
 
@@ -280,17 +285,27 @@ public class SubModuleSyncService
         entity.Points = dto.Points;
 
         SyncChildren(
-            entity.Options, dto.Options,
-            dtoId: o => o.Id,
+            entity.Options, dto.Options ?? new(),
+            dtoId: o => (o.Id.HasValue && o.Id.Value != Guid.Empty) ? o.Id : null,
             entityId: o => o.Id,
-            create: o => new QuizOption
+            create: o =>
             {
-                Id = o.Id ?? Guid.NewGuid(),
-                QuizQuestionId = entity.Id,
-                Text = o.Text,
-                IsCorrect = o.IsCorrect
+                var optId = (o.Id.HasValue && o.Id.Value != Guid.Empty) ? o.Id.Value : Guid.NewGuid();
+                var isCorrect = o.IsCorrect || (dto.CorrectOptionIds != null && dto.CorrectOptionIds.Contains(optId));
+                return new QuizOption
+                {
+                    Id = optId,
+                    QuizQuestionId = entity.Id,
+                    Text = o.Text,
+                    IsCorrect = isCorrect
+                };
             },
-            update: (o, od) => { o.Text = od.Text; o.IsCorrect = od.IsCorrect; });
+            update: (o, od) =>
+            {
+                o.Text = od.Text;
+                var isCorrect = od.IsCorrect || (dto.CorrectOptionIds != null && dto.CorrectOptionIds.Contains(o.Id));
+                o.IsCorrect = isCorrect;
+            });
     }
 
     // --- generic id-keyed collection sync (attachments / questions / options) ---
@@ -335,6 +350,7 @@ public class SubModuleSyncService
     private async Task<SubModuleDto> MapToDtoAsync(Guid subModuleId, CancellationToken ct)
     {
         var subModule = await _db.SubModules.AsNoTracking()
+            .Include(s => s.Module).ThenInclude(m => m.Course)
             .FirstAsync(s => s.Id == subModuleId, ct);
 
         var contentSteps = await _db.Set<ContentStep>().AsNoTracking()
@@ -401,6 +417,7 @@ public class SubModuleSyncService
                 Type = qq.Type,
                 CorrectAnswer = qq.CorrectAnswer,
                 Points = qq.Points,
+                CorrectOptionIds = qq.Options.Where(o => o.IsCorrect).Select(o => o.Id).ToList(),
                 Options = qq.Options.Select(o => new QuizOptionDto
                 { Id = o.Id, Text = o.Text, IsCorrect = o.IsCorrect }).ToList()
             }).ToList()
@@ -410,6 +427,9 @@ public class SubModuleSyncService
         {
             Id = subModule.Id,
             ModuleId = subModule.ModuleId,
+            CourseId = subModule.Module?.CourseId,
+            CourseSlug = subModule.Module?.Course?.Slug,
+            CourseTitle = subModule.Module?.Course?.Title,
             Title = subModule.Title,
             Description = subModule.Description,
             Order = subModule.Order,

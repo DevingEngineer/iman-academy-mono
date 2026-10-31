@@ -98,12 +98,15 @@ public class SubModuleDto
 {
     public Guid Id { get; set; }
     public Guid ModuleId { get; set; }
+    public Guid? CourseId { get; set; }
+    public string? CourseSlug { get; set; }
+    public string? CourseTitle { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int Order { get; set; }
     public int? EstimatedDurationMinutes { get; set; }
 
-    public IEnumerable<StepDto> Steps{ get; set; }
+    public IEnumerable<StepDto> Steps { get; set; } = new List<StepDto>();
 }
 
 public class CreateSubModuleDto
@@ -177,10 +180,12 @@ public class QuizQuestionDto
 {
     public Guid? Id { get; set; }
     public string Prompt { get; set; } = string.Empty;
+    [JsonConverter(typeof(QuestionTypeJsonConverter))]
     public QuestionType Type { get; set; }
     public string? CorrectAnswer { get; set; }
     public int Points { get; set; }
     public List<QuizOptionDto> Options { get; set; } = new();
+    public List<Guid>? CorrectOptionIds { get; set; }
 }
 
 public class QuizOptionDto
@@ -265,6 +270,7 @@ public class QuizQuestionUpsertDto
     [Required, MaxLength(1000)]
     public string Prompt { get; set; } = string.Empty;
 
+    [JsonConverter(typeof(QuestionTypeJsonConverter))]
     public QuestionType Type { get; set; }
 
     // Only meaningful when Type == ShortAnswer
@@ -274,6 +280,7 @@ public class QuizQuestionUpsertDto
     public int Points { get; set; }
 
     public List<QuizOptionUpsertDto> Options { get; set; } = new();
+    public List<Guid>? CorrectOptionIds { get; set; }
 }
 
 public class QuizOptionUpsertDto
@@ -398,6 +405,7 @@ public static class MappingExtensions
         Type = question.Type,
         CorrectAnswer = question.CorrectAnswer,
         Points = question.Points,
+        CorrectOptionIds = question.Options.Where(o => o.IsCorrect).Select(o => o.Id).ToList(),
         Options = question.Options.Select(o => o.ToDto()).ToList(),
     };
 

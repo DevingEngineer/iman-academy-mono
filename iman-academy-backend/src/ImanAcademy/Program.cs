@@ -23,7 +23,11 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Smtp"
 // Add services to the container.
 
 builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new QuestionTypeJsonConverter());
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 builder.Services.AddScoped<ValidateAntiforgeryTokenFilter>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
