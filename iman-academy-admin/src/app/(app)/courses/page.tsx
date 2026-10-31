@@ -6,7 +6,7 @@ import { PageHeader } from '@/src/components/ui/PageHeader'
 import { Button } from '@/src/components/ui/Button'
 import { PlusIcon } from '@/src/components/icons/PlusIcon'
 import { useCourses } from '@/src/hooks/useCourses'
-import { deleteCourse, updateCourse } from '@/src/lib/course-storage'
+import { deleteCourse } from '@/src/lib/course-storage'
 import { CourseListItem } from '@/src/components/courses/CourseListItem'
 import { CourseDeleteModal } from '@/src/components/courses/CourseDeleteModal'
 import { CourseMetrics } from '@/src/components/courses/CourseMetrics'
@@ -23,7 +23,6 @@ const CoursesPage = () => {
 
 	const [courseToDelete, setCourseToDelete] = useState<Course | null>(null)
 	const [isDeleting, setIsDeleting] = useState(false)
-	const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null)
 
 	const stats = useMemo(() => {
 		const total = courses.length
@@ -67,20 +66,6 @@ const CoursesPage = () => {
 				return dateB - dateA
 			})
 	}, [courses, searchQuery, statusFilter, levelFilter, sortBy])
-
-	const handleStatusChange = async (course: Course, nextStatus: ContentStatus) => {
-		if (course.status === nextStatus) return
-		try {
-			setStatusUpdatingId(course.id)
-			updateCourse({
-				...course,
-				status: nextStatus,
-				updatedAt: new Date().toISOString(),
-			})
-		} finally {
-			setStatusUpdatingId(null)
-		}
-	}
 
 	const handleDeleteConfirm = async () => {
 		if (!courseToDelete) return
@@ -153,8 +138,6 @@ const CoursesPage = () => {
 							<CourseListItem
 								key={course.id}
 								course={course}
-								isUpdating={statusUpdatingId === course.id}
-								onStatusChange={(status) => handleStatusChange(course, status)}
 								onDeleteClick={() => setCourseToDelete(course)}
 							/>
 						))}

@@ -30,31 +30,37 @@ const levelLabels: Record<CourseLevel, string> = {
 
 type CourseListItemProps = {
 	course: Course
-	isUpdating?: boolean
-	onStatusChange: (status: ContentStatus) => void
 	onDeleteClick: () => void
 }
 
 export const CourseListItem = ({
 	course,
-	isUpdating,
-	onStatusChange,
 	onDeleteClick,
 }: CourseListItemProps) => {
 	const statusInfo = statusLabels[course.status] ?? statusLabels.draft
 	const modulesCount = course.modules?.length ?? 0
 
 	return (
-		<li className='flex flex-col gap-4 p-5 transition-colors hover:bg-slate-50/70 sm:flex-row sm:items-center sm:justify-between'>
+		<li className='group flex flex-col gap-4 p-5 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center sm:justify-between'>
 			<div className='flex items-start gap-4 min-w-0 flex-1'>
-				<div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-base font-bold text-slate-700 border border-slate-200'>
-					{course.title.slice(0, 2).toUpperCase()}
-				</div>
+				{course.thumbnailUrl ? (
+					// eslint-disable-next-line @next/next/no-img-element
+					<img
+						src={course.thumbnailUrl}
+						alt={course.title}
+						className='h-14 w-20 shrink-0 rounded-xl border border-slate-200 object-cover'
+					/>
+				) : (
+					<div className='flex h-14 w-20 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 text-sm font-bold text-slate-600 border border-slate-200'>
+						{course.title.slice(0, 2).toUpperCase()}
+					</div>
+				)}
+
 				<div className='min-w-0 flex-1'>
-					<div className='flex flex-wrap items-center gap-2'>
+					<div className='flex flex-wrap items-center gap-2.5'>
 						<Link
 							href={`/courses/${course.id}/description`}
-							className='text-base font-semibold text-slate-900 hover:text-color_brand_primary transition-colors truncate'
+							className='text-base font-semibold text-slate-900 group-hover:text-color_brand_primary transition-colors truncate'
 						>
 							{course.title}
 						</Link>
@@ -72,14 +78,14 @@ export const CourseListItem = ({
 						</p>
 					)}
 
-					<div className='mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500'>
+					<div className='mt-2 flex flex-wrap items-center gap-2.5 text-xs text-slate-500'>
 						<span className='font-medium text-slate-700'>
 							{levelLabels[course.level] ?? course.level}
 						</span>
 						<span>•</span>
 						<span>{modulesCount} модулей</span>
 						<span>•</span>
-						<span>
+						<span className='font-medium text-slate-800'>
 							{course.price && course.price > 0
 								? `${course.price.toLocaleString()} ${course.currency}`
 								: 'Бесплатно'}
@@ -108,35 +114,23 @@ export const CourseListItem = ({
 				</div>
 			</div>
 
-			<div className='flex flex-wrap items-center gap-2 sm:shrink-0'>
-				<select
-					disabled={isUpdating}
-					value={course.status}
-					onChange={(e) => onStatusChange(e.target.value as ContentStatus)}
-					className='h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-700 hover:border-slate-300 focus:border-color_brand_primary focus:outline-none'
-					title='Изменить статус'
-				>
-					<option value='draft'>Черновик</option>
-					<option value='published'>Опубликован</option>
-					<option value='archived'>В архиве</option>
-				</select>
-
-				<Link href={`/courses/${course.id}/content`}>
+			<div className='flex items-center gap-2 sm:shrink-0'>
+				<Link href={`/courses/${course.id}/description`}>
 					<Button size='sm' variant='outlined' className='text-xs'>
-						Содержание
+						Обзор
 					</Button>
 				</Link>
 
-				<Link href={`/courses/${course.id}/settings`}>
-					<Button size='sm' variant='outlined' className='text-xs'>
-						Настройки
+				<Link href={`/courses/${course.id}/content`}>
+					<Button size='sm' className='text-xs'>
+						Содержание
 					</Button>
 				</Link>
 
 				<button
 					type='button'
 					onClick={onDeleteClick}
-					className='h-8 rounded-lg px-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors'
+					className='h-8 rounded-lg px-2 text-xs font-medium text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors'
 					title='Удалить курс'
 				>
 					Удалить
