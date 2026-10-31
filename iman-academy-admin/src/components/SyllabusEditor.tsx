@@ -141,8 +141,13 @@ const SyllabusEditorForm = ({ course, courseSlug }: EditorFormProps) => {
 		try {
 			const normalized = normalizeOrders(draft)
 			const tree = mapCourseToSyllabusTree(normalized)
-			await syncCourseSyllabusApi(course.id, tree)
-			updateCourse(normalized)
+			const updatedTree = await syncCourseSyllabusApi(course.id, tree)
+			if (updatedTree && Array.isArray(updatedTree.modules) && updatedTree.modules.length > 0) {
+				const updatedModules = mapSyllabusTreeToCourseModules(course.id, updatedTree)
+				updateCourse(normalizeOrders({ ...normalized, modules: updatedModules }))
+			} else {
+				updateCourse(normalized)
+			}
 			router.push(`/courses/${courseSlug}/content`)
 		} catch (err) {
 			console.error('Failed to sync syllabus to backend', err)

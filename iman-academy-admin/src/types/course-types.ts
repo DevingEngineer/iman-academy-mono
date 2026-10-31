@@ -55,6 +55,9 @@ export interface Module {
 export interface SubModule {
   id: EntityId;
   moduleId: EntityId;
+  courseId?: EntityId;
+  courseSlug?: string;
+  courseTitle?: string;
   title: string;
   description?: string;
   order: number;
